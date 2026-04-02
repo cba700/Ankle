@@ -11,6 +11,16 @@ export type CalendarDate = {
 
 const DAY = 24 * 60 * 60 * 1000;
 
+function getNumericDatePart(date: Date, type: "month" | "day") {
+  const parts = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    [type]: "numeric",
+  }).formatToParts(date);
+
+  const value = parts.find((part) => part.type === type)?.value ?? "0";
+  return Number.parseInt(value, 10);
+}
+
 export function getSeoulTodayStart() {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -58,18 +68,8 @@ export function getCalendarDates(total = 14): CalendarDate[] {
 
   return Array.from({ length: total }, (_, index) => {
     const nextDate = addDays(today, index);
-    const month = Number(
-      new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        month: "numeric",
-      }).format(nextDate),
-    );
-    const day = Number(
-      new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        day: "numeric",
-      }).format(nextDate),
-    );
+    const month = getNumericDatePart(nextDate, "month");
+    const day = getNumericDatePart(nextDate, "day");
     const weekdayShort = new Intl.DateTimeFormat("ko-KR", {
       timeZone: "Asia/Seoul",
       weekday: "short",
