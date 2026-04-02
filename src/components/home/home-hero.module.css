@@ -126,18 +126,31 @@
 
 @media (max-width: 520px) {
   .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
     align-items: start;
+    gap: 14px;
+    padding-right: 18px;
+  }
+
+  .content {
+    max-width: none;
   }
 
   .badgeCard {
+    justify-self: start;
     min-width: 76px;
     padding: 12px 14px;
+  }
+
+  .pagination {
+    right: 12px;
   }
 }
 
 @media (max-width: 360px) {
   .hero {
-    gap: 14px;
     margin: 12px;
     padding: 22px 18px 32px;
     border-radius: 18px;
