@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.accent {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.soft {
+  background: var(--blue-soft);
+  color: var(--blue-text);
+}
+
+.neutral {
+  background: var(--gray-soft);
+  color: var(--gray-text);
+}
+
+.danger {
+  background: var(--red-soft);
+  color: var(--red-text);
+}
