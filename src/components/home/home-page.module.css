@@ -1,16 +1,18 @@
 .page {
   min-height: 100vh;
-  padding-bottom: 112px;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 34%),
     linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
+  overflow-x: clip;
 }
 
 .frame {
-  width: min(100%, 1120px);
+  width: min(calc(100% - 24px), 1120px);
   min-height: 100vh;
   margin: 0 auto;
   background: #fff;
+  overflow: clip;
 }
 
 .main {
@@ -41,11 +43,10 @@
 
 @media (min-width: 768px) {
   .page {
-    padding: 24px 24px 132px;
+    padding: 24px 0 132px;
   }
 
   .frame {
-    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 30px;
     box-shadow: 0 26px 56px rgba(17, 17, 17, 0.08);
