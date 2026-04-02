@@ -1,0 +1,537 @@
+.page {
+  padding: 24px 0 72px;
+}
+
+.shell {
+  display: grid;
+  gap: 22px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.backIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.headerBadge {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gallerySection {
+  display: grid;
+  gap: 14px;
+}
+
+.galleryFrame {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 34px;
+  background: #111;
+  box-shadow: var(--shadow-soft);
+}
+
+.galleryImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shareButton {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.galleryActions {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.galleryNav {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  background: rgba(17, 17, 17, 0.45);
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+
+.galleryThumbs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.thumbButton {
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+}
+
+.thumbButton img {
+  width: 100%;
+  height: auto;
+}
+
+.thumbButtonActive {
+  border-color: rgba(243, 109, 33, 0.38);
+  box-shadow: 0 18px 30px rgba(243, 109, 33, 0.16);
+}
+
+.topInfo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.detailCard,
+.applyCard,
+.infoPanel,
+.accordion {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.detailCard,
+.applyCard,
+.infoPanel {
+  padding: 24px;
+}
+
+.titleBlock {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.titleBlock h1 {
+  margin: 0;
+  font-size: clamp(34px, 5vw, 48px);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.titleBlock p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.infoCell {
+  display: flex;
+  align-items: start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fff 0%, #fcf8f4 100%);
+}
+
+.infoCell span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.infoCell strong {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.infoIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.applyTop {
+  display: grid;
+  gap: 10px;
+}
+
+.applyTop h2 {
+  margin: 6px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.applyTop strong {
+  font-size: 18px;
+}
+
+.addressRow {
+  display: grid;
+  gap: 10px;
+}
+
+.addressRow p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  width: fit-content;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.applyDivider {
+  height: 1px;
+  margin: 22px 0;
+  background: var(--line);
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.priceRow span {
+  color: var(--text-secondary);
+}
+
+.priceRow strong {
+  font-size: 34px;
+  letter-spacing: -0.05em;
+}
+
+.participantRow {
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.applyButton {
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  box-shadow: 0 18px 32px rgba(243, 109, 33, 0.22);
+}
+
+.applyHint {
+  margin: 12px 0 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.applyNotice {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.contentGrid {
+  display: grid;
+}
+
+.primaryColumn {
+  display: grid;
+  gap: 16px;
+}
+
+.panelHeader {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.distributionBar {
+  display: flex;
+  overflow: hidden;
+  height: 24px;
+  border-radius: 999px;
+  background: #f3efe8;
+}
+
+.distributionSegment {
+  height: 100%;
+}
+
+.segmentBasic {
+  background: linear-gradient(90deg, #f5ba86 0%, #f39a57 100%);
+}
+
+.segmentMiddle {
+  background: linear-gradient(90deg, #202020 0%, #3f3f3f 100%);
+}
+
+.segmentHigh {
+  background: linear-gradient(90deg, #6e7784 0%, #3e4d66 100%);
+}
+
+.distributionLegend {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #efeae2;
+}
+
+.averageNote {
+  margin: 16px 0 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.venueInfoGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.venueInfoCard {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fff 0%, #faf6f0 100%);
+}
+
+.venueInfoCard span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.venueInfoCard p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.accordion {
+  overflow: hidden;
+}
+
+.accordion summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px;
+  list-style: none;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  cursor: pointer;
+}
+
+.accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.chevronIcon {
+  width: 18px;
+  height: 18px;
+  transition: transform 160ms ease;
+}
+
+.accordion[open] .chevronIcon {
+  transform: rotate(180deg);
+}
+
+.detailList,
+.policyTable {
+  margin: 0;
+  padding: 0 24px 24px;
+}
+
+.detailList {
+  display: grid;
+  gap: 10px;
+  padding-left: 42px;
+}
+
+.detailList li {
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.policyTable {
+  display: grid;
+  gap: 10px;
+}
+
+.policyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.policyRow span {
+  color: var(--text-secondary);
+}
+
+.policyRow strong {
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .topInfo {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-top: 16px;
+  }
+
+  .header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .galleryFrame {
+    min-height: 280px;
+    border-radius: 28px;
+  }
+
+  .galleryThumbs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detailCard,
+  .applyCard,
+  .infoPanel,
+  .accordion summary {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .shareButton {
+    top: 12px;
+    right: 12px;
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .galleryActions {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .policyRow {
+    flex-direction: column;
+    align-items: start;
+  }
+}
+

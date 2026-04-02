@@ -1,0 +1,23 @@
+<svg width="1400" height="780" viewBox="0 0 1400 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="780" rx="42" fill="#1B1715"/>
+  <rect x="24" y="24" width="1352" height="732" rx="28" fill="url(#paint0_linear_1_2)" stroke="rgba(255,255,255,0.18)" stroke-width="3"/>
+  <rect x="86" y="88" width="1228" height="604" rx="22" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <path d="M700 88V692" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <circle cx="700" cy="390" r="94" stroke="rgba(255,255,255,0.22)" stroke-width="4"/>
+  <circle cx="700" cy="390" r="6" fill="#fff"/>
+  <path d="M86 250H232C278.392 250 316 287.608 316 334V446C316 492.392 278.392 530 232 530H86" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <path d="M1314 250H1168C1121.61 250 1084 287.608 1084 334V446C1084 492.392 1121.61 530 1168 530H1314" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <circle cx="144" cy="390" r="84" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <circle cx="1256" cy="390" r="84" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <rect x="62" y="610" width="360" height="92" rx="22" fill="rgba(17,17,17,0.35)" stroke="rgba(255,255,255,0.14)"/>
+  <text x="102" y="649" fill="white" font-size="20" font-family="Arial, sans-serif" font-weight="700">Jamsil Riverside Court</text>
+  <text x="102" y="682" fill="rgba(255,255,255,0.75)" font-size="18" font-family="Arial, sans-serif">Seoul Han River Match Preview</text>
+  <defs>
+    <linearGradient id="paint0_linear_1_2" x1="142" y1="104" x2="1298" y2="698" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#48352C"/>
+      <stop offset="0.52" stop-color="#7A4B2A"/>
+      <stop offset="1" stop-color="#352722"/>
+    </linearGradient>
+  </defs>
+</svg>
+

@@ -1,0 +1,22 @@
+<svg width="1400" height="780" viewBox="0 0 1400 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="780" rx="42" fill="#171717"/>
+  <rect x="24" y="24" width="1352" height="732" rx="28" fill="url(#paint0_linear_4_12)" stroke="rgba(255,255,255,0.18)" stroke-width="3"/>
+  <rect x="86" y="88" width="1228" height="604" rx="22" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <path d="M700 88V692" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <circle cx="700" cy="390" r="94" stroke="rgba(255,255,255,0.22)" stroke-width="4"/>
+  <path d="M86 250H232C278.392 250 316 287.608 316 334V446C316 492.392 278.392 530 232 530H86" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <path d="M1314 250H1168C1121.61 250 1084 287.608 1084 334V446C1084 492.392 1121.61 530 1168 530H1314" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <circle cx="144" cy="390" r="84" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <circle cx="1256" cy="390" r="84" stroke="rgba(255,255,255,0.24)" stroke-width="4"/>
+  <path d="M96 640C288 540 478 500 700 500C922 500 1112 540 1304 640" stroke="rgba(255,255,255,0.16)" stroke-width="3"/>
+  <rect x="928" y="74" width="370" height="90" rx="22" fill="rgba(17,17,17,0.28)" stroke="rgba(255,255,255,0.14)"/>
+  <text x="968" y="110" fill="white" font-size="20" font-family="Arial, sans-serif" font-weight="700">Mangwon After Work</text>
+  <text x="968" y="141" fill="rgba(255,255,255,0.75)" font-size="18" font-family="Arial, sans-serif">Warm evening pickup mood</text>
+  <defs>
+    <linearGradient id="paint0_linear_4_12" x1="126" y1="94" x2="1304" y2="688" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F2F2F"/>
+      <stop offset="0.5" stop-color="#565656"/>
+      <stop offset="1" stop-color="#222222"/>
+    </linearGradient>
+  </defs>
+</svg>
