@@ -1,6 +1,107 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
 
-export function LoginPage() {
+type LoginPageProps = {
+  errorCode?: string;
+  nextPath: string;
+};
+
+type LoginStatus =
+  | { status: "loading" }
+  | { status: "signedOut" }
+  | { email: string; status: "signedIn" };
+
+const ERROR_MESSAGES: Record<string, string> = {
+  callback_code_missing: "카카오 로그인 응답이 올바르지 않았습니다. 다시 시도해 주세요.",
+  oauth_failed: "카카오 로그인에 실패했습니다. 다시 시도해 주세요.",
+  supabase_not_configured: "Supabase 환경변수가 설정되지 않았습니다.",
+};
+
+export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
+  const [inlineError, setInlineError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginStatus, setLoginStatus] = useState<LoginStatus>({ status: "loading" });
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      setLoginStatus({ status: "signedOut" });
+      return;
+    }
+
+    const activeSupabase = supabase;
+    let isMounted = true;
+
+    async function syncLoginStatus() {
+      const {
+        data: { user },
+      } = await activeSupabase.auth.getUser();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!user) {
+        setLoginStatus({ status: "signedOut" });
+        return;
+      }
+
+      setLoginStatus({
+        email: user.email ?? "카카오 계정",
+        status: "signedIn",
+      });
+    }
+
+    void syncLoginStatus();
+
+    const {
+      data: { subscription },
+    } = activeSupabase.auth.onAuthStateChange(() => {
+      void syncLoginStatus();
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function handleKakaoLogin() {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase || isSubmitting || !isSupabaseConfigured()) {
+      return;
+    }
+
+    setInlineError(null);
+    setIsSubmitting(true);
+
+    const redirectTo = new URL("/auth/callback", window.location.origin);
+
+    if (nextPath !== "/") {
+      redirectTo.searchParams.set("next", nextPath);
+    }
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      options: {
+        redirectTo: redirectTo.toString(),
+      },
+      provider: "kakao",
+    });
+
+    if (error) {
+      setInlineError("카카오 로그인으로 이동하지 못했습니다. 다시 시도해 주세요.");
+      setIsSubmitting(false);
+    }
+  }
+
+  const serverError = errorCode ? ERROR_MESSAGES[errorCode] : null;
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -10,10 +111,48 @@ export function LoginPage() {
         </div>
         <p className={styles.tagline}>코트에서 만나는 모든 농구</p>
 
-        <button className={styles.kakaoButton} type="button">
-          <KakaoIcon />
-          <span>카카오로 3초 만에 시작하기</span>
-        </button>
+        {serverError || inlineError ? (
+          <p className={styles.errorMessage}>{serverError ?? inlineError}</p>
+        ) : null}
+
+        {!isSupabaseConfigured() ? (
+          <p className={styles.helperText}>
+            Supabase가 아직 연결되지 않았습니다. 환경변수를 먼저 설정해 주세요.
+          </p>
+        ) : null}
+
+        {loginStatus.status === "signedIn" ? (
+          <div className={styles.accountPanel}>
+            <p className={styles.accountTitle}>이미 로그인되어 있습니다.</p>
+            <p className={styles.accountEmail}>{loginStatus.email}</p>
+
+            <div className={styles.actionRow}>
+              <Link className={styles.secondaryButton} href={nextPath}>
+                {nextPath === "/" ? "홈으로 이동" : "원래 화면으로 이동"}
+              </Link>
+
+              <form action="/auth/signout" className={styles.actionForm} method="post">
+                <button className={styles.ghostButton} type="submit">
+                  로그아웃
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : (
+          <button
+            className={`${styles.kakaoButton} ${
+              isSubmitting || !isSupabaseConfigured() ? styles.kakaoButtonDisabled : ""
+            }`}
+            disabled={isSubmitting || !isSupabaseConfigured()}
+            onClick={handleKakaoLogin}
+            type="button"
+          >
+            <KakaoIcon />
+            <span>
+              {isSubmitting ? "카카오 로그인으로 이동 중..." : "카카오로 3초 만에 시작하기"}
+            </span>
+          </button>
+        )}
 
         <p className={styles.terms}>
           로그인 시 <span className={styles.termsLink}>이용약관</span> 및{" "}

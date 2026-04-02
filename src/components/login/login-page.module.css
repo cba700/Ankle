@@ -48,6 +48,26 @@
   letter-spacing: -0.01em;
 }
 
+.errorMessage,
+.helperText {
+  width: 100%;
+  margin: 24px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.errorMessage {
+  background: rgba(255, 89, 89, 0.08);
+  color: #b63b30;
+}
+
+.helperText {
+  background: rgba(17, 17, 17, 0.05);
+  color: #666666;
+}
+
 .kakaoButton {
   width: 100%;
   display: inline-flex;
@@ -66,10 +86,74 @@
   box-shadow: 0 12px 28px rgba(254, 229, 0, 0.34);
 }
 
+.kakaoButtonDisabled {
+  opacity: 0.58;
+  box-shadow: none;
+}
+
 .kakaoIcon {
   width: 20px;
   height: 20px;
   flex: 0 0 auto;
+}
+
+.accountPanel {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 20px 18px;
+  border-radius: 18px;
+  background: rgba(17, 17, 17, 0.04);
+}
+
+.accountTitle {
+  margin: 0;
+  color: #111111;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.accountEmail {
+  margin: 0;
+  color: #666666;
+  font-size: 14px;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.actionForm {
+  flex: 1 1 180px;
+}
+
+.secondaryButton,
+.ghostButton {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.secondaryButton {
+  flex: 1 1 180px;
+  background: #111111;
+  color: #ffffff;
+}
+
+.ghostButton {
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  color: #111111;
 }
 
 .terms {

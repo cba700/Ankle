@@ -1,6 +1,8 @@
 "use client";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabasePublicEnv, isSupabaseConfigured as isConfigured } from "./env";
 
 let browserClient: SupabaseClient | null | undefined;
 
@@ -9,27 +11,21 @@ export function getSupabaseBrowserClient() {
     return browserClient;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseEnv = getSupabasePublicEnv();
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseEnv) {
     browserClient = null;
     return browserClient;
   }
 
-  browserClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      persistSession: true,
-    },
-  });
+  browserClient = createBrowserClient(
+    supabaseEnv.supabaseUrl,
+    supabaseEnv.supabasePublishableKey,
+  );
 
   return browserClient;
 }
 
 export function isSupabaseConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
+  return isConfigured();
 }
