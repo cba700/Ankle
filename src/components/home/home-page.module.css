@@ -17,6 +17,28 @@
   display: grid;
 }
 
+.dateSummary {
+  display: grid;
+  gap: 4px;
+  padding: 10px 16px 0;
+  background: #fff;
+}
+
+.dateSummaryEyebrow {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dateSummaryTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
 @media (min-width: 768px) {
   .page {
     padding: 24px 24px 132px;
@@ -27,5 +49,13 @@
     border: 1px solid var(--line);
     border-radius: 30px;
     box-shadow: 0 26px 56px rgba(17, 17, 17, 0.08);
+  }
+
+  .dateSummary {
+    padding: 12px 24px 0;
+  }
+
+  .dateSummaryTitle {
+    font-size: 26px;
   }
 }

@@ -25,6 +25,7 @@ export function HomePage({ matches, dates }: HomePageProps) {
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>([]);
 
   const matchRows = buildHomeMatchRows(matches);
+  const selectedDate = dates.find((date) => date.key === selectedDateKey) ?? dates[0];
   const hideClosed = activeFilterIds.includes("hideClosed");
   const visibleRows = matchRows.filter((row) => {
     if (row.dateKey !== selectedDateKey) {
@@ -67,6 +68,12 @@ export function HomePage({ matches, dates }: HomePageProps) {
             onSelect={setSelectedDateKey}
             selectedDateKey={selectedDateKey}
           />
+          <section className={styles.dateSummary}>
+            <p className={styles.dateSummaryEyebrow}>선택한 날짜</p>
+            <h2 className={styles.dateSummaryTitle}>
+              {selectedDate.month}월 {selectedDate.day}일 {selectedDate.weekdayLong} 매치
+            </h2>
+          </section>
           <HomeFilterBar
             activeFilterIds={activeFilterIds}
             items={HOME_FILTERS}
