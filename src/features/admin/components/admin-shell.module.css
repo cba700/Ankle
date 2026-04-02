@@ -197,7 +197,19 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
+}
+
+.signOutButton {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(201, 193, 183, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .body {

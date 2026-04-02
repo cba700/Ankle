@@ -91,7 +91,15 @@ export function AdminShell({
               <p className={styles.description}>{description}</p>
             </div>
 
-            {actions ? <div className={styles.actions}>{actions}</div> : null}
+            <div className={styles.actions}>
+              <form action="/auth/signout" method="post">
+                <button className={styles.signOutButton} type="submit">
+                  로그아웃
+                </button>
+              </form>
+
+              {actions}
+            </div>
           </header>
 
           <div className={styles.body}>{children}</div>
