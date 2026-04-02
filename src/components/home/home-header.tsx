@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarIcon, SearchIcon, UserIcon } from "@/components/icons";
 import styles from "./home-header.module.css";
 
@@ -27,9 +28,9 @@ export function HomeHeader({ tabLabel }: HomeHeaderProps) {
           <button aria-label="일정" className={styles.iconButton} type="button">
             <CalendarIcon className={styles.actionIcon} />
           </button>
-          <button aria-label="프로필" className={styles.iconButton} type="button">
+          <Link aria-label="로그인" className={styles.iconButton} href="/login">
             <UserIcon className={styles.actionIcon} />
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -42,4 +43,3 @@ export function HomeHeader({ tabLabel }: HomeHeaderProps) {
     </header>
   );
 }
-
