@@ -1,0 +1,72 @@
+import Image from "next/image";
+import { ArrowLeftIcon, ArrowRightIcon, ShareIcon } from "@/components/icons";
+import styles from "./match-hero.module.css";
+
+type MatchHeroProps = {
+  courtName: string;
+  images: string[];
+  imageIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onCopyShare: () => void;
+};
+
+export function MatchHero({
+  courtName,
+  images,
+  imageIndex,
+  onPrev,
+  onNext,
+  onCopyShare,
+}: MatchHeroProps) {
+  const hasImages = images.length > 0;
+  const showControls = images.length > 1;
+
+  return (
+    <section className={styles.hero}>
+      <div className={styles.frame}>
+        {hasImages ? (
+          <Image
+            alt={courtName}
+            className={styles.image}
+            fill
+            priority
+            sizes="(max-width: 1280px) 100vw, 1200px"
+            src={images[imageIndex]}
+          />
+        ) : (
+          <div className={styles.placeholder}>
+            <div className={styles.placeholderCopy}>
+              <span className={styles.placeholderEyebrow}>Court Preview</span>
+              <strong>{courtName}</strong>
+              <span>코트 이미지를 연결하면 이 영역에 노출됩니다.</span>
+            </div>
+            <div className={styles.courtLines} />
+          </div>
+        )}
+
+        <button className={styles.shareButton} onClick={onCopyShare} type="button">
+          <ShareIcon className={styles.shareIcon} />
+          친구에게 공유하기
+        </button>
+
+        <div className={styles.bottomBar}>
+          <div className={styles.counter}>
+            {hasImages ? `${imageIndex + 1} / ${images.length}` : "코트 미리보기"}
+          </div>
+          {showControls ? (
+            <div className={styles.controls}>
+              <button aria-label="이전 이미지" className={styles.controlButton} onClick={onPrev} type="button">
+                <ArrowLeftIcon className={styles.controlIcon} />
+              </button>
+              <button aria-label="다음 이미지" className={styles.controlButton} onClick={onNext} type="button">
+                <ArrowRightIcon className={styles.controlIcon} />
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+

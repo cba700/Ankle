@@ -177,3 +177,12 @@ export function UserIcon({ className }: IconProps) {
     </IconBase>
   );
 }
+
+export function EyeIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <path d="M2.8 12s3.2-5.7 9.2-5.7S21.2 12 21.2 12s-3.2 5.7-9.2 5.7S2.8 12 2.8 12Z" />
+      <circle cx="12" cy="12" r="2.9" />
+    </IconBase>
+  );
+}

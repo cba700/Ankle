@@ -1,0 +1,24 @@
+- **Coding rules**
+- Keep diffs minimal.
+- Do not overengineer.
+- Prefer the simplest working change.
+- Reuse existing code, patterns, and components before adding new code.
+- Match existing naming, structure, and style.
+- Add code only when required for the task.
+- **File modification rules**
+- Only touch files relevant to the task.
+- Do not rewrite entire files unless necessary.
+- Modify the smallest possible surface area.
+- Do not move, rename, or delete files unless required.
+- Do not change unrelated behavior.
+- **Workflow rules**
+- Read the relevant code before editing.
+- Make the change directly; avoid speculative refactors.
+- Keep public behavior stable unless the task requires a change.
+- Verify dependencies and existing helpers before creating new ones.
+- Stop and reassess if the change starts spreading beyond the task scope.
+- **Testing rules**
+- Run the relevant tests before finishing.
+- If no targeted tests exist, run the smallest meaningful validation available.
+- Do not finish with failing tests.
+- Report any unrun or blocked tests explicitly.
