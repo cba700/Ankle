@@ -11,7 +11,6 @@ type MatchSidebarProps = {
   views: number;
   notice: string;
   priceLabel: string;
-  participantSummary: string;
   saved: boolean;
   onCopyAddress: () => void;
   onOpenFaq: () => void;
@@ -31,7 +30,6 @@ export function MatchSidebar({
   views,
   notice,
   priceLabel,
-  participantSummary,
   saved,
   onCopyAddress,
   onOpenFaq,
@@ -76,7 +74,6 @@ export function MatchSidebar({
 
       <div className={styles.priceBlock}>
         <strong>{priceLabel}</strong>
-        <p>{participantSummary}</p>
       </div>
 
       <button className={styles.faqButton} onClick={onOpenFaq} type="button">
@@ -105,4 +102,3 @@ export function MatchSidebar({
     </div>
   );
 }
-

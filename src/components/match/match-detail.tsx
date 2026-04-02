@@ -114,7 +114,6 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
               {view.dateText} {view.time} · {view.courtName}
             </p>
             <div className={styles.quickMeta}>
-              <span>{view.participantSummary}</span>
               <span>{view.priceLabel}</span>
             </div>
           </section>
@@ -138,7 +137,6 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
             likes={view.likes}
             mapUrl={view.mapUrl}
             notice={view.notice}
-            participantSummary={view.participantSummary}
             priceLabel={view.priceLabel}
             saved={saved}
             time={view.time}
@@ -159,7 +157,6 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
 
       <MatchStickyApplyBar
         onApply={handleApply}
-        participantSummary={view.participantSummary}
         priceLabel={view.priceLabel}
       />
 
