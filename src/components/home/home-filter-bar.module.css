@@ -1,0 +1,49 @@
+.section {
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 16px 14px;
+  scrollbar-width: none;
+}
+
+.row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.chipActive {
+  border-color: rgba(255, 107, 0, 0.35);
+  background: rgba(255, 107, 0, 0.08);
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+}
+
+@media (min-width: 768px) {
+  .row {
+    padding: 12px 24px 16px;
+  }
+}
+

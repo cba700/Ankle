@@ -1,0 +1,234 @@
+.list {
+  background: #fff;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.rowLink {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.timeColumn {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding-top: 3px;
+}
+
+.timeWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeUrgent {
+  color: var(--red-text);
+}
+
+.urgentDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #e03200;
+  box-shadow: 0 0 0 4px rgba(224, 50, 0, 0.1);
+}
+
+.time {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.statusNeutral {
+  background: #ececec;
+  color: var(--text-tertiary);
+}
+
+.statusAccent {
+  background: rgba(255, 107, 0, 0.12);
+  color: var(--accent-strong);
+}
+
+.statusDanger {
+  background: #e03200;
+  color: #fff;
+}
+
+.statusOpen {
+  background: #eff9f5;
+  color: #159b68;
+}
+
+.infoColumn {
+  min-width: 0;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.infoBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badgeGreen {
+  color: #128155;
+  background: #ecfaf5;
+}
+
+.badgeBlue {
+  color: #2f67c9;
+  background: #eef5ff;
+}
+
+.badgeOrange {
+  color: #cf621d;
+  background: #fff4ea;
+}
+
+.venueRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.venueRow strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+}
+
+.newTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #18a26d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.matchTitle {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.metaDot {
+  margin: 0 5px;
+  color: var(--line-strong);
+}
+
+.likeButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #bbb;
+}
+
+.likeButtonActive {
+  color: #d74949;
+}
+
+.emptyState {
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  padding: 48px 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.emptyState strong {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.emptyState p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (min-width: 768px) {
+  .row {
+    gap: 16px;
+    padding: 20px 24px;
+  }
+
+  .rowLink {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .time {
+    font-size: 17px;
+  }
+
+  .venueRow strong {
+    font-size: 16px;
+  }
+
+  .matchTitle {
+    font-size: 14px;
+  }
+}
+

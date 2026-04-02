@@ -159,3 +159,21 @@ export function ChevronDownIcon({ className }: IconProps) {
     </IconBase>
   );
 }
+
+export function SearchIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </IconBase>
+  );
+}
+
+export function UserIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <circle cx="12" cy="8.5" r="3.2" />
+      <path d="M5.5 19c.8-3 3.3-4.8 6.5-4.8s5.7 1.8 6.5 4.8" />
+    </IconBase>
+  );
+}

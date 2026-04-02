@@ -1,0 +1,59 @@
+.cta {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: min(calc(100% - 32px), 420px);
+  transform: translateX(-50%);
+  padding: 12px 18px 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.14);
+}
+
+.iconWrap {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+}
+
+.copy {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  min-width: 0;
+}
+
+.copy small {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.copy strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .cta {
+    bottom: 28px;
+    width: auto;
+    min-width: 360px;
+    padding-right: 22px;
+  }
+}
