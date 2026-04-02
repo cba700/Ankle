@@ -32,7 +32,7 @@
 
 @media (max-width: 720px) {
   .toast {
-    bottom: 16px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
     width: calc(100% - 24px);
     white-space: normal;
     text-align: center;

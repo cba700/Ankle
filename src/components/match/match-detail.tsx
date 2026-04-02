@@ -11,6 +11,7 @@ import { MatchLevelSection } from "./match-level-section";
 import { MatchRefundSection } from "./match-refund-section";
 import { MatchRulesSection } from "./match-rules-section";
 import { MatchSidebar } from "./match-sidebar";
+import { MatchStickyApplyBar } from "./match-sticky-apply-bar";
 import { MatchToast } from "./match-toast";
 import type { MatchToastState } from "./match-detail-types";
 import styles from "./match-detail.module.css";
@@ -155,6 +156,12 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
           />
         </aside>
       </main>
+
+      <MatchStickyApplyBar
+        onApply={handleApply}
+        participantSummary={view.participantSummary}
+        priceLabel={view.priceLabel}
+      />
 
       {toast ? <MatchToast message={toast.message} tone={toast.tone} /> : null}
     </div>
