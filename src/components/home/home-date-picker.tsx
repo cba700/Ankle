@@ -58,8 +58,11 @@ export function HomeDatePicker({
               onClick={() => onSelect(date.key)}
               type="button"
             >
-              <span className={styles.day}>{date.day}</span>
+              <span className={styles.monthDay}>
+                {date.month}/{date.day}
+              </span>
               <span className={`${styles.weekday} ${weekdayClassName}`}>{date.weekdayShort}</span>
+              {date.isToday ? <span className={styles.todayTag}>오늘</span> : null}
             </button>
           );
         })}
@@ -76,4 +79,3 @@ export function HomeDatePicker({
     </section>
   );
 }
-

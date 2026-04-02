@@ -4,6 +4,7 @@ export type CalendarDate = {
   day: number;
   weekdayShort: string;
   weekdayLong: string;
+  isToday: boolean;
   isSaturday: boolean;
   isSunday: boolean;
 };
@@ -84,6 +85,7 @@ export function getCalendarDates(total = 14): CalendarDate[] {
       day,
       weekdayShort,
       weekdayLong,
+      isToday: index === 0,
       isSaturday: weekdayShort === "토",
       isSunday: weekdayShort === "일",
     };
@@ -93,4 +95,3 @@ export function getCalendarDates(total = 14): CalendarDate[] {
 export function formatMoney(amount: number) {
   return new Intl.NumberFormat("ko-KR").format(amount);
 }
-
