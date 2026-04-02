@@ -11,6 +11,10 @@
   padding: 18px 12px;
 }
 
+.row::-webkit-scrollbar {
+  display: none;
+}
+
 .item {
   display: grid;
   justify-items: center;
@@ -19,6 +23,7 @@
   border: 0;
   background: transparent;
   color: var(--text-primary);
+  min-width: 0;
 }
 
 .iconWrap {
@@ -40,7 +45,28 @@
   font-size: 11px;
   color: var(--text-secondary);
   font-weight: 600;
+  max-width: 100%;
+  text-align: center;
   white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 18px 12px;
+    scrollbar-width: none;
+  }
+
+  .item {
+    flex: 0 0 68px;
+  }
+
+  .iconWrap {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -57,4 +83,3 @@
     font-size: 12px;
   }
 }
-

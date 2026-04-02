@@ -141,3 +141,36 @@
   }
 }
 
+@media (max-width: 360px) {
+  .topRow {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .headerActions {
+    gap: 6px;
+  }
+
+  .brandWord {
+    font-size: 20px;
+  }
+
+  .brandDot {
+    font-size: 24px;
+  }
+
+  .search {
+    min-height: 38px;
+    padding: 0 10px;
+  }
+
+  .searchInput {
+    font-size: 12px;
+  }
+
+  .iconButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+}

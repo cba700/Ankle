@@ -25,6 +25,7 @@
 .content {
   position: relative;
   z-index: 1;
+  min-width: 0;
   max-width: 520px;
 }
 
@@ -134,3 +135,25 @@
   }
 }
 
+@media (max-width: 360px) {
+  .hero {
+    gap: 14px;
+    margin: 12px;
+    padding: 22px 18px 32px;
+    border-radius: 18px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .description {
+    font-size: 12px;
+  }
+
+  .badgeCard {
+    min-width: 72px;
+    padding: 11px 12px;
+    border-radius: 14px;
+  }
+}

@@ -22,3 +22,4 @@
 - If no targeted tests exist, run the smallest meaningful validation available.
 - Do not finish with failing tests.
 - Report any unrun or blocked tests explicitly.
+- 기능구현이나 리팩토링시 항상 새로운 브랜치를 생성하고 커밋도 남긴다.
