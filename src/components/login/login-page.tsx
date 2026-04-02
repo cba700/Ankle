@@ -38,23 +38,31 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
     let isMounted = true;
 
     async function syncLoginStatus() {
-      const {
-        data: { user },
-      } = await activeSupabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await activeSupabase.auth.getUser();
 
-      if (!isMounted) {
-        return;
-      }
+        if (!isMounted) {
+          return;
+        }
 
-      if (!user) {
+        if (!user) {
+          setLoginStatus({ status: "signedOut" });
+          return;
+        }
+
+        setLoginStatus({
+          email: user.email ?? "카카오 계정",
+          status: "signedIn",
+        });
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
         setLoginStatus({ status: "signedOut" });
-        return;
       }
-
-      setLoginStatus({
-        email: user.email ?? "카카오 계정",
-        status: "signedIn",
-      });
     }
 
     void syncLoginStatus();
@@ -81,21 +89,26 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
     setInlineError(null);
     setIsSubmitting(true);
 
-    const redirectTo = new URL("/auth/callback", window.location.origin);
+    try {
+      const redirectTo = new URL("/auth/callback", window.location.origin);
 
-    if (nextPath !== "/") {
-      redirectTo.searchParams.set("next", nextPath);
-    }
+      if (nextPath !== "/") {
+        redirectTo.searchParams.set("next", nextPath);
+      }
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      options: {
-        redirectTo: redirectTo.toString(),
-      },
-      provider: "kakao",
-    });
+      const { error } = await supabase.auth.signInWithOAuth({
+        options: {
+          redirectTo: redirectTo.toString(),
+        },
+        provider: "kakao",
+      });
 
-    if (error) {
-      setInlineError("카카오 로그인으로 이동하지 못했습니다. 다시 시도해 주세요.");
+      if (error) {
+        setInlineError("카카오 로그인으로 이동하지 못했습니다. 다시 시도해 주세요.");
+      }
+    } catch {
+      setInlineError("카카오 로그인 요청 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
       setIsSubmitting(false);
     }
   }
