@@ -1,0 +1,177 @@
+.hero {
+  width: min(calc(100% - 32px), 1200px);
+  margin: 0 auto;
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  border-radius: 0 0 28px 28px;
+  background: #161616;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+  padding: 32px;
+  background: linear-gradient(135deg, #151515 0%, #2d1405 55%, #1a1a1a 100%);
+  color: #fff;
+}
+
+.placeholderCopy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.placeholderEyebrow {
+  color: #ff9b58;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.placeholderCopy strong {
+  font-size: clamp(24px, 4vw, 38px);
+  letter-spacing: -0.05em;
+}
+
+.placeholderCopy span:last-child {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+}
+
+.courtLines {
+  position: absolute;
+  inset: 24px;
+  border: 2px solid rgba(255, 107, 0, 0.18);
+  border-radius: 24px;
+}
+
+.courtLines::before,
+.courtLines::after {
+  content: "";
+  position: absolute;
+  border: 2px solid rgba(255, 107, 0, 0.16);
+}
+
+.courtLines::before {
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.courtLines::after {
+  top: 50%;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.shareButton {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.shareIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.bottomBar {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counter {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.58);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+}
+
+.controls {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.controlButton {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(17, 17, 17, 0.58);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.controlIcon {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    width: 100%;
+  }
+
+  .frame,
+  .placeholder {
+    min-height: 280px;
+    border-radius: 0 0 22px 22px;
+  }
+
+  .shareButton {
+    top: 12px;
+    right: 12px;
+    min-height: 38px;
+    padding: 0 12px;
+  }
+
+  .bottomBar {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
