@@ -4,7 +4,6 @@
   background:
     radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 34%),
     linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
-  overflow-x: clip;
 }
 
 .frame {
@@ -12,7 +11,6 @@
   min-height: 100vh;
   margin: 0 auto;
   background: #fff;
-  overflow: clip;
 }
 
 .main {
@@ -47,6 +45,7 @@
   }
 
   .frame {
+    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 30px;
     box-shadow: 0 26px 56px rgba(17, 17, 17, 0.08);

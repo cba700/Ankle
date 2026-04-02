@@ -5,7 +5,7 @@ export const HOME_HERO = {
   eyebrow: "총 리워드 1,100만 원!",
   title: ["앵클을 소개할", "300인의 앵클러를 찾아요"],
   badgeNumber: "300",
-  badgeLabel: "ANKLERS",
+  badgeLabel: "앵클러",
   description: "첫 배포 전 함께 확인할 앵클의 소셜 매치 홈을 먼저 공개합니다.",
   slideLabel: "1 | 1",
 };

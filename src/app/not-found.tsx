@@ -22,7 +22,7 @@ export default function NotFound() {
         }}
       >
         <p className="sectionLabel" style={{ margin: "0 auto 16px" }}>
-          AnkleBasket
+          앵클
         </p>
         <h1 style={{ margin: "0 0 10px", fontSize: "32px", letterSpacing: "-0.04em" }}>
           매치를 찾을 수 없습니다
@@ -51,4 +51,3 @@ export default function NotFound() {
     </main>
   );
 }
-
