@@ -3,9 +3,9 @@
   grid-template-columns: 24px minmax(0, 1fr) 24px;
   align-items: center;
   gap: 8px;
-  padding: 12px 12px 8px;
+  padding: 14px 14px 10px;
   background: #fff;
-  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .arrowButton {
@@ -105,7 +105,7 @@
   .section {
     grid-template-columns: 32px minmax(0, 1fr) 32px;
     gap: 12px;
-    padding: 14px 16px 10px;
+    padding: 16px 18px 12px;
   }
 
   .arrowButton {

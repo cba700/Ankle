@@ -2,7 +2,8 @@
   min-height: 100vh;
   min-height: 100dvh;
   padding-bottom: 24px;
-  background: #fff;
+  background:
+    linear-gradient(180deg, #fbfaf8 0%, #f5f2ed 100%);
 }
 
 .frame {
@@ -15,12 +16,23 @@
 
 .main {
   display: grid;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.browserPanel {
+  margin: 0 12px;
+  overflow: hidden;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(29, 24, 19, 0.04);
 }
 
 .dateSummary {
   display: grid;
   gap: 4px;
-  padding: 10px 12px 0;
+  padding: 12px 14px 0;
   background: #fff;
 }
 
@@ -57,6 +69,16 @@
 
   .dateSummary {
     padding: 12px 24px 0;
+  }
+
+  .main {
+    gap: 16px;
+    padding-top: 16px;
+  }
+
+  .browserPanel {
+    margin: 0 24px;
+    border-radius: 24px;
   }
 
   .dateSummaryTitle {

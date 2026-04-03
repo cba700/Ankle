@@ -57,7 +57,7 @@ export function HomeMatchBrowser({ dates, rows }: HomeMatchBrowserProps) {
   }
 
   return (
-    <>
+    <section className={styles.browserPanel}>
       <HomeDatePicker
         dates={dates}
         onSelect={handleSelectDate}
@@ -79,6 +79,6 @@ export function HomeMatchBrowser({ dates, rows }: HomeMatchBrowserProps) {
         onToggleLike={toggleLike}
         rows={visibleRows}
       />
-    </>
+    </section>
   );
 }

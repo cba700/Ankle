@@ -1,14 +1,16 @@
 .section {
+  margin: 0 12px;
+  overflow: hidden;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 18px;
   background: #fff;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
 }
 
 .row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  padding: 18px 12px;
+  gap: 8px;
+  padding: 14px 12px;
 }
 
 .row::-webkit-scrollbar {
@@ -18,7 +20,7 @@
 .item {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -29,57 +31,62 @@
 .iconWrap {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #f7f7f7;
+  border-radius: 14px;
+  background: #f8f5f0;
 }
 
 .icon {
-  width: 21px;
-  height: 21px;
+  width: 19px;
+  height: 19px;
 }
 
 .label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
   font-weight: 600;
   max-width: 100%;
   text-align: center;
-  white-space: nowrap;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 @media (max-width: 360px) {
   .row {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
-    padding: 18px 12px;
+    padding: 14px 12px;
     scrollbar-width: none;
   }
 
   .item {
-    flex: 0 0 68px;
+    flex: 0 0 62px;
   }
 
   .iconWrap {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
   }
 }
 
 @media (min-width: 768px) {
+  .section {
+    margin: 0 24px;
+  }
+
   .row {
-    padding: 20px 24px;
+    padding: 16px 18px;
   }
 
   .iconWrap {
-    width: 58px;
-    height: 58px;
+    width: 52px;
+    height: 52px;
   }
 
   .label {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
