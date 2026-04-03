@@ -2,12 +2,37 @@
 
 import { redirect } from "next/navigation";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { AdminMatchFormat, AdminMatchStatus } from "./types";
+import {
+  buildGeneratedMatchTitle,
+  getMatchLevelValues,
+  inferDistrictFromAddress,
+} from "./match-form";
+import type {
+  AdminMatchFormat,
+  AdminMatchLevelPreset,
+  AdminMatchStatus,
+  AdminVenueEntryMode,
+} from "./types";
 
 type VenueWriteResult = {
   id: string;
   slug: string;
+};
+
+type VenueFormValues = {
+  name: string;
+  district: string;
+  address: string;
+  directions: string;
+  parking: string;
+  smoking: string;
+  showerLocker: string;
+  defaultImageUrls: string[];
+  defaultRules: string[];
+  defaultSafetyNotes: string[];
+  isActive: boolean;
 };
 
 type MatchCountResult = {
@@ -16,11 +41,18 @@ type MatchCountResult = {
 
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
+const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
+const VENUE_ENTRY_MODES: AdminVenueEntryMode[] = ["managed", "manual"];
+const CREATE_MATCH_INTENTS = ["save_draft", "publish_now"] as const;
+const UPDATE_MATCH_INTENTS = ["save_changes"] as const;
+
+type AdminSupabaseClient = NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>;
 
 export async function createAdminMatchAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
-  const values = readMatchFormValues(formData);
-  const venue = await upsertVenue(supabase, values);
+  await assertVenueManagementSchemaReady(supabase);
+  const values = readCreateMatchFormValues(formData);
+  const venue = await resolveVenueForMatch(supabase, values);
   const slug = buildMatchSlug(venue.slug, values.startAt);
 
   const { data, error } = await supabase
@@ -28,6 +60,13 @@ export async function createAdminMatchAction(formData: FormData) {
     .insert({
       venue_id: venue.id,
       slug,
+      venue_name: values.venueName,
+      district: values.district,
+      address: values.address,
+      directions: values.directions,
+      parking: values.parking,
+      smoking: values.smoking,
+      shower_locker: values.showerLocker,
       title: values.title,
       summary: values.summary,
       public_notice: values.publicNotice,
@@ -45,7 +84,7 @@ export async function createAdminMatchAction(formData: FormData) {
       tags: values.tags,
       rules: values.rules,
       safety_notes: values.safetyNotes,
-      image_urls: [],
+      image_urls: values.imageUrls,
     })
     .select("id")
     .single();
@@ -59,8 +98,9 @@ export async function createAdminMatchAction(formData: FormData) {
 
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
-  const values = readMatchFormValues(formData);
-  const venue = await upsertVenue(supabase, values);
+  await assertVenueManagementSchemaReady(supabase);
+  const values = readUpdateMatchFormValues(formData);
+  const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
 
   if (values.capacity < confirmedCount) {
@@ -74,6 +114,13 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
     .update({
       venue_id: venue.id,
       slug,
+      venue_name: values.venueName,
+      district: values.district,
+      address: values.address,
+      directions: values.directions,
+      parking: values.parking,
+      smoking: values.smoking,
+      shower_locker: values.showerLocker,
       title: values.title,
       summary: values.summary,
       public_notice: values.publicNotice,
@@ -91,6 +138,7 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
       tags: values.tags,
       rules: values.rules,
       safety_notes: values.safetyNotes,
+      image_urls: values.imageUrls,
     })
     .eq("id", matchId);
 
@@ -117,6 +165,46 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
   redirect(`/admin/matches/${matchId}/edit`);
 }
 
+export async function createAdminVenueAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
+  const values = readVenueFormValues(formData);
+  const venue = await createVenue(supabase, values);
+
+  redirect(`/admin/venues/${venue.id}/edit`);
+}
+
+export async function updateAdminVenueAction(venueId: string, formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
+  const values = readVenueFormValues(formData);
+  const slug = toSlug(`${values.district} ${values.name}`);
+
+  const { error } = await supabase
+    .from("venues")
+    .update({
+      slug,
+      name: values.name,
+      district: values.district,
+      address: values.address,
+      directions: values.directions,
+      parking: values.parking,
+      smoking: values.smoking,
+      shower_locker: values.showerLocker,
+      default_image_urls: values.defaultImageUrls,
+      default_rules: values.defaultRules,
+      default_safety_notes: values.defaultSafetyNotes,
+      is_active: values.isActive,
+    })
+    .eq("id", venueId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  redirect(`/admin/venues/${venueId}/edit`);
+}
+
 async function requireAdminSupabase() {
   const { configured, role, user } = await getServerAuthState();
 
@@ -137,29 +225,88 @@ async function requireAdminSupabase() {
   return supabase;
 }
 
-async function upsertVenue(
-  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+async function resolveVenueForMatch(
+  supabase: AdminSupabaseClient,
   values: MatchFormValues,
 ) {
-  const slug = toSlug(`${values.district} ${values.venueName}`);
+  if (values.venueEntryMode === "managed" && values.selectedVenueId) {
+    return getManagedVenue(supabase, values.selectedVenueId);
+  }
+
+  return resolveManualVenue(supabase, values);
+}
+
+async function getManagedVenue(
+  supabase: AdminSupabaseClient,
+  venueId: string,
+) {
   const { data, error } = await supabase
     .from("venues")
-    .upsert(
-      {
-        slug,
-        name: values.venueName,
-        district: values.district,
-        address: values.address,
-        directions: values.directions,
-        parking: values.parking,
-        smoking: values.smoking,
-        shower_locker: values.showerLocker,
-        is_active: true,
-      },
-      {
-        onConflict: "address",
-      },
-    )
+    .select("id, slug")
+    .eq("id", venueId)
+    .maybeSingle();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Failed to load venue");
+  }
+
+  return data as VenueWriteResult;
+}
+
+async function resolveManualVenue(
+  supabase: AdminSupabaseClient,
+  values: MatchFormValues,
+) {
+  const { data: existingVenue, error: lookupError } = await supabase
+    .from("venues")
+    .select("id, slug")
+    .eq("address", values.address)
+    .maybeSingle();
+
+  if (lookupError) {
+    throw new Error(lookupError.message);
+  }
+
+  if (existingVenue) {
+    return existingVenue as VenueWriteResult;
+  }
+
+  return createVenue(supabase, {
+    name: values.venueName,
+    district: values.district,
+    address: values.address,
+    directions: values.directions,
+    parking: values.parking,
+    smoking: values.smoking,
+    showerLocker: values.showerLocker,
+    defaultImageUrls: values.imageUrls,
+    defaultRules: values.rules,
+    defaultSafetyNotes: values.safetyNotes,
+    isActive: true,
+  });
+}
+
+async function createVenue(
+  supabase: AdminSupabaseClient,
+  values: VenueFormValues,
+) {
+  const slug = toSlug(`${values.district} ${values.name}`);
+  const { data, error } = await supabase
+    .from("venues")
+    .insert({
+      slug,
+      name: values.name,
+      district: values.district,
+      address: values.address,
+      directions: values.directions,
+      parking: values.parking,
+      smoking: values.smoking,
+      shower_locker: values.showerLocker,
+      default_image_urls: values.defaultImageUrls,
+      default_rules: values.defaultRules,
+      default_safety_notes: values.defaultSafetyNotes,
+      is_active: values.isActive,
+    })
     .select("id, slug")
     .single();
 
@@ -171,7 +318,7 @@ async function upsertVenue(
 }
 
 async function getConfirmedCount(
-  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  supabase: AdminSupabaseClient,
   matchId: string,
 ) {
   const { data, error } = await supabase
@@ -188,6 +335,8 @@ async function getConfirmedCount(
 }
 
 type MatchFormValues = {
+  venueEntryMode: AdminVenueEntryMode;
+  selectedVenueId: string;
   title: string;
   venueName: string;
   district: string;
@@ -209,49 +358,121 @@ type MatchFormValues = {
   parking: string;
   smoking: string;
   showerLocker: string;
+  imageUrls: string[];
   tags: string[];
   rules: string[];
   safetyNotes: string[];
 };
 
-function readMatchFormValues(formData: FormData): MatchFormValues {
+function readCreateMatchFormValues(formData: FormData): MatchFormValues {
   const date = getRequiredString(formData, "date");
   const startTime = getRequiredString(formData, "startTime");
-  const endTime = getRequiredString(formData, "endTime");
-  const intent = getOptionalString(formData, "intent");
-  const selectedStatus = getStatus(getRequiredString(formData, "status"));
+  const durationMinutes = getPositiveInteger(formData, "durationMinutes");
+  const intent = getCreateMatchIntent(getRequiredString(formData, "intent"));
+  const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
+  const format = getFormat(getRequiredString(formData, "format"));
+  const venueName = getRequiredString(formData, "venueName");
+  const address = getRequiredString(formData, "address");
+  const { levelCondition, levelRange } = getMatchLevelValues(
+    getLevel(getRequiredString(formData, "level")),
+  );
   const startAt = buildSeoulDateTime(date, startTime);
-  const endAt = buildSeoulDateTime(date, endTime);
-
-  if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
-    throw new Error("End time must be later than start time");
-  }
+  const endAt = buildMatchEndAt(startAt, durationMinutes);
 
   return {
-    title: getRequiredString(formData, "title"),
-    venueName: getRequiredString(formData, "venueName"),
-    district: getRequiredString(formData, "district"),
-    address: getRequiredString(formData, "address"),
+    venueEntryMode,
+    selectedVenueId: getOptionalString(formData, "selectedVenueId"),
+    title:
+      getOptionalString(formData, "title") ||
+      buildGeneratedMatchTitle({ venueName, format, startTime }),
+    venueName,
+    district: getDistrict(formData, address),
+    address,
     startAt,
     endAt,
-    status: intent === "publish" ? "open" : selectedStatus,
-    format: getFormat(getRequiredString(formData, "format")),
+    status: intent === "publish_now" ? "open" : "draft",
+    format,
     capacity: getPositiveInteger(formData, "capacity"),
     price: getNonNegativeInteger(formData, "price"),
     genderCondition: getRequiredString(formData, "genderCondition"),
-    levelCondition: getRequiredString(formData, "levelCondition"),
-    levelRange: getRequiredString(formData, "levelRange"),
-    preparation: getRequiredString(formData, "preparation"),
-    summary: getRequiredString(formData, "summary"),
-    publicNotice: getRequiredString(formData, "publicNotice"),
-    operatorNote: getRequiredString(formData, "operatorNote"),
+    levelCondition,
+    levelRange,
+    preparation: getOptionalString(formData, "preparation"),
+    summary: getOptionalString(formData, "summary"),
+    publicNotice: getOptionalString(formData, "publicNotice"),
+    operatorNote: getOptionalString(formData, "operatorNote"),
+    directions: getOptionalString(formData, "directions"),
+    parking: getOptionalString(formData, "parking"),
+    smoking: getOptionalString(formData, "smoking"),
+    showerLocker: getOptionalString(formData, "showerLocker"),
+    imageUrls: splitLineSeparated(getOptionalString(formData, "imageUrlsText")),
+    tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
+    rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
+    safetyNotes: splitLineSeparated(getOptionalString(formData, "safetyNotesText")),
+  };
+}
+
+function readUpdateMatchFormValues(formData: FormData): MatchFormValues {
+  const date = getRequiredString(formData, "date");
+  const startTime = getRequiredString(formData, "startTime");
+  const durationMinutes = getPositiveInteger(formData, "durationMinutes");
+  getUpdateMatchIntent(getRequiredString(formData, "intent"));
+  const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
+  const format = getFormat(getRequiredString(formData, "format"));
+  const venueName = getRequiredString(formData, "venueName");
+  const address = getRequiredString(formData, "address");
+  const { levelCondition, levelRange } = getMatchLevelValues(
+    getLevel(getRequiredString(formData, "level")),
+  );
+  const startAt = buildSeoulDateTime(date, startTime);
+  const endAt = buildMatchEndAt(startAt, durationMinutes);
+
+  return {
+    venueEntryMode,
+    selectedVenueId: getOptionalString(formData, "selectedVenueId"),
+    title:
+      getOptionalString(formData, "title") ||
+      buildGeneratedMatchTitle({ venueName, format, startTime }),
+    venueName,
+    district: getDistrict(formData, address),
+    address,
+    startAt,
+    endAt,
+    status: getStatus(getRequiredString(formData, "status")),
+    format,
+    capacity: getPositiveInteger(formData, "capacity"),
+    price: getNonNegativeInteger(formData, "price"),
+    genderCondition: getRequiredString(formData, "genderCondition"),
+    levelCondition,
+    levelRange,
+    preparation: getOptionalString(formData, "preparation"),
+    summary: getOptionalString(formData, "summary"),
+    publicNotice: getOptionalString(formData, "publicNotice"),
+    operatorNote: getOptionalString(formData, "operatorNote"),
+    directions: getOptionalString(formData, "directions"),
+    parking: getOptionalString(formData, "parking"),
+    smoking: getOptionalString(formData, "smoking"),
+    showerLocker: getOptionalString(formData, "showerLocker"),
+    imageUrls: splitLineSeparated(getOptionalString(formData, "imageUrlsText")),
+    tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
+    rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
+    safetyNotes: splitLineSeparated(getOptionalString(formData, "safetyNotesText")),
+  };
+}
+
+function readVenueFormValues(formData: FormData): VenueFormValues {
+  return {
+    name: getRequiredString(formData, "name"),
+    district: getRequiredString(formData, "district"),
+    address: getRequiredString(formData, "address"),
     directions: getRequiredString(formData, "directions"),
     parking: getRequiredString(formData, "parking"),
     smoking: getRequiredString(formData, "smoking"),
     showerLocker: getRequiredString(formData, "showerLocker"),
-    tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
-    rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
-    safetyNotes: splitLineSeparated(getOptionalString(formData, "safetyNotesText")),
+    defaultImageUrls: splitLineSeparated(getOptionalString(formData, "defaultImageUrlsText")),
+    defaultRules: splitLineSeparated(getOptionalString(formData, "defaultRulesText")),
+    defaultSafetyNotes: splitLineSeparated(getOptionalString(formData, "defaultSafetyNotesText")),
+    isActive: formData.get("isActive") === "on",
   };
 }
 
@@ -298,12 +519,44 @@ function getStatus(value: string) {
   throw new Error("Invalid match status");
 }
 
+function getCreateMatchIntent(value: string) {
+  if (CREATE_MATCH_INTENTS.includes(value as (typeof CREATE_MATCH_INTENTS)[number])) {
+    return value as (typeof CREATE_MATCH_INTENTS)[number];
+  }
+
+  throw new Error("Invalid create match intent");
+}
+
+function getUpdateMatchIntent(value: string) {
+  if (UPDATE_MATCH_INTENTS.includes(value as (typeof UPDATE_MATCH_INTENTS)[number])) {
+    return value as (typeof UPDATE_MATCH_INTENTS)[number];
+  }
+
+  throw new Error("Invalid update match intent");
+}
+
 function getFormat(value: string) {
   if (MATCH_FORMATS.includes(value as AdminMatchFormat)) {
     return value as AdminMatchFormat;
   }
 
   throw new Error("Invalid match format");
+}
+
+function getLevel(value: string) {
+  if (MATCH_LEVELS.includes(value as AdminMatchLevelPreset)) {
+    return value as AdminMatchLevelPreset;
+  }
+
+  throw new Error("Invalid match level");
+}
+
+function getVenueEntryMode(value: string) {
+  if (VENUE_ENTRY_MODES.includes(value as AdminVenueEntryMode)) {
+    return value as AdminVenueEntryMode;
+  }
+
+  throw new Error("Invalid venue entry mode");
 }
 
 function splitCommaSeparated(value: string) {
@@ -329,6 +582,20 @@ function buildSeoulDateTime(date: string, time: string) {
   }
 
   return parsed.toISOString();
+}
+
+function buildMatchEndAt(startAt: string, durationMinutes: number) {
+  const endAt = new Date(new Date(startAt).getTime() + durationMinutes * 60 * 1000);
+
+  if (Number.isNaN(endAt.getTime())) {
+    throw new Error("Invalid match duration");
+  }
+
+  return endAt.toISOString();
+}
+
+function getDistrict(formData: FormData, address: string) {
+  return inferDistrictFromAddress(address) || getOptionalString(formData, "district");
 }
 
 function buildMatchSlug(venueSlug: string, startAt: string) {

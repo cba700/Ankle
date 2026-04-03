@@ -73,6 +73,54 @@
   gap: 18px;
 }
 
+.modeToggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modeButton {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(201, 193, 183, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modeButtonActive {
+  border-color: rgba(243, 109, 33, 0.24);
+  background: rgba(255, 240, 227, 0.92);
+  color: var(--accent-strong);
+}
+
+.sourceCard {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(247, 245, 241, 0.92);
+}
+
+.sourceHint {
+  display: grid;
+  gap: 4px;
+}
+
+.sourceHint strong {
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+
+.sourceHint p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .sectionHeader {
   display: grid;
   gap: 4px;
@@ -141,6 +189,18 @@
   font-size: 24px;
   line-height: 1.15;
   letter-spacing: -0.04em;
+}
+
+.previewBadgeEmpty {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(247, 245, 241, 0.96);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .previewMeta {

@@ -15,11 +15,12 @@ import { HOME_FILTERS, HOME_NOTICE, HOME_QUICK_MENUS, HOME_TABS, buildHomeMatchR
 import styles from "./home-page.module.css";
 
 type HomePageProps = {
+  isAdmin: boolean;
   matches: MatchRecord[];
   dates: CalendarDate[];
 };
 
-export function HomePage({ matches, dates }: HomePageProps) {
+export function HomePage({ isAdmin, matches, dates }: HomePageProps) {
   const [selectedDateKey, setSelectedDateKey] = useState(dates[0]?.key ?? "");
   const [likedMatches, setLikedMatches] = useState<Record<string, boolean>>({});
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>([]);
@@ -57,7 +58,7 @@ export function HomePage({ matches, dates }: HomePageProps) {
   return (
     <div className={styles.page}>
       <div className={styles.frame}>
-        <HomeHeader tabLabel={HOME_TABS[0]} />
+        <HomeHeader isAdmin={isAdmin} tabLabel={HOME_TABS[0]} />
 
         <main className={styles.main}>
           <HomeHero />

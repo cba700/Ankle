@@ -16,7 +16,7 @@ export default async function AdminMatchesPage() {
       <AdminMatchList
         ctaHref="/admin/matches/new"
         ctaLabel="새 매치 만들기"
-        description="목업 데이터로 구성된 관리자 전용 일정입니다. 공개 홈/상세에는 아직 연결되지 않습니다."
+        description="경기장 기본값을 불러와 생성한 운영 회차를 상태와 일정 중심으로 관리합니다."
         heading="전체 운영 회차"
         rows={rows}
       />

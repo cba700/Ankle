@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 
 export type MatchEntityStatus = "draft" | "open" | "closed" | "cancelled";
 export type MatchEntityFormat = "3vs3" | "5vs5";
@@ -81,6 +82,13 @@ type MatchRow = {
   safety_notes: string[] | null;
   view_count: number;
   like_count: number;
+  venue_name: string;
+  district: string;
+  address: string;
+  directions: string;
+  parking: string;
+  smoking: string;
+  shower_locker: string;
   venue: MatchVenueRow | MatchVenueRow[] | null;
 };
 
@@ -112,6 +120,13 @@ const MATCH_SELECT = `
   safety_notes,
   view_count,
   like_count,
+  venue_name,
+  district,
+  address,
+  directions,
+  parking,
+  smoking,
+  shower_locker,
   venue:venues!matches_venue_id_fkey (
     id,
     slug,
@@ -171,6 +186,8 @@ async function listMatchEntities({
     return [];
   }
 
+  await assertVenueManagementSchemaReady(supabase);
+
   let query = supabase
     .from("matches")
     .select(MATCH_SELECT)
@@ -212,6 +229,14 @@ async function listMatchEntities({
         return null;
       }
 
+      const venueName = row.venue_name || venue.name;
+      const district = row.district || venue.district;
+      const address = row.address || venue.address;
+      const directions = row.directions || venue.directions;
+      const parking = row.parking || venue.parking;
+      const smoking = row.smoking || venue.smoking;
+      const showerLocker = row.shower_locker || venue.shower_locker;
+
       return {
         id: row.id,
         slug: row.slug,
@@ -239,13 +264,13 @@ async function listMatchEntities({
         venue: {
           id: venue.id,
           slug: venue.slug,
-          name: venue.name,
-          district: venue.district,
-          address: venue.address,
-          directions: venue.directions,
-          parking: venue.parking,
-          smoking: venue.smoking,
-          showerLocker: venue.shower_locker,
+          name: venueName,
+          district,
+          address,
+          directions,
+          parking,
+          smoking,
+          showerLocker,
           isActive: venue.is_active,
         },
       } satisfies MatchEntity;

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import styles from "./admin-shell.module.css";
 
 type AdminShellProps = {
-  activeNav: "dashboard" | "matches" | "create";
+  activeNav: "dashboard" | "matches" | "venues" | "create";
   eyebrow: string;
   title: string;
   description: string;
@@ -23,6 +23,12 @@ const NAV_ITEMS = [
     label: "매치 관리",
     description: "회차 목록과 수정",
     href: "/admin/matches",
+  },
+  {
+    id: "venues",
+    label: "경기장 관리",
+    description: "관리 경기장 기본값",
+    href: "/admin/venues",
   },
   {
     id: "create",
@@ -77,8 +83,8 @@ export function AdminShell({
           <div className={styles.sidebarNote}>
             <p className={styles.sidebarNoteTitle}>현재 단계</p>
             <p className={styles.sidebarNoteText}>
-              이 관리자 화면은 공개 메인/상세와 분리된 목업입니다. 운영 플로우와 정보
-              구조를 먼저 검증하는 용도입니다.
+              관리 경기장 기본값을 정리하고, 그 값을 바탕으로 매치를 여는 운영 콘솔입니다.
+              경기장 원본과 매치 저장값은 분리해서 다룹니다.
             </p>
           </div>
         </aside>
