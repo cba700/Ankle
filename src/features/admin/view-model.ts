@@ -5,6 +5,10 @@ import type {
   AdminMatchRow,
   AdminMatchStatus,
   AdminOverviewCard,
+  AdminVenueFormValue,
+  AdminVenueOption,
+  AdminVenueRecord,
+  AdminVenueRow,
 } from "./types";
 
 const dateLabelFormatter = new Intl.DateTimeFormat("ko-KR", {
@@ -118,39 +122,89 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
   }));
 }
 
-export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFormValue {
-  if (!match) {
+export function buildAdminVenueRows(venues: AdminVenueRecord[]): AdminVenueRow[] {
+  return venues.map((venue) => ({
+    id: venue.id,
+    name: venue.name,
+    district: venue.district,
+    address: venue.address,
+    statusLabel: venue.isActive ? "운영 중" : "보관",
+    matchCountLabel: `${venue.matchCount}개 매치 연결`,
+    editHref: `/admin/venues/${venue.id}/edit`,
+    createMatchHref: `/admin/matches/new?venueId=${venue.id}`,
+  }));
+}
+
+export function buildAdminVenueFormValue(venue?: AdminVenueRecord): AdminVenueFormValue {
+  if (!venue) {
     return {
-      title: "여의도 라이트게임 3vs3",
-      venueName: "여의도 한강공원 농구장",
-      district: "영등포",
-      address: "서울 영등포구 여의동로 330 여의도 한강공원 농구장",
-      date: "2026-04-10",
-      startTime: "19:30",
-      endTime: "21:30",
-      status: "draft",
-      format: "3vs3",
-      capacity: "9",
-      participantSummary: "신청 0명 · 저장 후 자동 집계",
-      price: "5900",
-      genderCondition: "남녀 모두",
-      levelCondition: "모든 레벨",
-      levelRange: "초급 ~ 중급",
-      preparation: "운동화 또는 농구화",
-      summary: "퇴근 후 부담 없이 합류할 수 있는 3vs3 한강 매치입니다.",
-      publicNotice: "첫 참가자도 빠르게 적응할 수 있게 운영자가 밸런스를 먼저 맞춥니다.",
-      operatorNote: "신규 카피 테스트용 회차, 이미지와 혜택 문구는 추후 확정",
-      directions: "국회의사당역 버스 환승 후 도보 6분",
-      parking: "공원 주차장 이용 가능, 퇴근 시간대 혼잡할 수 있음",
-      smoking: "지정 흡연 구역 외 흡연 금지",
-      showerLocker: "샤워실 없음, 간이 짐 보관대 제공",
-      tagsText: "한강 코트, 입문 환영, 퇴근 후",
-      rulesText: "10분 로테이션 운영\n팀 밸런스는 운영자가 현장 조정\n지각자는 다음 경기부터 참여",
-      safetyNotesText: "워밍업 10분 권장\n과도한 몸싸움은 즉시 제지\n우천 시 운영 공지 우선",
+      name: "",
+      district: "",
+      address: "",
+      directions: "",
+      parking: "",
+      smoking: "",
+      showerLocker: "",
+      defaultImageUrlsText: "",
+      defaultRulesText: "",
+      defaultSafetyNotesText: "",
+      isActive: true,
     };
   }
 
   return {
+    name: venue.name,
+    district: venue.district,
+    address: venue.address,
+    directions: venue.venueInfo.directions,
+    parking: venue.venueInfo.parking,
+    smoking: venue.venueInfo.smoking,
+    showerLocker: venue.venueInfo.showerLocker,
+    defaultImageUrlsText: venue.defaultImageUrls.join("\n"),
+    defaultRulesText: venue.defaultRules.join("\n"),
+    defaultSafetyNotesText: venue.defaultSafetyNotes.join("\n"),
+    isActive: venue.isActive,
+  };
+}
+
+export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFormValue {
+  if (!match) {
+    return {
+      venueEntryMode: "manual",
+      selectedVenueId: "",
+      title: "",
+      venueName: "",
+      district: "",
+      address: "",
+      date: "",
+      startTime: "",
+      endTime: "",
+      status: "",
+      format: "",
+      capacity: "",
+      participantSummary: "신청 0명 · 저장 후 자동 집계",
+      price: "",
+      genderCondition: "",
+      levelCondition: "",
+      levelRange: "",
+      preparation: "",
+      summary: "",
+      publicNotice: "",
+      operatorNote: "",
+      directions: "",
+      parking: "",
+      smoking: "",
+      showerLocker: "",
+      imageUrlsText: "",
+      tagsText: "",
+      rulesText: "",
+      safetyNotesText: "",
+    };
+  }
+
+  return {
+    venueEntryMode: match.venueId ? "managed" : "manual",
+    selectedVenueId: match.venueId,
     title: match.title,
     venueName: match.venueName,
     district: match.district,
@@ -174,9 +228,31 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
     parking: match.venueInfo.parking,
     smoking: match.venueInfo.smoking,
     showerLocker: match.venueInfo.showerLocker,
+    imageUrlsText: match.imageUrls.join("\n"),
     tagsText: match.tags.join(", "),
     rulesText: match.rules.join("\n"),
     safetyNotesText: match.safetyNotes.join("\n"),
+  };
+}
+
+export function applyVenueOptionToMatchFormValue(
+  values: AdminMatchFormValue,
+  venue: AdminVenueOption,
+): AdminMatchFormValue {
+  return {
+    ...values,
+    venueEntryMode: "managed",
+    selectedVenueId: venue.id,
+    venueName: venue.name,
+    district: venue.district,
+    address: venue.address,
+    directions: venue.venueInfo.directions,
+    parking: venue.venueInfo.parking,
+    smoking: venue.venueInfo.smoking,
+    showerLocker: venue.venueInfo.showerLocker,
+    imageUrlsText: venue.defaultImageUrls.join("\n"),
+    rulesText: venue.defaultRules.join("\n"),
+    safetyNotesText: venue.defaultSafetyNotes.join("\n"),
   };
 }
 

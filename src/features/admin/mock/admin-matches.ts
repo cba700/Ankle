@@ -4,6 +4,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
   {
     id: "adm-01",
     slug: "jamsil-riverside-20260403-1930",
+    venueId: "venue-01",
     title: "잠실 선셋 밸런스 3vs3",
     venueName: "잠실 한강공원 농구장",
     district: "송파",
@@ -44,6 +45,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
   {
     id: "adm-02",
     slug: "ttukseom-riverside-20260404-2100",
+    venueId: "venue-02",
     title: "뚝섬 나이트런 5vs5",
     venueName: "뚝섬 한강공원 농구장",
     district: "광진",
@@ -84,6 +86,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
   {
     id: "adm-03",
     slug: "banpo-riverside-20260405-1300",
+    venueId: "venue-03",
     title: "반포 위켄드 스타트 3vs3",
     venueName: "반포 한강공원 세빛 농구장",
     district: "서초",
@@ -124,6 +127,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
   {
     id: "adm-04",
     slug: "mangwon-riverside-20260406-1830",
+    venueId: "venue-04",
     title: "망원 애프터워크 3vs3",
     venueName: "망원 한강공원 농구장",
     district: "마포",
@@ -164,6 +168,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
   {
     id: "adm-05",
     slug: "yeouido-riverside-20260407-2000",
+    venueId: "venue-05",
     title: "여의도 프라임 5vs5",
     venueName: "여의도 한강공원 농구장",
     district: "영등포",
@@ -204,6 +209,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
   {
     id: "adm-06",
     slug: "ichon-riverside-20260409-1030",
+    venueId: "venue-06",
     title: "이촌 모닝 밸런스 3vs3",
     venueName: "이촌 한강공원 농구장",
     district: "용산",
