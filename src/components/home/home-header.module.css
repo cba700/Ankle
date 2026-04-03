@@ -92,6 +92,24 @@
   flex-shrink: 0;
 }
 
+.adminButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -139,6 +157,12 @@
   .searchInput {
     font-size: 14px;
   }
+
+  .adminButton {
+    min-height: 46px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -172,5 +196,12 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
+  }
+
+  .adminButton {
+    min-height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font-size: 12px;
   }
 }
