@@ -186,3 +186,40 @@ export function EyeIcon({ className }: IconProps) {
     </IconBase>
   );
 }
+
+export function BellIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <path d="M7.2 9.2a4.8 4.8 0 1 1 9.6 0v3.1l1.8 2.6v1.1H5.4v-1.1l1.8-2.6V9.2Z" />
+      <path d="M10 18.2a2.1 2.1 0 0 0 4 0" />
+    </IconBase>
+  );
+}
+
+export function CogIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <circle cx="12" cy="12" r="3.1" />
+      <path d="M12 3.2v2.1M12 18.7v2.1M20.8 12h-2.1M5.3 12H3.2M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5M18.2 18.2l-1.5-1.5M7.3 7.3 5.8 5.8" />
+    </IconBase>
+  );
+}
+
+export function PencilIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <path d="m5.1 18.9 3.1-.7 8.1-8.1a1.9 1.9 0 0 0-2.7-2.7l-8.1 8.1-.7 3.4Z" />
+      <path d="m12.6 8.4 3 3" />
+    </IconBase>
+  );
+}
+
+export function QuestionIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.6 9.4a2.7 2.7 0 1 1 4.7 1.8c-.8.8-1.5 1.3-1.5 2.5" />
+      <path d="M12 16.8h.1" />
+    </IconBase>
+  );
+}

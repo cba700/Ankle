@@ -1,99 +1,284 @@
+"use client";
+
+import type { ChangeEvent } from "react";
+import { useState } from "react";
 import { formatMoney } from "@/lib/date";
-import type { AdminMatchFormValue } from "../types";
+import {
+  buildAdminVenueLabel,
+  buildGeneratedMatchTitle,
+  formatMatchDurationLabel,
+  MATCH_DURATION_OPTIONS,
+} from "../match-form";
+import type { AdminMatchFormValue, AdminVenueOption } from "../types";
+import { applyVenueOptionToMatchFormValue } from "../view-model";
 import { AdminStatusBadge } from "./admin-status-badge";
+import ui from "./admin-ui.module.css";
 import styles from "./admin-match-editor.module.css";
 
 type AdminMatchEditorProps = {
   mode: "create" | "edit";
   values: AdminMatchFormValue;
+  venueOptions: AdminVenueOption[];
+  formAction: (formData: FormData) => void | Promise<void>;
+  formId?: string;
 };
+
+const GENDER_OPTIONS = ["남녀 모두", "남성만", "여성만"];
+const LEVEL_OPTIONS = [
+  { value: "all", label: "모든 레벨" },
+  { value: "basic", label: "초급 위주" },
+  { value: "middle", label: "중급 위주" },
+  { value: "high", label: "상급 위주" },
+] as const;
 
 export function AdminMatchEditor({
   mode,
   values,
+  venueOptions,
+  formAction,
+  formId,
 }: AdminMatchEditorProps) {
-  const primaryActionLabel =
-    mode === "create" ? "임시 저장" : "변경 사항 저장";
+  const [formValues, setFormValues] = useState(values);
 
-  const secondaryActionLabel =
-    mode === "create" ? "바로 모집 열기" : "모집 상태 업데이트";
+  const selectedVenue = venueOptions.find((venue) => venue.id === formValues.selectedVenueId);
+  const generatedTitle = buildGeneratedMatchTitle({
+    venueName: formValues.venueName,
+    format: formValues.format,
+    startTime: formValues.startTime,
+  });
+  const durationOptions = getDurationOptions(formValues.durationMinutes);
+  const genderOptions = getOptionsWithCurrent(GENDER_OPTIONS, formValues.genderCondition);
+
+  function handleFieldChange(
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) {
+    const { name, value } = event.target;
+
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      [name]: value,
+    }));
+  }
+
+  function handleVenueModeChange(modeValue: AdminMatchFormValue["venueEntryMode"]) {
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      venueEntryMode: modeValue,
+      selectedVenueId: modeValue === "manual" ? "" : currentValues.selectedVenueId,
+    }));
+  }
+
+  function handleVenueSelectChange(event: ChangeEvent<HTMLSelectElement>) {
+    const venueId = event.target.value;
+
+    if (!venueId) {
+      setFormValues((currentValues) => ({
+        ...currentValues,
+        selectedVenueId: "",
+      }));
+      return;
+    }
+
+    const venue = venueOptions.find((item) => item.id === venueId);
+
+    if (!venue) {
+      return;
+    }
+
+    setFormValues((currentValues) => applyVenueOptionToMatchFormValue(currentValues, venue));
+  }
 
   return (
-    <div className={styles.layout}>
-      <form className={styles.form}>
-        <div className={styles.actionBar}>
-          <div>
-            <p className={styles.actionEyebrow}>관리자 목업 화면</p>
-            <h2 className={styles.actionTitle}>
-              {mode === "create" ? "새 회차를 설계하는 폼" : "운영 중인 회차를 다듬는 폼"}
-            </h2>
-          </div>
+    <div className={`${styles.layout} ${mode === "create" ? styles.layoutSingle : ""}`}>
+      <form action={formAction} className={styles.form} id={formId} name={formId}>
+        <input name="venueEntryMode" type="hidden" value={formValues.venueEntryMode} />
+        <input name="selectedVenueId" type="hidden" value={formValues.selectedVenueId} />
+        {mode === "create" ? (
+          <>
+            <input name="district" type="hidden" value={formValues.district} />
+            <input name="directions" type="hidden" value={formValues.directions} />
+            <input name="parking" type="hidden" value={formValues.parking} />
+            <input name="smoking" type="hidden" value={formValues.smoking} />
+            <input name="showerLocker" type="hidden" value={formValues.showerLocker} />
+            <input name="imageUrlsText" type="hidden" value={formValues.imageUrlsText} />
+            <input name="rulesText" type="hidden" value={formValues.rulesText} />
+            <input name="safetyNotesText" type="hidden" value={formValues.safetyNotesText} />
+          </>
+        ) : null}
 
-          <div className={styles.actionButtons}>
-            <button className={styles.secondaryButton} type="button">
-              {secondaryActionLabel}
-            </button>
-            <button className={styles.primaryButton} type="button">
-              {primaryActionLabel}
+        {mode === "edit" ? (
+          <div className={`${ui.sectionCard} ${styles.actionBar}`}>
+            <div className={styles.actionCopy}>
+              <p className={styles.sectionEyebrow}>편집</p>
+              <h2 className={styles.actionTitle}>운영 중인 매치를 정리합니다.</h2>
+            </div>
+
+            <button className={`${ui.button} ${ui.buttonPrimary}`} name="intent" type="submit" value="save_changes">
+              변경 사항 저장
             </button>
           </div>
-        </div>
+        ) : null}
 
-        <section className={styles.section}>
+        <section className={`${ui.sectionCard} ${styles.section}`}>
           <div className={styles.sectionHeader}>
-            <p className={styles.sectionEyebrow}>기본 정보</p>
-            <h3 className={styles.sectionTitle}>매치 정보와 노출 상태</h3>
+            <p className={styles.sectionEyebrow}>경기장</p>
+          </div>
+
+          <div className={styles.modeToggle}>
+            <button
+              aria-pressed={formValues.venueEntryMode === "managed"}
+              className={`${styles.modeButton} ${formValues.venueEntryMode === "managed" ? styles.modeButtonActive : ""}`}
+              onClick={() => handleVenueModeChange("managed")}
+              type="button"
+            >
+              관리 경기장 선택
+            </button>
+            <button
+              aria-pressed={formValues.venueEntryMode === "manual"}
+              className={`${styles.modeButton} ${formValues.venueEntryMode === "manual" ? styles.modeButtonActive : ""}`}
+              onClick={() => handleVenueModeChange("manual")}
+              type="button"
+            >
+              새 경기장 직접 입력
+            </button>
           </div>
 
           <div className={styles.fieldGrid}>
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>매치 제목</span>
-              <input defaultValue={values.title} type="text" />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>장소명</span>
-              <input defaultValue={values.venueName} type="text" />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>권역</span>
-              <input defaultValue={values.district} type="text" />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>운영 상태</span>
-              <select defaultValue={values.status}>
-                <option value="draft">임시 저장</option>
-                <option value="open">모집 중</option>
-                <option value="closed">마감</option>
-                <option value="cancelled">운영 취소</option>
+            <label className={`${styles.field} ${styles.fieldSpan}`}>
+              <span className={styles.fieldLabel}>관리 경기장</span>
+              <select onChange={handleVenueSelectChange} value={formValues.selectedVenueId}>
+                <option value="">관리 중인 경기장을 선택하세요</option>
+                {venueOptions.map((venue) => (
+                  <option key={venue.id} value={venue.id}>
+                    {venue.label}
+                    {venue.isActive ? "" : " · 보관"}
+                  </option>
+                ))}
               </select>
             </label>
 
+            <p className={styles.helperText}>
+              {selectedVenue
+                ? `${selectedVenue.label} 기준으로 장소 정보와 기본값이 채워집니다.`
+                : "경기장을 고르면 장소 정보와 기본값이 자동으로 채워집니다."}
+            </p>
+
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>경기장명</span>
+              <input
+                name="venueName"
+                onChange={handleFieldChange}
+                required
+                type="text"
+                value={formValues.venueName}
+              />
+            </label>
+
+            {mode === "edit" ? (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>권역</span>
+                <input
+                  name="district"
+                  onChange={handleFieldChange}
+                  type="text"
+                  value={formValues.district}
+                />
+              </label>
+            ) : null}
+
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>주소</span>
-              <input defaultValue={values.address} type="text" />
+              <input
+                name="address"
+                onChange={handleFieldChange}
+                required
+                type="text"
+                value={formValues.address}
+              />
             </label>
+          </div>
+        </section>
+
+        <section className={`${ui.sectionCard} ${styles.section}`}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.sectionEyebrow}>기본 정보</p>
+          </div>
+
+          <div className={styles.fieldGrid}>
+            <label className={`${styles.field} ${styles.fieldSpan}`}>
+              <span className={styles.fieldLabel}>매치 제목</span>
+              <input
+                name="title"
+                onChange={handleFieldChange}
+                placeholder={
+                  mode === "create" ? `비워두면 ${generatedTitle || "자동 제목"}으로 저장됩니다.` : undefined
+                }
+                type="text"
+                value={formValues.title}
+              />
+            </label>
+
+            {mode === "edit" ? (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>운영 상태</span>
+                <select
+                  name="status"
+                  onChange={handleFieldChange}
+                  required
+                  value={formValues.status}
+                >
+                  <option value="">운영 상태를 선택하세요</option>
+                  <option value="draft">임시 저장</option>
+                  <option value="open">모집 중</option>
+                  <option value="closed">마감</option>
+                  <option value="cancelled">운영 취소</option>
+                </select>
+              </label>
+            ) : null}
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>날짜</span>
-              <input defaultValue={values.date} type="date" />
+              <input
+                name="date"
+                onChange={handleFieldChange}
+                required
+                type="date"
+                value={formValues.date}
+              />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>시작 시간</span>
-              <input defaultValue={values.startTime} type="time" />
+              <input
+                name="startTime"
+                onChange={handleFieldChange}
+                required
+                type="time"
+                value={formValues.startTime}
+              />
             </label>
 
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>종료 시간</span>
-              <input defaultValue={values.endTime} type="time" />
+              <span className={styles.fieldLabel}>경기 시간</span>
+              <select
+                name="durationMinutes"
+                onChange={handleFieldChange}
+                required
+                value={formValues.durationMinutes}
+              >
+                <option value="">경기시간을 선택하세요</option>
+                {durationOptions.map((option) => (
+                  <option key={option} value={String(option)}>
+                    {formatMatchDurationLabel(option)}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>경기 방식</span>
-              <select defaultValue={values.format}>
+              <span className={styles.fieldLabel}>방식</span>
+              <select name="format" onChange={handleFieldChange} required value={formValues.format}>
+                <option value="">경기 방식을 선택하세요</option>
                 <option value="3vs3">3vs3</option>
                 <option value="5vs5">5vs5</option>
               </select>
@@ -101,179 +286,258 @@ export function AdminMatchEditor({
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={`${ui.sectionCard} ${styles.section}`}>
           <div className={styles.sectionHeader}>
             <p className={styles.sectionEyebrow}>참가 조건</p>
-            <h3 className={styles.sectionTitle}>정원, 가격, 레벨 기준</h3>
           </div>
 
           <div className={styles.fieldGrid}>
             <label className={styles.field}>
               <span className={styles.fieldLabel}>정원</span>
-              <input defaultValue={values.capacity} inputMode="numeric" type="text" />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>현재 신청자 수</span>
               <input
-                defaultValue={values.currentParticipants}
                 inputMode="numeric"
+                name="capacity"
+                onChange={handleFieldChange}
+                required
                 type="text"
+                value={formValues.capacity}
               />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>참가비</span>
-              <input defaultValue={values.price} inputMode="numeric" type="text" />
+              <input
+                inputMode="numeric"
+                name="price"
+                onChange={handleFieldChange}
+                required
+                type="text"
+                value={formValues.price}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>레벨</span>
+              <select
+                name="level"
+                onChange={handleFieldChange}
+                required
+                value={formValues.level}
+              >
+                <option value="">레벨을 선택하세요</option>
+                {LEVEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>성별 조건</span>
-              <input defaultValue={values.genderCondition} type="text" />
+              <select
+                name="genderCondition"
+                onChange={handleFieldChange}
+                required
+                value={formValues.genderCondition}
+              >
+                <option value="">성별 조건을 선택하세요</option>
+                {genderOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </label>
 
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>레벨 조건</span>
-              <input defaultValue={values.levelCondition} type="text" />
-            </label>
+            {mode === "edit" ? (
+              <>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>현재 신청 현황</span>
+                  <input readOnly type="text" value={formValues.participantSummary} />
+                </label>
 
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>레벨 범위</span>
-              <input defaultValue={values.levelRange} type="text" />
-            </label>
-
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>준비물</span>
-              <input defaultValue={values.preparation} type="text" />
-            </label>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>준비물</span>
+                  <input
+                    name="preparation"
+                    onChange={handleFieldChange}
+                    type="text"
+                    value={formValues.preparation}
+                  />
+                </label>
+              </>
+            ) : null}
           </div>
         </section>
 
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <p className={styles.sectionEyebrow}>운영 카피</p>
-            <h3 className={styles.sectionTitle}>유저에게 보일 설명과 공지</h3>
-          </div>
+        {mode === "edit" ? (
+          <>
+            <section className={`${ui.sectionCard} ${styles.section}`}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.sectionEyebrow}>운영 카피</p>
+              </div>
 
-          <div className={styles.fieldGrid}>
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>한 줄 요약</span>
-              <textarea defaultValue={values.summary} rows={3} />
-            </label>
+              <div className={styles.fieldGrid}>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>한 줄 요약</span>
+                  <textarea
+                    name="summary"
+                    onChange={handleFieldChange}
+                    rows={3}
+                    value={formValues.summary}
+                  />
+                </label>
 
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>공개 공지</span>
-              <textarea defaultValue={values.publicNotice} rows={3} />
-            </label>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>공개 공지</span>
+                  <textarea
+                    name="publicNotice"
+                    onChange={handleFieldChange}
+                    rows={3}
+                    value={formValues.publicNotice}
+                  />
+                </label>
 
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>태그</span>
-              <input defaultValue={values.tagsText} type="text" />
-            </label>
-          </div>
-        </section>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>태그</span>
+                  <input
+                    name="tagsText"
+                    onChange={handleFieldChange}
+                    type="text"
+                    value={formValues.tagsText}
+                  />
+                </label>
+              </div>
+            </section>
 
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <p className={styles.sectionEyebrow}>장소 안내</p>
-            <h3 className={styles.sectionTitle}>현장 운영 정보와 안전 메모</h3>
-          </div>
+            <section className={`${ui.sectionCard} ${styles.section}`}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.sectionEyebrow}>장소 안내</p>
+              </div>
 
-          <div className={styles.fieldGrid}>
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>찾아오는 길</span>
-              <textarea defaultValue={values.directions} rows={3} />
-            </label>
+              <div className={styles.fieldGrid}>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>찾아오는 길</span>
+                  <textarea
+                    name="directions"
+                    onChange={handleFieldChange}
+                    rows={3}
+                    value={formValues.directions}
+                  />
+                </label>
 
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>주차</span>
-              <textarea defaultValue={values.parking} rows={3} />
-            </label>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>주차</span>
+                  <textarea
+                    name="parking"
+                    onChange={handleFieldChange}
+                    rows={3}
+                    value={formValues.parking}
+                  />
+                </label>
 
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>흡연</span>
-              <textarea defaultValue={values.smoking} rows={3} />
-            </label>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>흡연</span>
+                  <textarea
+                    name="smoking"
+                    onChange={handleFieldChange}
+                    rows={3}
+                    value={formValues.smoking}
+                  />
+                </label>
 
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>보관/샤워</span>
-              <textarea defaultValue={values.showerLocker} rows={3} />
-            </label>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>보관/샤워</span>
+                  <textarea
+                    name="showerLocker"
+                    onChange={handleFieldChange}
+                    rows={3}
+                    value={formValues.showerLocker}
+                  />
+                </label>
 
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>운영 규칙</span>
-              <textarea defaultValue={values.rulesText} rows={5} />
-            </label>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>이미지 URL</span>
+                  <textarea
+                    name="imageUrlsText"
+                    onChange={handleFieldChange}
+                    rows={4}
+                    value={formValues.imageUrlsText}
+                  />
+                </label>
 
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>안전 메모</span>
-              <textarea defaultValue={values.safetyNotesText} rows={5} />
-            </label>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>운영 규칙</span>
+                  <textarea
+                    name="rulesText"
+                    onChange={handleFieldChange}
+                    rows={5}
+                    value={formValues.rulesText}
+                  />
+                </label>
 
-            <label className={`${styles.field} ${styles.fieldSpan}`}>
-              <span className={styles.fieldLabel}>내부 운영 메모</span>
-              <textarea defaultValue={values.operatorNote} rows={4} />
-            </label>
-          </div>
-        </section>
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>안전 메모</span>
+                  <textarea
+                    name="safetyNotesText"
+                    onChange={handleFieldChange}
+                    rows={5}
+                    value={formValues.safetyNotesText}
+                  />
+                </label>
+
+                <label className={`${styles.field} ${styles.fieldSpan}`}>
+                  <span className={styles.fieldLabel}>내부 운영 메모</span>
+                  <textarea
+                    name="operatorNote"
+                    onChange={handleFieldChange}
+                    rows={4}
+                    value={formValues.operatorNote}
+                  />
+                </label>
+              </div>
+            </section>
+          </>
+        ) : null}
       </form>
 
-      <aside className={styles.aside}>
-        <section className={styles.previewCard}>
-          <div className={styles.previewHeader}>
-            <p className={styles.previewLabel}>미리 보는 운영 카드</p>
-            <AdminStatusBadge status={values.status} />
-          </div>
-
-          <h3 className={styles.previewTitle}>{values.title}</h3>
-          <p className={styles.previewMeta}>
-            {values.date} · {values.startTime} - {values.endTime}
-          </p>
-          <p className={styles.previewMeta}>
-            {values.venueName} · {values.district}
-          </p>
-
-          <div className={styles.previewStats}>
-            <div>
-              <span>참가 현황</span>
-              <strong>
-                {values.currentParticipants} / {values.capacity}명
-              </strong>
+      {mode === "edit" ? (
+        <aside className={styles.aside}>
+          <section className={`${ui.sectionCard} ${styles.previewCard}`}>
+            <div className={styles.previewHeader}>
+              <p className={styles.sectionEyebrow}>미리 보기</p>
+              {formValues.status ? <AdminStatusBadge status={formValues.status} /> : null}
             </div>
-            <div>
-              <span>참가비</span>
-              <strong>{formatPreviewPrice(values.price)}</strong>
+
+            <h3 className={styles.previewTitle}>{formValues.title || generatedTitle || "매치 제목"}</h3>
+            <p className={styles.previewMeta}>
+              {formValues.date || "날짜 미정"} ·{" "}
+              {formValues.startTime && formValues.durationMinutes
+                ? `${formValues.startTime} 시작 · ${formatMatchDurationLabel(
+                    Number.parseInt(formValues.durationMinutes, 10),
+                  )}`
+                : "시간 미정"}
+            </p>
+            <p className={styles.previewMeta}>
+              {formValues.venueName
+                ? buildAdminVenueLabel(formValues.venueName, formValues.district)
+                : "경기장을 선택하거나 직접 입력하세요"}
+            </p>
+
+            <div className={styles.previewStats}>
+              <div>
+                <span>참가 현황</span>
+                <strong>{formValues.participantSummary}</strong>
+              </div>
+              <div>
+                <span>참가비</span>
+                <strong>{formatPreviewPrice(formValues.price)}</strong>
+              </div>
             </div>
-          </div>
-
-          <div className={styles.previewTags}>
-            {values.tagsText.split(",").map((tag) => {
-              const trimmedTag = tag.trim();
-
-              if (!trimmedTag) {
-                return null;
-              }
-
-              return (
-                <span key={trimmedTag} className={styles.previewTag}>
-                  {trimmedTag}
-                </span>
-              );
-            })}
-          </div>
-
-          <p className={styles.previewNotice}>{values.publicNotice}</p>
-        </section>
-
-        <section className={styles.previewCard}>
-          <p className={styles.previewLabel}>현재 연결 범위</p>
-          <ul className={styles.previewList}>
-            <li>이 화면은 목업이며 저장 동작은 연결되지 않았습니다.</li>
-            <li>기존 메인과 상세 페이지 데이터 소스에는 영향을 주지 않습니다.</li>
-            <li>실데이터 연결 시 이 폼 구조를 그대로 서버 액션 또는 API에 연결할 수 있습니다.</li>
-          </ul>
-        </section>
-      </aside>
+          </section>
+        </aside>
+      ) : null}
     </div>
   );
 }
@@ -282,8 +546,26 @@ function formatPreviewPrice(value: string) {
   const amount = Number.parseInt(value, 10);
 
   if (Number.isNaN(amount)) {
-    return value;
+    return value ? `${value}원` : "참가비 미입력";
   }
 
   return `${formatMoney(amount)}원`;
+}
+
+function getDurationOptions(currentValue: string) {
+  const current = Number.parseInt(currentValue, 10);
+
+  if (!Number.isFinite(current) || current <= 0 || MATCH_DURATION_OPTIONS.includes(current)) {
+    return MATCH_DURATION_OPTIONS;
+  }
+
+  return [...MATCH_DURATION_OPTIONS, current].sort((left, right) => left - right);
+}
+
+function getOptionsWithCurrent(options: string[], currentValue: string) {
+  if (!currentValue || options.includes(currentValue)) {
+    return options;
+  }
+
+  return [currentValue, ...options];
 }

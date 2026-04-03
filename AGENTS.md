@@ -23,3 +23,4 @@
 - Do not finish with failing tests.
 - Report any unrun or blocked tests explicitly.
 - 기능구현이나 리팩토링시 항상 새로운 브랜치를 생성하고 커밋도 남긴다.
+-Ensure all interactive elements in Next.js client components remain clickable on mobile by avoiding overlay blocking, improper z-index stacking, and scroll/touch conflicts, while using semantic elements and responsive layouts.

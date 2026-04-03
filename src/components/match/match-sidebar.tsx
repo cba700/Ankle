@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CopyIcon, EyeIcon, HeartIcon, MapPinIcon } from "@/components/icons";
 import styles from "./match-sidebar.module.css";
 
@@ -12,10 +13,11 @@ type MatchSidebarProps = {
   notice: string;
   priceLabel: string;
   saved: boolean;
+  applyHref: string;
+  canApply: boolean;
   onCopyAddress: () => void;
   onOpenFaq: () => void;
   onOpenCancelInfo: () => void;
-  onApply: () => void;
   onReserve: () => void;
   onSave: () => void;
 };
@@ -31,10 +33,11 @@ export function MatchSidebar({
   notice,
   priceLabel,
   saved,
+  applyHref,
+  canApply,
   onCopyAddress,
   onOpenFaq,
   onOpenCancelInfo,
-  onApply,
   onReserve,
   onSave,
 }: MatchSidebarProps) {
@@ -92,9 +95,15 @@ export function MatchSidebar({
         >
           <HeartIcon filled={saved} />
         </button>
-        <button className={styles.secondaryButton} onClick={onApply} type="button">
-          바로 신청
-        </button>
+        {canApply ? (
+          <Link className={styles.secondaryButton} href={applyHref}>
+            바로 신청
+          </Link>
+        ) : (
+          <button className={styles.secondaryButtonDisabled} disabled type="button">
+            신청 마감
+          </button>
+        )}
         <button className={styles.primaryButton} onClick={onReserve} type="button">
           자리 맡기
         </button>

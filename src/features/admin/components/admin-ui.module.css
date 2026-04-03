@@ -1,0 +1,88 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.buttonPrimary {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: #fff;
+}
+
+.buttonBrand {
+  border-color: #e05a28;
+  background: #e05a28;
+  color: #fff;
+}
+
+.buttonSmall {
+  min-height: 28px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.sectionCard {
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px 16px;
+}
+
+.tableCard {
+  overflow: hidden;
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeadCell {
+  padding: 10px 12px;
+  background: #f4f2ee;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tableCell {
+  padding: 12px;
+  border-top: 0.5px solid var(--line);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.tableRow:hover {
+  background: #faf8f5;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.tertiary {
+  color: var(--text-tertiary);
+}
