@@ -29,6 +29,7 @@
   grid-auto-flow: column;
   grid-auto-columns: minmax(54px, 1fr);
   gap: 6px;
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
