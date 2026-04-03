@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   AdminMatchFormat,
@@ -40,6 +41,7 @@ type AdminSupabaseClient = NonNullable<Awaited<ReturnType<typeof getSupabaseServ
 
 export async function createAdminMatchAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
   const values = readMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const slug = buildMatchSlug(venue.slug, values.startAt);
@@ -87,6 +89,7 @@ export async function createAdminMatchAction(formData: FormData) {
 
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
   const values = readMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
@@ -155,6 +158,7 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
 
 export async function createAdminVenueAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
   const values = readVenueFormValues(formData);
   const venue = await createVenue(supabase, values);
 
@@ -163,6 +167,7 @@ export async function createAdminVenueAction(formData: FormData) {
 
 export async function updateAdminVenueAction(venueId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
   const values = readVenueFormValues(formData);
   const slug = toSlug(`${values.district} ${values.name}`);
 

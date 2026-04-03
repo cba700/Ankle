@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 
 export type VenueEntity = {
   id: string;
@@ -70,6 +71,8 @@ async function listVenueEntities(id?: string) {
   if (!supabase) {
     return [];
   }
+
+  await assertVenueManagementSchemaReady(supabase);
 
   let query = supabase
     .from("venues")

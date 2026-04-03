@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 
 export type MatchEntityStatus = "draft" | "open" | "closed" | "cancelled";
 export type MatchEntityFormat = "3vs3" | "5vs5";
@@ -184,6 +185,8 @@ async function listMatchEntities({
   if (!supabase) {
     return [];
   }
+
+  await assertVenueManagementSchemaReady(supabase);
 
   let query = supabase
     .from("matches")
