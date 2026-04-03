@@ -33,16 +33,22 @@
 
 .brandWord {
   color: #111;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
 }
 
 .brandDot {
   color: var(--accent);
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 900;
   line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .brandWord {
+    font-size: 26px;
+  }
 }
 
 .headerActions {
@@ -652,11 +658,11 @@
   }
 
   .brandWord {
-    font-size: 18px;
+    font-size: 22px;
   }
 
   .brandDot {
-    font-size: 22px;
+    font-size: 28px;
   }
 
   .search {
@@ -733,6 +739,16 @@
 
   .sectionTitle {
     font-size: 22px;
+  }
+}
+
+@media (max-width: 360px) {
+  .brandWord {
+    font-size: 20px;
+  }
+
+  .brandDot {
+    font-size: 24px;
   }
 }
 

@@ -92,7 +92,7 @@ export function MyPage({ data }: MyPageProps) {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link className={styles.brand} href="/">
-            <span className={styles.brandWord}>ANKLE</span>
+            <span className={styles.brandWord}>앵클</span>
             <span className={styles.brandDot}>.</span>
           </Link>
 
