@@ -2,30 +2,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
-  padding: 6px 12px;
+  min-height: 24px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .accent {
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-}
-
-.soft {
-  background: var(--blue-soft);
-  color: var(--blue-text);
+  background: rgba(224, 90, 40, 0.12);
+  color: #e05a28;
 }
 
 .neutral {
-  background: var(--gray-soft);
-  color: var(--gray-text);
+  background: #f1f1f1;
+  color: var(--text-secondary);
 }
 
 .danger {
-  background: var(--red-soft);
+  background: rgba(191, 61, 53, 0.1);
   color: var(--red-text);
 }

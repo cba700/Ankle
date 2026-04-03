@@ -1,59 +1,39 @@
 import Link from "next/link";
 import type { AdminVenueRow } from "../types";
+import { AdminStatusBadge } from "./admin-status-badge";
+import ui from "./admin-ui.module.css";
 import styles from "./admin-venue-list.module.css";
 
 type AdminVenueListProps = {
-  heading: string;
-  description: string;
   rows: AdminVenueRow[];
 };
 
-export function AdminVenueList({
-  heading,
-  description,
-  rows,
-}: AdminVenueListProps) {
+export function AdminVenueList({ rows }: AdminVenueListProps) {
   return (
-    <section className={styles.section}>
-      <div className={styles.header}>
-        <div>
-          <h2 className={styles.heading}>{heading}</h2>
-          <p className={styles.description}>{description}</p>
-        </div>
+    <section className={styles.list}>
+      {rows.map((row) => (
+        <article key={row.id} className={`${ui.sectionCard} ${styles.row}`}>
+          <div className={styles.info}>
+            <strong className={styles.name}>{row.name}</strong>
+            <span className={styles.meta}>
+              {row.address} · {row.matchCountLabel}
+            </span>
+          </div>
 
-        <Link className={styles.cta} href="/admin/venues/new">
-          새 경기장 추가
-        </Link>
-      </div>
-
-      <div className={styles.list}>
-        {rows.map((row) => (
-          <article key={row.id} className={styles.card}>
-            <div className={styles.cardTop}>
-              <div>
-                <h3 className={styles.title}>{row.name}</h3>
-                <p className={styles.subtitle}>{row.district}</p>
-              </div>
-              <span className={styles.status}>{row.statusLabel}</span>
-            </div>
-
-            <p className={styles.address}>{row.address}</p>
-
-            <div className={styles.meta}>
-              <span>{row.matchCountLabel}</span>
-            </div>
-
-            <div className={styles.actions}>
-              <Link className={styles.secondaryLink} href={row.editHref}>
-                경기장 수정
-              </Link>
-              <Link className={styles.primaryLink} href={row.createMatchHref}>
-                이 경기장으로 새 매치
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
+          <div className={styles.actions}>
+            <AdminStatusBadge label={row.statusLabel} tone={row.statusTone} />
+            <Link className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
+              수정
+            </Link>
+            <Link
+              className={`${ui.button} ${ui.buttonBrand} ${ui.buttonSmall}`}
+              href={row.createMatchHref}
+            >
+              이 경기장으로 새 매치
+            </Link>
+          </div>
+        </article>
+      ))}
     </section>
   );
 }
