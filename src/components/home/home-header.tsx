@@ -4,10 +4,11 @@ import styles from "./home-header.module.css";
 
 type HomeHeaderProps = {
   isAdmin: boolean;
+  myPageHref: string;
   tabLabel: string;
 };
 
-export function HomeHeader({ isAdmin, tabLabel }: HomeHeaderProps) {
+export function HomeHeader({ isAdmin, myPageHref, tabLabel }: HomeHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.topRow}>
@@ -34,7 +35,7 @@ export function HomeHeader({ isAdmin, tabLabel }: HomeHeaderProps) {
           <button aria-label="일정" className={styles.iconButton} type="button">
             <CalendarIcon className={styles.actionIcon} />
           </button>
-          <Link aria-label="로그인" className={styles.iconButton} href="/login">
+          <Link aria-label="마이페이지" className={styles.iconButton} href={myPageHref}>
             <UserIcon className={styles.actionIcon} />
           </Link>
         </div>

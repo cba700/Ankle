@@ -18,9 +18,10 @@ type HomePageProps = {
   isAdmin: boolean;
   matches: MatchRecord[];
   dates: CalendarDate[];
+  myPageHref: string;
 };
 
-export function HomePage({ isAdmin, matches, dates }: HomePageProps) {
+export function HomePage({ isAdmin, matches, dates, myPageHref }: HomePageProps) {
   const [selectedDateKey, setSelectedDateKey] = useState(dates[0]?.key ?? "");
   const [likedMatches, setLikedMatches] = useState<Record<string, boolean>>({});
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>([]);
@@ -58,7 +59,11 @@ export function HomePage({ isAdmin, matches, dates }: HomePageProps) {
   return (
     <div className={styles.page}>
       <div className={styles.frame}>
-        <HomeHeader isAdmin={isAdmin} tabLabel={HOME_TABS[0]} />
+        <HomeHeader
+          isAdmin={isAdmin}
+          myPageHref={myPageHref}
+          tabLabel={HOME_TABS[0]}
+        />
 
         <main className={styles.main}>
           <HomeHero />
