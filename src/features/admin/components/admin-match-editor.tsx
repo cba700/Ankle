@@ -23,12 +23,6 @@ export function AdminMatchEditor({
 }: AdminMatchEditorProps) {
   const [formValues, setFormValues] = useState(values);
 
-  const primaryActionLabel =
-    mode === "create" ? "매치 저장" : "변경 사항 저장";
-
-  const secondaryActionLabel =
-    mode === "create" ? "바로 모집 열기" : "모집 상태 업데이트";
-
   const selectedVenue = venueOptions.find((venue) => venue.id === formValues.selectedVenueId);
 
   function handleFieldChange(
@@ -86,6 +80,8 @@ export function AdminMatchEditor({
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean);
+  const previewStatusLabel =
+    mode === "create" && !formValues.status ? "버튼에서 결정" : "상태 미선택";
 
   return (
     <div className={styles.layout}>
@@ -102,21 +98,23 @@ export function AdminMatchEditor({
           </div>
 
           <div className={styles.actionButtons}>
-            <button
-              className={styles.secondaryButton}
-              name="intent"
-              type="submit"
-              value={mode === "create" ? "publish" : "save"}
-            >
-              {secondaryActionLabel}
-            </button>
+            {mode === "create" ? (
+              <button
+                className={styles.secondaryButton}
+                name="intent"
+                type="submit"
+                value="publish_now"
+              >
+                저장 후 바로 모집 열기
+              </button>
+            ) : null}
             <button
               className={styles.primaryButton}
               name="intent"
               type="submit"
-              value="save"
+              value={mode === "create" ? "save_draft" : "save_changes"}
             >
-              {primaryActionLabel}
+              {mode === "create" ? "임시 저장" : "변경 사항 저장"}
             </button>
           </div>
         </div>
@@ -215,16 +213,23 @@ export function AdminMatchEditor({
               />
             </label>
 
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>운영 상태</span>
-              <select name="status" onChange={handleFieldChange} value={formValues.status}>
-                <option value="">운영 상태를 선택하세요</option>
-                <option value="draft">임시 저장</option>
-                <option value="open">모집 중</option>
-                <option value="closed">마감</option>
-                <option value="cancelled">운영 취소</option>
-              </select>
-            </label>
+            {mode === "edit" ? (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>운영 상태</span>
+                <select
+                  name="status"
+                  onChange={handleFieldChange}
+                  required
+                  value={formValues.status}
+                >
+                  <option value="">운영 상태를 선택하세요</option>
+                  <option value="draft">임시 저장</option>
+                  <option value="open">모집 중</option>
+                  <option value="closed">마감</option>
+                  <option value="cancelled">운영 취소</option>
+                </select>
+              </label>
+            ) : null}
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>주소</span>
@@ -506,7 +511,7 @@ export function AdminMatchEditor({
             {formValues.status ? (
               <AdminStatusBadge status={formValues.status} />
             ) : (
-              <span className={styles.previewBadgeEmpty}>상태 미선택</span>
+              <span className={styles.previewBadgeEmpty}>{previewStatusLabel}</span>
             )}
           </div>
 

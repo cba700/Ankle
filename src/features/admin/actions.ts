@@ -36,13 +36,15 @@ type MatchCountResult = {
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
 const VENUE_ENTRY_MODES: AdminVenueEntryMode[] = ["managed", "manual"];
+const CREATE_MATCH_INTENTS = ["save_draft", "publish_now"] as const;
+const UPDATE_MATCH_INTENTS = ["save_changes"] as const;
 
 type AdminSupabaseClient = NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>;
 
 export async function createAdminMatchAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
-  const values = readMatchFormValues(formData);
+  const values = readCreateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const slug = buildMatchSlug(venue.slug, values.startAt);
 
@@ -90,7 +92,7 @@ export async function createAdminMatchAction(formData: FormData) {
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
-  const values = readMatchFormValues(formData);
+  const values = readUpdateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
 
@@ -355,13 +357,12 @@ type MatchFormValues = {
   safetyNotes: string[];
 };
 
-function readMatchFormValues(formData: FormData): MatchFormValues {
+function readCreateMatchFormValues(formData: FormData): MatchFormValues {
   const date = getRequiredString(formData, "date");
   const startTime = getRequiredString(formData, "startTime");
   const endTime = getRequiredString(formData, "endTime");
-  const intent = getOptionalString(formData, "intent");
+  const intent = getCreateMatchIntent(getRequiredString(formData, "intent"));
   const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
-  const selectedStatus = resolveStatus(getOptionalString(formData, "status"), intent);
   const startAt = buildSeoulDateTime(date, startTime);
   const endAt = buildSeoulDateTime(date, endTime);
 
@@ -378,7 +379,51 @@ function readMatchFormValues(formData: FormData): MatchFormValues {
     address: getRequiredString(formData, "address"),
     startAt,
     endAt,
-    status: selectedStatus,
+    status: intent === "publish_now" ? "open" : "draft",
+    format: getFormat(getRequiredString(formData, "format")),
+    capacity: getPositiveInteger(formData, "capacity"),
+    price: getNonNegativeInteger(formData, "price"),
+    genderCondition: getRequiredString(formData, "genderCondition"),
+    levelCondition: getRequiredString(formData, "levelCondition"),
+    levelRange: getRequiredString(formData, "levelRange"),
+    preparation: getRequiredString(formData, "preparation"),
+    summary: getRequiredString(formData, "summary"),
+    publicNotice: getRequiredString(formData, "publicNotice"),
+    operatorNote: getRequiredString(formData, "operatorNote"),
+    directions: getRequiredString(formData, "directions"),
+    parking: getRequiredString(formData, "parking"),
+    smoking: getRequiredString(formData, "smoking"),
+    showerLocker: getRequiredString(formData, "showerLocker"),
+    imageUrls: splitLineSeparated(getOptionalString(formData, "imageUrlsText")),
+    tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
+    rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
+    safetyNotes: splitLineSeparated(getOptionalString(formData, "safetyNotesText")),
+  };
+}
+
+function readUpdateMatchFormValues(formData: FormData): MatchFormValues {
+  const date = getRequiredString(formData, "date");
+  const startTime = getRequiredString(formData, "startTime");
+  const endTime = getRequiredString(formData, "endTime");
+  getUpdateMatchIntent(getRequiredString(formData, "intent"));
+  const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
+  const startAt = buildSeoulDateTime(date, startTime);
+  const endAt = buildSeoulDateTime(date, endTime);
+
+  if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
+    throw new Error("End time must be later than start time");
+  }
+
+  return {
+    venueEntryMode,
+    selectedVenueId: getOptionalString(formData, "selectedVenueId"),
+    title: getRequiredString(formData, "title"),
+    venueName: getRequiredString(formData, "venueName"),
+    district: getRequiredString(formData, "district"),
+    address: getRequiredString(formData, "address"),
+    startAt,
+    endAt,
+    status: getStatus(getRequiredString(formData, "status")),
     format: getFormat(getRequiredString(formData, "format")),
     capacity: getPositiveInteger(formData, "capacity"),
     price: getNonNegativeInteger(formData, "price"),
@@ -459,16 +504,20 @@ function getStatus(value: string) {
   throw new Error("Invalid match status");
 }
 
-function resolveStatus(value: string, intent: string) {
-  if (intent === "publish") {
-    return "open" as const;
+function getCreateMatchIntent(value: string) {
+  if (CREATE_MATCH_INTENTS.includes(value as (typeof CREATE_MATCH_INTENTS)[number])) {
+    return value as (typeof CREATE_MATCH_INTENTS)[number];
   }
 
-  if (!value) {
-    return "draft" as const;
+  throw new Error("Invalid create match intent");
+}
+
+function getUpdateMatchIntent(value: string) {
+  if (UPDATE_MATCH_INTENTS.includes(value as (typeof UPDATE_MATCH_INTENTS)[number])) {
+    return value as (typeof UPDATE_MATCH_INTENTS)[number];
   }
 
-  return getStatus(value);
+  throw new Error("Invalid update match intent");
 }
 
 function getFormat(value: string) {
