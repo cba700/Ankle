@@ -1,12 +1,12 @@
 import { HomePage } from "@/components/home/home-page";
-import { getDisplayDates, getMatches } from "@/lib/matches";
+import { getDisplayDates } from "@/lib/matches";
+import { getPublicMatches } from "@/lib/matches-data";
 
 export const dynamic = "force-dynamic";
 
-export default function Page() {
-  const matches = getMatches();
+export default async function Page() {
+  const matches = await getPublicMatches();
   const dates = getDisplayDates();
 
   return <HomePage matches={matches} dates={dates} />;
 }
-

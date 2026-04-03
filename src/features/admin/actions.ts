@@ -1,0 +1,366 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { getServerAuthState } from "@/lib/supabase/auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
+import type { AdminMatchFormat, AdminMatchStatus } from "./types";
+
+type VenueWriteResult = {
+  id: string;
+  slug: string;
+};
+
+type MatchCountResult = {
+  confirmed_count: number;
+};
+
+const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
+const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
+
+export async function createAdminMatchAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  const values = readMatchFormValues(formData);
+  const venue = await upsertVenue(supabase, values);
+  const slug = buildMatchSlug(venue.slug, values.startAt);
+
+  const { data, error } = await supabase
+    .from("matches")
+    .insert({
+      venue_id: venue.id,
+      slug,
+      title: values.title,
+      summary: values.summary,
+      public_notice: values.publicNotice,
+      operator_note: values.operatorNote,
+      status: values.status,
+      format: values.format,
+      start_at: values.startAt,
+      end_at: values.endAt,
+      capacity: values.capacity,
+      price: values.price,
+      gender_condition: values.genderCondition,
+      level_condition: values.levelCondition,
+      level_range: values.levelRange,
+      preparation: values.preparation,
+      tags: values.tags,
+      rules: values.rules,
+      safety_notes: values.safetyNotes,
+      image_urls: [],
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Failed to create match");
+  }
+
+  redirect(`/admin/matches/${data.id}/edit`);
+}
+
+export async function updateAdminMatchAction(matchId: string, formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  const values = readMatchFormValues(formData);
+  const venue = await upsertVenue(supabase, values);
+  const confirmedCount = await getConfirmedCount(supabase, matchId);
+
+  if (values.capacity < confirmedCount) {
+    throw new Error("Capacity cannot be lower than the current confirmed participants");
+  }
+
+  const slug = buildMatchSlug(venue.slug, values.startAt);
+
+  const { error } = await supabase
+    .from("matches")
+    .update({
+      venue_id: venue.id,
+      slug,
+      title: values.title,
+      summary: values.summary,
+      public_notice: values.publicNotice,
+      operator_note: values.operatorNote,
+      status: values.status,
+      format: values.format,
+      start_at: values.startAt,
+      end_at: values.endAt,
+      capacity: values.capacity,
+      price: values.price,
+      gender_condition: values.genderCondition,
+      level_condition: values.levelCondition,
+      level_range: values.levelRange,
+      preparation: values.preparation,
+      tags: values.tags,
+      rules: values.rules,
+      safety_notes: values.safetyNotes,
+    })
+    .eq("id", matchId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (values.status === "cancelled") {
+    const { error: cancelError } = await supabase
+      .from("match_applications")
+      .update({
+        status: "cancelled_by_admin",
+        cancel_reason: "admin_cancelled",
+        cancelled_at: new Date().toISOString(),
+      })
+      .eq("match_id", matchId)
+      .eq("status", "confirmed");
+
+    if (cancelError) {
+      throw new Error(cancelError.message);
+    }
+  }
+
+  redirect(`/admin/matches/${matchId}/edit`);
+}
+
+async function requireAdminSupabase() {
+  const { configured, role, user } = await getServerAuthState();
+
+  if (!configured) {
+    throw new Error("Supabase is not configured");
+  }
+
+  if (!user || role !== "admin") {
+    throw new Error("Admin access required");
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase is not configured");
+  }
+
+  return supabase;
+}
+
+async function upsertVenue(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  values: MatchFormValues,
+) {
+  const slug = toSlug(`${values.district} ${values.venueName}`);
+  const { data, error } = await supabase
+    .from("venues")
+    .upsert(
+      {
+        slug,
+        name: values.venueName,
+        district: values.district,
+        address: values.address,
+        directions: values.directions,
+        parking: values.parking,
+        smoking: values.smoking,
+        shower_locker: values.showerLocker,
+        is_active: true,
+      },
+      {
+        onConflict: "address",
+      },
+    )
+    .select("id, slug")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Failed to save venue");
+  }
+
+  return data as VenueWriteResult;
+}
+
+async function getConfirmedCount(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  matchId: string,
+) {
+  const { data, error } = await supabase
+    .from("match_application_counts")
+    .select("confirmed_count")
+    .eq("match_id", matchId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data as MatchCountResult | null)?.confirmed_count ?? 0);
+}
+
+type MatchFormValues = {
+  title: string;
+  venueName: string;
+  district: string;
+  address: string;
+  startAt: string;
+  endAt: string;
+  status: AdminMatchStatus;
+  format: AdminMatchFormat;
+  capacity: number;
+  price: number;
+  genderCondition: string;
+  levelCondition: string;
+  levelRange: string;
+  preparation: string;
+  summary: string;
+  publicNotice: string;
+  operatorNote: string;
+  directions: string;
+  parking: string;
+  smoking: string;
+  showerLocker: string;
+  tags: string[];
+  rules: string[];
+  safetyNotes: string[];
+};
+
+function readMatchFormValues(formData: FormData): MatchFormValues {
+  const date = getRequiredString(formData, "date");
+  const startTime = getRequiredString(formData, "startTime");
+  const endTime = getRequiredString(formData, "endTime");
+  const intent = getOptionalString(formData, "intent");
+  const selectedStatus = getStatus(getRequiredString(formData, "status"));
+  const startAt = buildSeoulDateTime(date, startTime);
+  const endAt = buildSeoulDateTime(date, endTime);
+
+  if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
+    throw new Error("End time must be later than start time");
+  }
+
+  return {
+    title: getRequiredString(formData, "title"),
+    venueName: getRequiredString(formData, "venueName"),
+    district: getRequiredString(formData, "district"),
+    address: getRequiredString(formData, "address"),
+    startAt,
+    endAt,
+    status: intent === "publish" ? "open" : selectedStatus,
+    format: getFormat(getRequiredString(formData, "format")),
+    capacity: getPositiveInteger(formData, "capacity"),
+    price: getNonNegativeInteger(formData, "price"),
+    genderCondition: getRequiredString(formData, "genderCondition"),
+    levelCondition: getRequiredString(formData, "levelCondition"),
+    levelRange: getRequiredString(formData, "levelRange"),
+    preparation: getRequiredString(formData, "preparation"),
+    summary: getRequiredString(formData, "summary"),
+    publicNotice: getRequiredString(formData, "publicNotice"),
+    operatorNote: getRequiredString(formData, "operatorNote"),
+    directions: getRequiredString(formData, "directions"),
+    parking: getRequiredString(formData, "parking"),
+    smoking: getRequiredString(formData, "smoking"),
+    showerLocker: getRequiredString(formData, "showerLocker"),
+    tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
+    rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
+    safetyNotes: splitLineSeparated(getOptionalString(formData, "safetyNotesText")),
+  };
+}
+
+function getRequiredString(formData: FormData, key: string) {
+  const value = formData.get(key);
+
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`Missing required field: ${key}`);
+  }
+
+  return value.trim();
+}
+
+function getOptionalString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getPositiveInteger(formData: FormData, key: string) {
+  const value = Number.parseInt(getRequiredString(formData, key), 10);
+
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`Invalid numeric field: ${key}`);
+  }
+
+  return value;
+}
+
+function getNonNegativeInteger(formData: FormData, key: string) {
+  const value = Number.parseInt(getRequiredString(formData, key), 10);
+
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`Invalid numeric field: ${key}`);
+  }
+
+  return value;
+}
+
+function getStatus(value: string) {
+  if (MATCH_STATUSES.includes(value as AdminMatchStatus)) {
+    return value as AdminMatchStatus;
+  }
+
+  throw new Error("Invalid match status");
+}
+
+function getFormat(value: string) {
+  if (MATCH_FORMATS.includes(value as AdminMatchFormat)) {
+    return value as AdminMatchFormat;
+  }
+
+  throw new Error("Invalid match format");
+}
+
+function splitCommaSeparated(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function splitLineSeparated(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function buildSeoulDateTime(date: string, time: string) {
+  const iso = `${date}T${time}:00+09:00`;
+  const parsed = new Date(iso);
+
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error("Invalid date or time");
+  }
+
+  return parsed.toISOString();
+}
+
+function buildMatchSlug(venueSlug: string, startAt: string) {
+  const startDate = new Date(startAt);
+  const date = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(startDate)
+    .replaceAll("-", "");
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(startDate)
+    .replace(":", "");
+
+  return `${venueSlug}-${date}-${time}`;
+}
+
+function toSlug(value: string) {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s-]/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return slug || "venue";
+}

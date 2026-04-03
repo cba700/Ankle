@@ -21,6 +21,8 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
   const [saved, setSaved] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [toast, setToast] = useState<MatchToastState | null>(null);
+  const applyHref = `/match/${match.slug}/apply`;
+  const canApply = match.status.kind !== "closed";
 
   useEffect(() => {
     if (!toast) {
@@ -60,10 +62,6 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
     }
 
     setImageIndex((current) => (current + 1) % view.images.length);
-  }
-
-  function handleApply() {
-    showToast("바로 신청 흐름은 다음 단계에서 로그인과 결제로 연결됩니다.", "accent");
   }
 
   function handleReserve() {
@@ -141,7 +139,8 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
             saved={saved}
             time={view.time}
             views={view.views}
-            onApply={handleApply}
+            applyHref={applyHref}
+            canApply={canApply}
             onCopyAddress={() => copyToClipboard(view.address, "주소를 복사했어요.")}
             onOpenCancelInfo={() =>
               showToast("취소 걱정 안내는 다음 단계에서 별도 정책 화면과 연결됩니다.", "default")
@@ -156,7 +155,8 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
       </main>
 
       <MatchStickyApplyBar
-        onApply={handleApply}
+        applyHref={applyHref}
+        canApply={canApply}
         priceLabel={view.priceLabel}
       />
 

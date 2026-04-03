@@ -6,11 +6,13 @@ import styles from "./admin-match-editor.module.css";
 type AdminMatchEditorProps = {
   mode: "create" | "edit";
   values: AdminMatchFormValue;
+  formAction: (formData: FormData) => void | Promise<void>;
 };
 
 export function AdminMatchEditor({
   mode,
   values,
+  formAction,
 }: AdminMatchEditorProps) {
   const primaryActionLabel =
     mode === "create" ? "임시 저장" : "변경 사항 저장";
@@ -20,7 +22,7 @@ export function AdminMatchEditor({
 
   return (
     <div className={styles.layout}>
-      <form className={styles.form}>
+      <form action={formAction} className={styles.form}>
         <div className={styles.actionBar}>
           <div>
             <p className={styles.actionEyebrow}>관리자 목업 화면</p>
@@ -30,10 +32,20 @@ export function AdminMatchEditor({
           </div>
 
           <div className={styles.actionButtons}>
-            <button className={styles.secondaryButton} type="button">
+            <button
+              className={styles.secondaryButton}
+              name="intent"
+              type="submit"
+              value={mode === "create" ? "publish" : "save"}
+            >
               {secondaryActionLabel}
             </button>
-            <button className={styles.primaryButton} type="button">
+            <button
+              className={styles.primaryButton}
+              name="intent"
+              type="submit"
+              value="save"
+            >
               {primaryActionLabel}
             </button>
           </div>
@@ -48,22 +60,22 @@ export function AdminMatchEditor({
           <div className={styles.fieldGrid}>
             <label className={styles.field}>
               <span className={styles.fieldLabel}>매치 제목</span>
-              <input defaultValue={values.title} type="text" />
+              <input defaultValue={values.title} name="title" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>장소명</span>
-              <input defaultValue={values.venueName} type="text" />
+              <input defaultValue={values.venueName} name="venueName" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>권역</span>
-              <input defaultValue={values.district} type="text" />
+              <input defaultValue={values.district} name="district" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>운영 상태</span>
-              <select defaultValue={values.status}>
+              <select defaultValue={values.status} name="status">
                 <option value="draft">임시 저장</option>
                 <option value="open">모집 중</option>
                 <option value="closed">마감</option>
@@ -73,27 +85,27 @@ export function AdminMatchEditor({
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>주소</span>
-              <input defaultValue={values.address} type="text" />
+              <input defaultValue={values.address} name="address" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>날짜</span>
-              <input defaultValue={values.date} type="date" />
+              <input defaultValue={values.date} name="date" type="date" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>시작 시간</span>
-              <input defaultValue={values.startTime} type="time" />
+              <input defaultValue={values.startTime} name="startTime" type="time" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>종료 시간</span>
-              <input defaultValue={values.endTime} type="time" />
+              <input defaultValue={values.endTime} name="endTime" type="time" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>경기 방식</span>
-              <select defaultValue={values.format}>
+              <select defaultValue={values.format} name="format">
                 <option value="3vs3">3vs3</option>
                 <option value="5vs5">5vs5</option>
               </select>
@@ -110,41 +122,41 @@ export function AdminMatchEditor({
           <div className={styles.fieldGrid}>
             <label className={styles.field}>
               <span className={styles.fieldLabel}>정원</span>
-              <input defaultValue={values.capacity} inputMode="numeric" type="text" />
+              <input defaultValue={values.capacity} inputMode="numeric" name="capacity" type="text" />
             </label>
 
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>현재 신청자 수</span>
+              <span className={styles.fieldLabel}>현재 신청 현황</span>
               <input
-                defaultValue={values.currentParticipants}
-                inputMode="numeric"
+                readOnly
+                value={values.participantSummary}
                 type="text"
               />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>참가비</span>
-              <input defaultValue={values.price} inputMode="numeric" type="text" />
+              <input defaultValue={values.price} inputMode="numeric" name="price" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>성별 조건</span>
-              <input defaultValue={values.genderCondition} type="text" />
+              <input defaultValue={values.genderCondition} name="genderCondition" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>레벨 조건</span>
-              <input defaultValue={values.levelCondition} type="text" />
+              <input defaultValue={values.levelCondition} name="levelCondition" type="text" />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>레벨 범위</span>
-              <input defaultValue={values.levelRange} type="text" />
+              <input defaultValue={values.levelRange} name="levelRange" type="text" />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>준비물</span>
-              <input defaultValue={values.preparation} type="text" />
+              <input defaultValue={values.preparation} name="preparation" type="text" />
             </label>
           </div>
         </section>
@@ -158,17 +170,17 @@ export function AdminMatchEditor({
           <div className={styles.fieldGrid}>
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>한 줄 요약</span>
-              <textarea defaultValue={values.summary} rows={3} />
+              <textarea defaultValue={values.summary} name="summary" rows={3} />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>공개 공지</span>
-              <textarea defaultValue={values.publicNotice} rows={3} />
+              <textarea defaultValue={values.publicNotice} name="publicNotice" rows={3} />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>태그</span>
-              <input defaultValue={values.tagsText} type="text" />
+              <input defaultValue={values.tagsText} name="tagsText" type="text" />
             </label>
           </div>
         </section>
@@ -182,37 +194,37 @@ export function AdminMatchEditor({
           <div className={styles.fieldGrid}>
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>찾아오는 길</span>
-              <textarea defaultValue={values.directions} rows={3} />
+              <textarea defaultValue={values.directions} name="directions" rows={3} />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>주차</span>
-              <textarea defaultValue={values.parking} rows={3} />
+              <textarea defaultValue={values.parking} name="parking" rows={3} />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>흡연</span>
-              <textarea defaultValue={values.smoking} rows={3} />
+              <textarea defaultValue={values.smoking} name="smoking" rows={3} />
             </label>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>보관/샤워</span>
-              <textarea defaultValue={values.showerLocker} rows={3} />
+              <textarea defaultValue={values.showerLocker} name="showerLocker" rows={3} />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>운영 규칙</span>
-              <textarea defaultValue={values.rulesText} rows={5} />
+              <textarea defaultValue={values.rulesText} name="rulesText" rows={5} />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>안전 메모</span>
-              <textarea defaultValue={values.safetyNotesText} rows={5} />
+              <textarea defaultValue={values.safetyNotesText} name="safetyNotesText" rows={5} />
             </label>
 
             <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>내부 운영 메모</span>
-              <textarea defaultValue={values.operatorNote} rows={4} />
+              <textarea defaultValue={values.operatorNote} name="operatorNote" rows={4} />
             </label>
           </div>
         </section>
@@ -236,9 +248,7 @@ export function AdminMatchEditor({
           <div className={styles.previewStats}>
             <div>
               <span>참가 현황</span>
-              <strong>
-                {values.currentParticipants} / {values.capacity}명
-              </strong>
+              <strong>{values.participantSummary}</strong>
             </div>
             <div>
               <span>참가비</span>

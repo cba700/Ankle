@@ -73,7 +73,7 @@ export type AdminMatchFormValue = {
   status: AdminMatchStatus;
   format: AdminMatchFormat;
   capacity: string;
-  currentParticipants: string;
+  participantSummary: string;
   price: string;
   genderCondition: string;
   levelCondition: string;

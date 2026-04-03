@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { MatchDetail } from "@/components/match/match-detail";
-import { getMatchBySlug } from "@/lib/matches";
+import { getPublicMatchBySlug } from "@/lib/matches-data";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export default async function MatchDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const match = getMatchBySlug(slug);
+  const match = await getPublicMatchBySlug(slug);
 
   if (!match) {
     notFound();
@@ -18,4 +18,3 @@ export default async function MatchDetailPage({
 
   return <MatchDetail match={match} />;
 }
-
