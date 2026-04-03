@@ -118,10 +118,10 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.logoWrap}>
+        <Link className={styles.logoWrap} href="/">
           <span className={styles.logoWord}>앵클</span>
           <span className={styles.logoDot}>.</span>
-        </div>
+        </Link>
         <p className={styles.tagline}>코트에서 만나는 모든 농구</p>
 
         {serverError || inlineError ? (

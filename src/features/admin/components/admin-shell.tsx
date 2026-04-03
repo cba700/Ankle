@@ -56,10 +56,10 @@ export function AdminShell({
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
           <div className={styles.brandBlock}>
-            <div className={styles.brand}>
+            <Link className={styles.brand} href="/">
               <span className={styles.brandWord}>앵클</span>
               <span className={styles.brandDot}>.</span>
-            </div>
+            </Link>
             <p className={styles.brandLabel}>ADMIN CONSOLE</p>
           </div>
 
