@@ -1,14 +1,14 @@
 .page {
   min-height: 100vh;
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 34%),
-    linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
+  min-height: 100dvh;
+  padding-bottom: 24px;
+  background: #fff;
 }
 
 .frame {
-  width: min(calc(100% - 24px), 1120px);
+  width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
   background: #fff;
 }
@@ -20,7 +20,7 @@
 .dateSummary {
   display: grid;
   gap: 4px;
-  padding: 10px 16px 0;
+  padding: 10px 12px 0;
   background: #fff;
 }
 
@@ -41,10 +41,14 @@
 
 @media (min-width: 768px) {
   .page {
-    padding: 24px 0 132px;
+    padding: 24px 0 40px;
+    background:
+      radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 34%),
+      linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
   }
 
   .frame {
+    width: min(calc(100% - 24px), 1120px);
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 30px;
