@@ -184,7 +184,13 @@ export function AdminMatchEditor({
           <div className={styles.fieldGrid}>
             <label className={styles.field}>
               <span className={styles.fieldLabel}>매치 제목</span>
-              <input name="title" onChange={handleFieldChange} type="text" value={formValues.title} />
+              <input
+                name="title"
+                onChange={handleFieldChange}
+                required
+                type="text"
+                value={formValues.title}
+              />
             </label>
 
             <label className={styles.field}>
@@ -192,6 +198,7 @@ export function AdminMatchEditor({
               <input
                 name="venueName"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.venueName}
               />
@@ -202,6 +209,7 @@ export function AdminMatchEditor({
               <input
                 name="district"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.district}
               />
@@ -223,6 +231,7 @@ export function AdminMatchEditor({
               <input
                 name="address"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.address}
               />
@@ -230,7 +239,13 @@ export function AdminMatchEditor({
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>날짜</span>
-              <input name="date" onChange={handleFieldChange} type="date" value={formValues.date} />
+              <input
+                name="date"
+                onChange={handleFieldChange}
+                required
+                type="date"
+                value={formValues.date}
+              />
             </label>
 
             <label className={styles.field}>
@@ -238,6 +253,7 @@ export function AdminMatchEditor({
               <input
                 name="startTime"
                 onChange={handleFieldChange}
+                required
                 type="time"
                 value={formValues.startTime}
               />
@@ -248,6 +264,7 @@ export function AdminMatchEditor({
               <input
                 name="endTime"
                 onChange={handleFieldChange}
+                required
                 type="time"
                 value={formValues.endTime}
               />
@@ -255,7 +272,7 @@ export function AdminMatchEditor({
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>경기 방식</span>
-              <select name="format" onChange={handleFieldChange} value={formValues.format}>
+              <select name="format" onChange={handleFieldChange} required value={formValues.format}>
                 <option value="">경기 방식을 선택하세요</option>
                 <option value="3vs3">3vs3</option>
                 <option value="5vs5">5vs5</option>
@@ -277,6 +294,7 @@ export function AdminMatchEditor({
                 inputMode="numeric"
                 name="capacity"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.capacity}
               />
@@ -293,6 +311,7 @@ export function AdminMatchEditor({
                 inputMode="numeric"
                 name="price"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.price}
               />
@@ -303,6 +322,7 @@ export function AdminMatchEditor({
               <input
                 name="genderCondition"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.genderCondition}
               />
@@ -313,6 +333,7 @@ export function AdminMatchEditor({
               <input
                 name="levelCondition"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.levelCondition}
               />
@@ -323,6 +344,7 @@ export function AdminMatchEditor({
               <input
                 name="levelRange"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.levelRange}
               />
@@ -333,6 +355,7 @@ export function AdminMatchEditor({
               <input
                 name="preparation"
                 onChange={handleFieldChange}
+                required
                 type="text"
                 value={formValues.preparation}
               />
@@ -352,6 +375,7 @@ export function AdminMatchEditor({
               <textarea
                 name="summary"
                 onChange={handleFieldChange}
+                required
                 rows={3}
                 value={formValues.summary}
               />
@@ -362,6 +386,7 @@ export function AdminMatchEditor({
               <textarea
                 name="publicNotice"
                 onChange={handleFieldChange}
+                required
                 rows={3}
                 value={formValues.publicNotice}
               />
@@ -391,6 +416,7 @@ export function AdminMatchEditor({
               <textarea
                 name="directions"
                 onChange={handleFieldChange}
+                required
                 rows={3}
                 value={formValues.directions}
               />
@@ -401,6 +427,7 @@ export function AdminMatchEditor({
               <textarea
                 name="parking"
                 onChange={handleFieldChange}
+                required
                 rows={3}
                 value={formValues.parking}
               />
@@ -411,6 +438,7 @@ export function AdminMatchEditor({
               <textarea
                 name="smoking"
                 onChange={handleFieldChange}
+                required
                 rows={3}
                 value={formValues.smoking}
               />
@@ -421,6 +449,7 @@ export function AdminMatchEditor({
               <textarea
                 name="showerLocker"
                 onChange={handleFieldChange}
+                required
                 rows={3}
                 value={formValues.showerLocker}
               />
@@ -461,6 +490,7 @@ export function AdminMatchEditor({
               <textarea
                 name="operatorNote"
                 onChange={handleFieldChange}
+                required
                 rows={4}
                 value={formValues.operatorNote}
               />

@@ -361,7 +361,7 @@ function readMatchFormValues(formData: FormData): MatchFormValues {
   const endTime = getRequiredString(formData, "endTime");
   const intent = getOptionalString(formData, "intent");
   const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
-  const selectedStatus = getStatus(getRequiredString(formData, "status"));
+  const selectedStatus = resolveStatus(getOptionalString(formData, "status"), intent);
   const startAt = buildSeoulDateTime(date, startTime);
   const endAt = buildSeoulDateTime(date, endTime);
 
@@ -378,7 +378,7 @@ function readMatchFormValues(formData: FormData): MatchFormValues {
     address: getRequiredString(formData, "address"),
     startAt,
     endAt,
-    status: intent === "publish" ? "open" : selectedStatus,
+    status: selectedStatus,
     format: getFormat(getRequiredString(formData, "format")),
     capacity: getPositiveInteger(formData, "capacity"),
     price: getNonNegativeInteger(formData, "price"),
@@ -457,6 +457,18 @@ function getStatus(value: string) {
   }
 
   throw new Error("Invalid match status");
+}
+
+function resolveStatus(value: string, intent: string) {
+  if (intent === "publish") {
+    return "open" as const;
+  }
+
+  if (!value) {
+    return "draft" as const;
+  }
+
+  return getStatus(value);
 }
 
 function getFormat(value: string) {
