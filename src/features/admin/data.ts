@@ -9,6 +9,7 @@ import {
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { buildAdminVenueLabel } from "./match-form";
 import type { AdminMatchRecord, AdminVenueOption, AdminVenueRecord } from "./types";
 
 export async function getAdminMatches() {
@@ -116,7 +117,7 @@ function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
 function mapVenueEntityToOption(entity: VenueEntity): AdminVenueOption {
   return {
     id: entity.id,
-    label: `${entity.name} · ${entity.district}`,
+    label: buildAdminVenueLabel(entity.name, entity.district),
     isActive: entity.isActive,
     name: entity.name,
     district: entity.district,

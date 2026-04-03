@@ -1,4 +1,10 @@
 import { formatMoney } from "@/lib/date";
+import {
+  buildAdminVenueLabel,
+  formatMatchDurationLabel,
+  getMatchDurationMinutes,
+  getMatchLevelPreset,
+} from "./match-form";
 import type {
   AdminMatchFormValue,
   AdminMatchRecord,
@@ -105,21 +111,31 @@ export function buildAdminOverviewCards(matches: AdminMatchRecord[]): AdminOverv
 }
 
 export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[] {
-  return matches.map((match) => ({
-    id: match.id,
-    title: match.title,
-    venueLabel: `${match.venueName} · ${match.district}`,
-    dateLabel: dateLabelFormatter.format(new Date(match.startAt)),
-    timeLabel: `${timeInputFormatter.format(new Date(match.startAt))} - ${timeInputFormatter.format(new Date(match.endAt))}`,
-    participantLabel: `${match.currentParticipants} / ${match.capacity}명`,
-    occupancyLabel: `잔여 ${Math.max(match.capacity - match.currentParticipants, 0)}석`,
-    priceLabel: `${formatMoney(match.price)}원`,
-    levelLabel: `${match.levelCondition} · ${match.levelRange}`,
-    description: match.summary,
-    status: match.status,
-    tags: match.tags,
-    editHref: `/admin/matches/${match.id}/edit`,
-  }));
+  return matches.map((match) => {
+    const durationMinutes = Number.parseInt(
+      getMatchDurationMinutes(match.startAt, match.endAt),
+      10,
+    );
+    const timeLabel = Number.isFinite(durationMinutes)
+      ? `${timeInputFormatter.format(new Date(match.startAt))} 시작 · ${formatMatchDurationLabel(durationMinutes)}`
+      : timeInputFormatter.format(new Date(match.startAt));
+
+    return {
+      id: match.id,
+      title: match.title,
+      venueLabel: buildAdminVenueLabel(match.venueName, match.district),
+      dateLabel: dateLabelFormatter.format(new Date(match.startAt)),
+      timeLabel,
+      participantLabel: `${match.currentParticipants} / ${match.capacity}명`,
+      occupancyLabel: `잔여 ${Math.max(match.capacity - match.currentParticipants, 0)}석`,
+      priceLabel: `${formatMoney(match.price)}원`,
+      levelLabel: [match.levelCondition, match.levelRange].filter(Boolean).join(" · ") || "레벨 미설정",
+      description: match.summary || "운영 설명 미입력",
+      status: match.status,
+      tags: match.tags,
+      editHref: `/admin/matches/${match.id}/edit`,
+    };
+  });
 }
 
 export function buildAdminVenueRows(venues: AdminVenueRecord[]): AdminVenueRow[] {
@@ -178,15 +194,14 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
       address: "",
       date: "",
       startTime: "",
-      endTime: "",
+      durationMinutes: "",
       status: "",
       format: "",
       capacity: "",
       participantSummary: "신청 0명 · 저장 후 자동 집계",
       price: "",
       genderCondition: "",
-      levelCondition: "",
-      levelRange: "",
+      level: "",
       preparation: "",
       summary: "",
       publicNotice: "",
@@ -211,15 +226,14 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
     address: match.address,
     date: dateInputFormatter.format(new Date(match.startAt)),
     startTime: timeInputFormatter.format(new Date(match.startAt)),
-    endTime: timeInputFormatter.format(new Date(match.endAt)),
+    durationMinutes: getMatchDurationMinutes(match.startAt, match.endAt),
     status: match.status,
     format: match.format,
     capacity: String(match.capacity),
     participantSummary: `신청 ${match.currentParticipants}명 · 정원 ${match.capacity}명`,
     price: String(match.price),
     genderCondition: match.genderCondition,
-    levelCondition: match.levelCondition,
-    levelRange: match.levelRange,
+    level: getMatchLevelPreset(match.levelCondition, match.levelRange),
     preparation: match.preparation,
     summary: match.summary,
     publicNotice: match.publicNotice,

@@ -19,7 +19,7 @@ export default async function AdminNewMatchPage({
   return (
     <AdminShell
       activeNav="create"
-      description="매치 고유 정보는 비운 상태에서 시작하고, 관리 경기장을 선택하면 경기장 기본값만 한 번에 채워집니다."
+      description="위치, 시작 시간, 경기시간, 레벨, 성별 조건, 방식, 정원, 가격만 먼저 입력하고 나머지는 저장 뒤 편집 화면에서 다듬을 수 있습니다."
       eyebrow="Create Match"
       title="새 매치 열기"
     >

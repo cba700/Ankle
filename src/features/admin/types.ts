@@ -1,6 +1,7 @@
 export type AdminMatchStatus = "draft" | "open" | "closed" | "cancelled";
 export type AdminMatchFormat = "3vs3" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
+export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
 
 export type AdminVenueInfo = {
   directions: string;
@@ -125,15 +126,14 @@ export type AdminMatchFormValue = {
   address: string;
   date: string;
   startTime: string;
-  endTime: string;
+  durationMinutes: string;
   status: AdminMatchStatus | "";
   format: AdminMatchFormat | "";
   capacity: string;
   participantSummary: string;
   price: string;
   genderCondition: string;
-  levelCondition: string;
-  levelRange: string;
+  level: AdminMatchLevelPreset | "";
   preparation: string;
   summary: string;
   publicNotice: string;

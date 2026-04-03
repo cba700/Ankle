@@ -4,8 +4,14 @@ import { redirect } from "next/navigation";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  buildGeneratedMatchTitle,
+  getMatchLevelValues,
+  inferDistrictFromAddress,
+} from "./match-form";
 import type {
   AdminMatchFormat,
+  AdminMatchLevelPreset,
   AdminMatchStatus,
   AdminVenueEntryMode,
 } from "./types";
@@ -35,6 +41,7 @@ type MatchCountResult = {
 
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
+const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
 const VENUE_ENTRY_MODES: AdminVenueEntryMode[] = ["managed", "manual"];
 const CREATE_MATCH_INTENTS = ["save_draft", "publish_now"] as const;
 const UPDATE_MATCH_INTENTS = ["save_changes"] as const;
@@ -360,40 +367,44 @@ type MatchFormValues = {
 function readCreateMatchFormValues(formData: FormData): MatchFormValues {
   const date = getRequiredString(formData, "date");
   const startTime = getRequiredString(formData, "startTime");
-  const endTime = getRequiredString(formData, "endTime");
+  const durationMinutes = getPositiveInteger(formData, "durationMinutes");
   const intent = getCreateMatchIntent(getRequiredString(formData, "intent"));
   const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
+  const format = getFormat(getRequiredString(formData, "format"));
+  const venueName = getRequiredString(formData, "venueName");
+  const address = getRequiredString(formData, "address");
+  const { levelCondition, levelRange } = getMatchLevelValues(
+    getLevel(getRequiredString(formData, "level")),
+  );
   const startAt = buildSeoulDateTime(date, startTime);
-  const endAt = buildSeoulDateTime(date, endTime);
-
-  if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
-    throw new Error("End time must be later than start time");
-  }
+  const endAt = buildMatchEndAt(startAt, durationMinutes);
 
   return {
     venueEntryMode,
     selectedVenueId: getOptionalString(formData, "selectedVenueId"),
-    title: getRequiredString(formData, "title"),
-    venueName: getRequiredString(formData, "venueName"),
-    district: getRequiredString(formData, "district"),
-    address: getRequiredString(formData, "address"),
+    title:
+      getOptionalString(formData, "title") ||
+      buildGeneratedMatchTitle({ venueName, format, startTime }),
+    venueName,
+    district: getDistrict(formData, address),
+    address,
     startAt,
     endAt,
     status: intent === "publish_now" ? "open" : "draft",
-    format: getFormat(getRequiredString(formData, "format")),
+    format,
     capacity: getPositiveInteger(formData, "capacity"),
     price: getNonNegativeInteger(formData, "price"),
     genderCondition: getRequiredString(formData, "genderCondition"),
-    levelCondition: getRequiredString(formData, "levelCondition"),
-    levelRange: getRequiredString(formData, "levelRange"),
-    preparation: getRequiredString(formData, "preparation"),
-    summary: getRequiredString(formData, "summary"),
-    publicNotice: getRequiredString(formData, "publicNotice"),
-    operatorNote: getRequiredString(formData, "operatorNote"),
-    directions: getRequiredString(formData, "directions"),
-    parking: getRequiredString(formData, "parking"),
-    smoking: getRequiredString(formData, "smoking"),
-    showerLocker: getRequiredString(formData, "showerLocker"),
+    levelCondition,
+    levelRange,
+    preparation: getOptionalString(formData, "preparation"),
+    summary: getOptionalString(formData, "summary"),
+    publicNotice: getOptionalString(formData, "publicNotice"),
+    operatorNote: getOptionalString(formData, "operatorNote"),
+    directions: getOptionalString(formData, "directions"),
+    parking: getOptionalString(formData, "parking"),
+    smoking: getOptionalString(formData, "smoking"),
+    showerLocker: getOptionalString(formData, "showerLocker"),
     imageUrls: splitLineSeparated(getOptionalString(formData, "imageUrlsText")),
     tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
     rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
@@ -404,40 +415,44 @@ function readCreateMatchFormValues(formData: FormData): MatchFormValues {
 function readUpdateMatchFormValues(formData: FormData): MatchFormValues {
   const date = getRequiredString(formData, "date");
   const startTime = getRequiredString(formData, "startTime");
-  const endTime = getRequiredString(formData, "endTime");
+  const durationMinutes = getPositiveInteger(formData, "durationMinutes");
   getUpdateMatchIntent(getRequiredString(formData, "intent"));
   const venueEntryMode = getVenueEntryMode(getRequiredString(formData, "venueEntryMode"));
+  const format = getFormat(getRequiredString(formData, "format"));
+  const venueName = getRequiredString(formData, "venueName");
+  const address = getRequiredString(formData, "address");
+  const { levelCondition, levelRange } = getMatchLevelValues(
+    getLevel(getRequiredString(formData, "level")),
+  );
   const startAt = buildSeoulDateTime(date, startTime);
-  const endAt = buildSeoulDateTime(date, endTime);
-
-  if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
-    throw new Error("End time must be later than start time");
-  }
+  const endAt = buildMatchEndAt(startAt, durationMinutes);
 
   return {
     venueEntryMode,
     selectedVenueId: getOptionalString(formData, "selectedVenueId"),
-    title: getRequiredString(formData, "title"),
-    venueName: getRequiredString(formData, "venueName"),
-    district: getRequiredString(formData, "district"),
-    address: getRequiredString(formData, "address"),
+    title:
+      getOptionalString(formData, "title") ||
+      buildGeneratedMatchTitle({ venueName, format, startTime }),
+    venueName,
+    district: getDistrict(formData, address),
+    address,
     startAt,
     endAt,
     status: getStatus(getRequiredString(formData, "status")),
-    format: getFormat(getRequiredString(formData, "format")),
+    format,
     capacity: getPositiveInteger(formData, "capacity"),
     price: getNonNegativeInteger(formData, "price"),
     genderCondition: getRequiredString(formData, "genderCondition"),
-    levelCondition: getRequiredString(formData, "levelCondition"),
-    levelRange: getRequiredString(formData, "levelRange"),
-    preparation: getRequiredString(formData, "preparation"),
-    summary: getRequiredString(formData, "summary"),
-    publicNotice: getRequiredString(formData, "publicNotice"),
-    operatorNote: getRequiredString(formData, "operatorNote"),
-    directions: getRequiredString(formData, "directions"),
-    parking: getRequiredString(formData, "parking"),
-    smoking: getRequiredString(formData, "smoking"),
-    showerLocker: getRequiredString(formData, "showerLocker"),
+    levelCondition,
+    levelRange,
+    preparation: getOptionalString(formData, "preparation"),
+    summary: getOptionalString(formData, "summary"),
+    publicNotice: getOptionalString(formData, "publicNotice"),
+    operatorNote: getOptionalString(formData, "operatorNote"),
+    directions: getOptionalString(formData, "directions"),
+    parking: getOptionalString(formData, "parking"),
+    smoking: getOptionalString(formData, "smoking"),
+    showerLocker: getOptionalString(formData, "showerLocker"),
     imageUrls: splitLineSeparated(getOptionalString(formData, "imageUrlsText")),
     tags: splitCommaSeparated(getOptionalString(formData, "tagsText")),
     rules: splitLineSeparated(getOptionalString(formData, "rulesText")),
@@ -528,6 +543,14 @@ function getFormat(value: string) {
   throw new Error("Invalid match format");
 }
 
+function getLevel(value: string) {
+  if (MATCH_LEVELS.includes(value as AdminMatchLevelPreset)) {
+    return value as AdminMatchLevelPreset;
+  }
+
+  throw new Error("Invalid match level");
+}
+
 function getVenueEntryMode(value: string) {
   if (VENUE_ENTRY_MODES.includes(value as AdminVenueEntryMode)) {
     return value as AdminVenueEntryMode;
@@ -559,6 +582,20 @@ function buildSeoulDateTime(date: string, time: string) {
   }
 
   return parsed.toISOString();
+}
+
+function buildMatchEndAt(startAt: string, durationMinutes: number) {
+  const endAt = new Date(new Date(startAt).getTime() + durationMinutes * 60 * 1000);
+
+  if (Number.isNaN(endAt.getTime())) {
+    throw new Error("Invalid match duration");
+  }
+
+  return endAt.toISOString();
+}
+
+function getDistrict(formData: FormData, address: string) {
+  return inferDistrictFromAddress(address) || getOptionalString(formData, "district");
 }
 
 function buildMatchSlug(venueSlug: string, startAt: string) {
