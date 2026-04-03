@@ -1,10 +1,10 @@
 import { AdminDashboard } from "@/features/admin/components/admin-dashboard";
 import { AdminShell } from "@/features/admin/components/admin-shell";
-import { getAdminMatches } from "@/features/admin/mock/admin-matches";
+import { getAdminMatches } from "@/features/admin/data";
 import { buildAdminMatchRows, buildAdminOverviewCards } from "@/features/admin/view-model";
 
-export default function AdminPage() {
-  const matches = getAdminMatches();
+export default async function AdminPage() {
+  const matches = await getAdminMatches();
   const overviewCards = buildAdminOverviewCards(matches);
   const recentMatches = buildAdminMatchRows(matches).slice(0, 3);
 

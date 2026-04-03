@@ -1,10 +1,10 @@
 import { AdminMatchList } from "@/features/admin/components/admin-match-list";
 import { AdminShell } from "@/features/admin/components/admin-shell";
-import { getAdminMatches } from "@/features/admin/mock/admin-matches";
+import { getAdminMatches } from "@/features/admin/data";
 import { buildAdminMatchRows } from "@/features/admin/view-model";
 
-export default function AdminMatchesPage() {
-  const rows = buildAdminMatchRows(getAdminMatches());
+export default async function AdminMatchesPage() {
+  const rows = buildAdminMatchRows(await getAdminMatches());
 
   return (
     <AdminShell

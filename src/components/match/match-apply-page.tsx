@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { startTransition, useState } from "react";
+import { useRouter } from "next/navigation";
+import { buildLoginHref } from "@/lib/auth/redirect";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
 type MatchApplyPageProps = {
   accountLabel: string;
+  alreadyApplied: boolean;
   isClosed: boolean;
   view: MatchDetailViewModel;
 };
@@ -19,15 +22,22 @@ const CHECK_ITEMS = [
 
 export function MatchApplyPage({
   accountLabel,
+  alreadyApplied,
   isClosed,
   view,
 }: MatchApplyPageProps) {
+  const router = useRouter();
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
+  const [isComplete, setIsComplete] = useState(alreadyApplied);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState(
+    alreadyApplied ? "이미 신청이 완료된 매치입니다." : null,
+  );
 
   const detailHref = `/match/${view.slug}`;
-  const allConfirmed = checkedIds.length === CHECK_ITEMS.length;
-  const canSubmit = allConfirmed && !isClosed && !isComplete;
+  const applyPath = `${detailHref}/apply`;
+  const allConfirmed = checkedIds.length === CHECK_ITEMS.length || alreadyApplied;
+  const canSubmit = allConfirmed && !isClosed && !isComplete && !isSubmitting;
 
   function toggleCheck(id: string) {
     setCheckedIds((current) =>
@@ -37,13 +47,45 @@ export function MatchApplyPage({
     );
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!canSubmit) {
       return;
     }
 
-    setIsComplete(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsSubmitting(true);
+    setFeedbackMessage(null);
+
+    try {
+      const response = await fetch(`/api/matches/${view.id}/applications`, {
+        method: "POST",
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { code?: string }
+        | null;
+
+      if (response.ok || payload?.code === "ALREADY_APPLIED") {
+        setIsComplete(true);
+        setFeedbackMessage(
+          payload?.code === "ALREADY_APPLIED"
+            ? "이미 신청이 완료된 매치입니다."
+            : "현재 계정으로 매치 신청이 저장되었습니다.",
+        );
+        startTransition(() => router.refresh());
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (response.status === 401) {
+        window.location.href = buildLoginHref(applyPath);
+        return;
+      }
+
+      setFeedbackMessage(getErrorMessage(payload?.code));
+    } catch {
+      setFeedbackMessage("신청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -76,11 +118,13 @@ export function MatchApplyPage({
 
           {isComplete ? (
             <section className={styles.completeCard}>
-              <div className={styles.completeBadge}>신청 절차 확인 완료</div>
-              <h2 className={styles.sectionTitle}>다음 단계 연결 전까지 여기서 마무리됩니다.</h2>
+              <div className={styles.completeBadge}>
+                {alreadyApplied ? "이미 신청된 매치" : "신청 완료"}
+              </div>
+              <h2 className={styles.sectionTitle}>매치 참가가 계정에 저장되었습니다.</h2>
               <p className={styles.completeText}>
-                실제 신청 저장과 결제 연결은 다음 단계에서 추가됩니다. 지금은
-                신청 화면과 확인 흐름만 먼저 검증하는 상태입니다.
+                {feedbackMessage ??
+                  "결제 연동 전 단계라 별도 결제는 진행되지 않았고, 신청 상태만 먼저 저장됩니다."}
               </p>
             </section>
           ) : (
@@ -145,6 +189,9 @@ export function MatchApplyPage({
                     현재 마감된 매치라 신청을 진행할 수 없습니다.
                   </p>
                 ) : null}
+                {feedbackMessage ? (
+                  <p className={styles.warningText}>{feedbackMessage}</p>
+                ) : null}
               </section>
             </div>
           )}
@@ -154,14 +201,14 @@ export function MatchApplyPage({
       <div className={styles.actionWrap}>
         <div className={styles.actionBar}>
           <div className={styles.actionCopy}>
-            <strong>{isComplete ? "프로토타입 확인 완료" : "신청 전 최종 확인"}</strong>
+            <strong>{isComplete ? "신청 저장 완료" : "신청 전 최종 확인"}</strong>
             <p>
               {isComplete
-                ? "실제 신청 저장과 결제 연결은 다음 단계에서 추가됩니다."
+                ? "현재 계정 기준 신청 상태가 저장되었습니다."
                 : isClosed
                   ? "마감된 매치는 신청할 수 없습니다."
                   : canSubmit
-                    ? "저장과 결제 연결 없이 확인 단계까지만 진행됩니다."
+                    ? "체크 완료 후 바로 신청이 저장됩니다."
                     : "체크 3개를 모두 완료하면 다음으로 진행됩니다."}
             </p>
           </div>
@@ -177,13 +224,33 @@ export function MatchApplyPage({
               onClick={handleConfirm}
               type="button"
             >
-              {isClosed ? "신청 마감" : "신청 내용 확인"}
+              {isClosed ? "신청 마감" : isSubmitting ? "신청 저장 중..." : "신청 확정"}
             </button>
           )}
         </div>
       </div>
     </div>
   );
+}
+
+function getErrorMessage(code?: string) {
+  if (code === "MATCH_FULL") {
+    return "정원이 모두 차서 신청할 수 없습니다.";
+  }
+
+  if (code === "MATCH_STARTED") {
+    return "이미 시작된 매치라 신청할 수 없습니다.";
+  }
+
+  if (code === "MATCH_NOT_OPEN") {
+    return "현재 모집 중인 매치가 아닙니다.";
+  }
+
+  if (code === "MATCH_NOT_FOUND") {
+    return "매치를 찾을 수 없습니다.";
+  }
+
+  return "신청 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
 function getStatusClassName(

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
+import { updateAdminMatchAction } from "@/features/admin/actions";
 import { AdminMatchEditor } from "@/features/admin/components/admin-match-editor";
 import { AdminShell } from "@/features/admin/components/admin-shell";
-import { getAdminMatchById } from "@/features/admin/mock/admin-matches";
+import { getAdminMatchById } from "@/features/admin/data";
 import { buildAdminMatchFormValue } from "@/features/admin/view-model";
 
 export default async function AdminEditMatchPage({
@@ -10,7 +11,8 @@ export default async function AdminEditMatchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const match = getAdminMatchById(id);
+  const match = await getAdminMatchById(id);
+  const formAction = updateAdminMatchAction.bind(null, id);
 
   if (!match) {
     notFound();
@@ -24,6 +26,7 @@ export default async function AdminEditMatchPage({
       title={match.title}
     >
       <AdminMatchEditor
+        formAction={formAction}
         mode="edit"
         values={buildAdminMatchFormValue(match)}
       />

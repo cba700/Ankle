@@ -1,3 +1,4 @@
+import { createAdminMatchAction } from "@/features/admin/actions";
 import { AdminMatchEditor } from "@/features/admin/components/admin-match-editor";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import { buildAdminMatchFormValue } from "@/features/admin/view-model";
@@ -10,7 +11,11 @@ export default function AdminNewMatchPage() {
       eyebrow="Create Match"
       title="새 매치 열기"
     >
-      <AdminMatchEditor mode="create" values={buildAdminMatchFormValue()} />
+      <AdminMatchEditor
+        formAction={createAdminMatchAction}
+        mode="create"
+        values={buildAdminMatchFormValue()}
+      />
     </AdminShell>
   );
 }
