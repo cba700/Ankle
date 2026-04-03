@@ -133,10 +133,15 @@
 
 .saveIconButton,
 .secondaryButton,
+.secondaryButtonDisabled,
 .primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 48px;
   border-radius: 14px;
   font-weight: 800;
+  text-align: center;
 }
 
 .saveIconButton {
@@ -158,6 +163,13 @@
   color: var(--text-primary);
 }
 
+.secondaryButtonDisabled {
+  border: 1px solid var(--line);
+  background: #f5f3ef;
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
 .primaryButton {
   border: 0;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
@@ -175,4 +187,3 @@
     font-size: 24px;
   }
 }
-

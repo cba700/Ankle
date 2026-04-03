@@ -48,6 +48,9 @@
   }
 
   .applyButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 126px;
     min-height: 52px;
     padding: 0 18px;
@@ -58,5 +61,22 @@
     font-size: 15px;
     font-weight: 800;
     box-shadow: 0 16px 28px rgba(255, 107, 0, 0.24);
+    text-align: center;
+  }
+
+  .applyButtonDisabled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 126px;
+    min-height: 52px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 16px;
+    background: #dad6cf;
+    color: #6d675f;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: not-allowed;
   }
 }
