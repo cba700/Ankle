@@ -7,9 +7,9 @@ type SupabaseServerClient = NonNullable<
 >;
 
 const REQUIRED_MIGRATION =
-  "20260403183000_add_venue_defaults_and_match_snapshots.sql";
+  "20260403190000_close_started_open_matches.sql";
 
-const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue management features.`;
+const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 
@@ -46,6 +46,10 @@ async function runSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleSchemaCheckError(venueDefaultsCheck.error);
+
+  const closeStartedMatchesCheck = await supabase.rpc("close_started_matches");
+
+  handleSchemaCheckError(closeStartedMatchesCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -55,7 +59,12 @@ function handleSchemaCheckError(
     return;
   }
 
-  if (error.code === "42703" || error.message?.includes("does not exist")) {
+  if (
+    error.code === "42703" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the function")
+  ) {
     throw new Error(REQUIRED_MIGRATION_MESSAGE);
   }
 

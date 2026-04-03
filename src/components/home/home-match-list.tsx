@@ -30,7 +30,11 @@ export function HomeMatchList({
 
         return (
           <article className={styles.row} key={row.id}>
-            <Link className={styles.rowLink} href={`/match/${row.slug}`}>
+            <Link
+              className={styles.rowLink}
+              href={`/match/${row.slug}`}
+              prefetch={false}
+            >
               <div className={styles.timeColumn}>
                 <div className={`${styles.timeWrap} ${row.isUrgent ? styles.timeUrgent : ""}`}>
                   {row.isUrgent ? <span className={styles.urgentDot} /> : null}
@@ -101,4 +105,3 @@ export function HomeMatchList({
     </section>
   );
 }
-

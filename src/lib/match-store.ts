@@ -187,6 +187,7 @@ async function listMatchEntities({
   }
 
   await assertVenueManagementSchemaReady(supabase);
+  await syncStartedMatchStatuses(supabase);
 
   let query = supabase
     .from("matches")
@@ -297,6 +298,16 @@ async function getConfirmedCountMap(matchIds: string[]) {
   return new Map(
     ((data ?? []) as MatchCountRow[]).map((row) => [row.match_id, row.confirmed_count]),
   );
+}
+
+async function syncStartedMatchStatuses(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+) {
+  const { error } = await supabase.rpc("close_started_matches");
+
+  if (error) {
+    throw new Error(`Failed to sync match statuses: ${error.message}`);
+  }
 }
 
 function normalizeVenue(venue: MatchRow["venue"]) {
