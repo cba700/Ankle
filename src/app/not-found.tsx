@@ -21,9 +21,9 @@ export default function NotFound() {
           textAlign: "center",
         }}
       >
-        <p className="sectionLabel" style={{ margin: "0 auto 16px" }}>
+        <Link className="sectionLabel" href="/" style={{ margin: "0 auto 16px" }}>
           앵클
-        </p>
+        </Link>
         <h1 style={{ margin: "0 0 10px", fontSize: "32px", letterSpacing: "-0.04em" }}>
           매치를 찾을 수 없습니다
         </h1>

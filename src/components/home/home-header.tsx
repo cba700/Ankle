@@ -12,10 +12,10 @@ export function HomeHeader({ isAdmin, myPageHref, tabLabel }: HomeHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.topRow}>
-        <div className={styles.brand}>
+        <Link className={styles.brand} href="/">
           <span className={styles.brandWord}>앵클</span>
           <span className={styles.brandDot}>.</span>
-        </div>
+        </Link>
 
         <div className={styles.headerActions}>
           <label className={styles.search}>
