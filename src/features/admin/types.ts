@@ -2,6 +2,7 @@ export type AdminMatchStatus = "draft" | "open" | "closed" | "cancelled";
 export type AdminMatchFormat = "3vs3" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
+export type AdminBadgeTone = "accent" | "neutral" | "danger";
 
 export type AdminVenueInfo = {
   directions: string;
@@ -43,6 +44,7 @@ export type AdminVenueRow = {
   district: string;
   address: string;
   statusLabel: string;
+  statusTone: AdminBadgeTone;
   matchCountLabel: string;
   editHref: string;
   createMatchHref: string;
@@ -91,7 +93,7 @@ export type AdminMatchRecord = {
   venueInfo: AdminVenueInfo;
 };
 
-export type AdminOverviewTone = "accent" | "soft" | "neutral" | "danger";
+export type AdminOverviewTone = AdminBadgeTone;
 
 export type AdminOverviewCard = {
   id: string;
@@ -109,10 +111,15 @@ export type AdminMatchRow = {
   timeLabel: string;
   participantLabel: string;
   occupancyLabel: string;
+  participantCount: number;
+  capacity: number;
   priceLabel: string;
   levelLabel: string;
   description: string;
   status: AdminMatchStatus;
+  displayStatusLabel: string;
+  displayStatusTone: AdminBadgeTone;
+  isNearClosing: boolean;
   tags: string[];
   editHref: string;
 };

@@ -1,8 +1,11 @@
 import { createAdminMatchAction } from "@/features/admin/actions";
 import { AdminMatchEditor } from "@/features/admin/components/admin-match-editor";
 import { AdminShell } from "@/features/admin/components/admin-shell";
+import ui from "@/features/admin/components/admin-ui.module.css";
 import { getAdminVenueOptions } from "@/features/admin/data";
 import { applyVenueOptionToMatchFormValue, buildAdminMatchFormValue } from "@/features/admin/view-model";
+
+const CREATE_MATCH_FORM_ID = "admin-match-create-form";
 
 export default async function AdminNewMatchPage({
   searchParams,
@@ -19,11 +22,33 @@ export default async function AdminNewMatchPage({
   return (
     <AdminShell
       activeNav="create"
-      description="위치, 시작 시간, 경기시간, 레벨, 성별 조건, 방식, 정원, 가격만 먼저 입력하고 나머지는 저장 뒤 편집 화면에서 다듬을 수 있습니다."
-      eyebrow="Create Match"
+      actions={
+        <>
+          <button
+            className={ui.button}
+            form={CREATE_MATCH_FORM_ID}
+            name="intent"
+            type="submit"
+            value="save_draft"
+          >
+            임시 저장
+          </button>
+          <button
+            className={`${ui.button} ${ui.buttonBrand}`}
+            form={CREATE_MATCH_FORM_ID}
+            name="intent"
+            type="submit"
+            value="publish_now"
+          >
+            저장 후 모집 열기
+          </button>
+        </>
+      }
+      eyebrow="CREATE MATCH"
       title="새 매치 열기"
     >
       <AdminMatchEditor
+        formId={CREATE_MATCH_FORM_ID}
         formAction={createAdminMatchAction}
         mode="create"
         values={initialValues}

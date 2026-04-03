@@ -12,6 +12,7 @@ import {
 import type { AdminMatchFormValue, AdminVenueOption } from "../types";
 import { applyVenueOptionToMatchFormValue } from "../view-model";
 import { AdminStatusBadge } from "./admin-status-badge";
+import ui from "./admin-ui.module.css";
 import styles from "./admin-match-editor.module.css";
 
 type AdminMatchEditorProps = {
@@ -19,6 +20,7 @@ type AdminMatchEditorProps = {
   values: AdminMatchFormValue;
   venueOptions: AdminVenueOption[];
   formAction: (formData: FormData) => void | Promise<void>;
+  formId?: string;
 };
 
 const GENDER_OPTIONS = ["남녀 모두", "남성만", "여성만"];
@@ -34,6 +36,7 @@ export function AdminMatchEditor({
   values,
   venueOptions,
   formAction,
+  formId,
 }: AdminMatchEditorProps) {
   const [formValues, setFormValues] = useState(values);
 
@@ -43,6 +46,8 @@ export function AdminMatchEditor({
     format: formValues.format,
     startTime: formValues.startTime,
   });
+  const durationOptions = getDurationOptions(formValues.durationMinutes);
+  const genderOptions = getOptionsWithCurrent(GENDER_OPTIONS, formValues.genderCondition);
 
   function handleFieldChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -80,44 +85,16 @@ export function AdminMatchEditor({
       return;
     }
 
-    setFormValues((currentValues) =>
-      applyVenueOptionToMatchFormValue(currentValues, venue),
-    );
+    setFormValues((currentValues) => applyVenueOptionToMatchFormValue(currentValues, venue));
   }
 
-  const previewTitle = formValues.title || generatedTitle || "매치 제목";
-  const previewDate = formValues.date || "날짜 미정";
-  const previewTime =
-    formValues.startTime && formValues.durationMinutes
-      ? `${formValues.startTime} 시작 · ${formatMatchDurationLabel(
-          Number.parseInt(formValues.durationMinutes, 10),
-        )}`
-      : "시간 미정";
-  const previewVenue = formValues.venueName
-    ? buildAdminVenueLabel(formValues.venueName, formValues.district)
-    : "경기장을 선택하거나 직접 입력하세요";
-  const previewNotice =
-    formValues.publicNotice ||
-    (mode === "create"
-      ? "추가 운영 정보는 저장 후 편집 화면에서 이어서 다듬을 수 있습니다."
-      : "공개 공지가 아직 없습니다.");
-  const previewTags = formValues.tagsText
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-  const previewStatusLabel =
-    mode === "create" && !formValues.status ? "버튼에서 결정" : "상태 미선택";
-  const durationOptions = getDurationOptions(formValues.durationMinutes);
-  const genderOptions = getOptionsWithCurrent(GENDER_OPTIONS, formValues.genderCondition);
-
   return (
-    <div className={styles.layout}>
-      <form action={formAction} className={styles.form}>
+    <div className={`${styles.layout} ${mode === "create" ? styles.layoutSingle : ""}`}>
+      <form action={formAction} className={styles.form} id={formId} name={formId}>
         <input name="venueEntryMode" type="hidden" value={formValues.venueEntryMode} />
         <input name="selectedVenueId" type="hidden" value={formValues.selectedVenueId} />
         {mode === "create" ? (
           <>
-            <input name="title" type="hidden" value={generatedTitle} />
             <input name="district" type="hidden" value={formValues.district} />
             <input name="directions" type="hidden" value={formValues.directions} />
             <input name="parking" type="hidden" value={formValues.parking} />
@@ -129,40 +106,22 @@ export function AdminMatchEditor({
           </>
         ) : null}
 
-        <div className={styles.actionBar}>
-          <div>
-            <p className={styles.actionEyebrow}>관리자 운영 화면</p>
-            <h2 className={styles.actionTitle}>
-              {mode === "create" ? "빈 폼에서 새 매치를 여는 방식" : "운영 중인 매치를 다듬는 방식"}
-            </h2>
-          </div>
+        {mode === "edit" ? (
+          <div className={`${ui.sectionCard} ${styles.actionBar}`}>
+            <div className={styles.actionCopy}>
+              <p className={styles.sectionEyebrow}>편집</p>
+              <h2 className={styles.actionTitle}>운영 중인 매치를 정리합니다.</h2>
+            </div>
 
-          <div className={styles.actionButtons}>
-            {mode === "create" ? (
-              <button
-                className={styles.secondaryButton}
-                name="intent"
-                type="submit"
-                value="publish_now"
-              >
-                저장 후 바로 모집 열기
-              </button>
-            ) : null}
-            <button
-              className={styles.primaryButton}
-              name="intent"
-              type="submit"
-              value={mode === "create" ? "save_draft" : "save_changes"}
-            >
-              {mode === "create" ? "임시 저장" : "변경 사항 저장"}
+            <button className={`${ui.button} ${ui.buttonPrimary}`} name="intent" type="submit" value="save_changes">
+              변경 사항 저장
             </button>
           </div>
-        </div>
+        ) : null}
 
-        <section className={styles.section}>
+        <section className={`${ui.sectionCard} ${styles.section}`}>
           <div className={styles.sectionHeader}>
-            <p className={styles.sectionEyebrow}>경기장 불러오기</p>
-            <h3 className={styles.sectionTitle}>관리 경기장을 선택하거나 새 경기장을 직접 입력</h3>
+            <p className={styles.sectionEyebrow}>경기장</p>
           </div>
 
           <div className={styles.modeToggle}>
@@ -184,13 +143,10 @@ export function AdminMatchEditor({
             </button>
           </div>
 
-          <div className={styles.sourceCard}>
-            <label className={styles.field}>
+          <div className={styles.fieldGrid}>
+            <label className={`${styles.field} ${styles.fieldSpan}`}>
               <span className={styles.fieldLabel}>관리 경기장</span>
-              <select
-                onChange={handleVenueSelectChange}
-                value={formValues.selectedVenueId}
-              >
+              <select onChange={handleVenueSelectChange} value={formValues.selectedVenueId}>
                 <option value="">관리 중인 경기장을 선택하세요</option>
                 {venueOptions.map((venue) => (
                   <option key={venue.id} value={venue.id}>
@@ -201,38 +157,11 @@ export function AdminMatchEditor({
               </select>
             </label>
 
-            <div className={styles.sourceHint}>
-              <strong>
-                {selectedVenue ? `${selectedVenue.label} 기준으로 채워짐` : "선택한 경기장 기준 자동 채움"}
-              </strong>
-              <p>
-                경기장을 선택하면 장소 정보, 이미지, 운영 규칙, 안전 메모가 바로 채워집니다.
-                이후 수정한 값은 이번 매치에만 저장됩니다.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <p className={styles.sectionEyebrow}>기본 정보</p>
-            <h3 className={styles.sectionTitle}>
-              {mode === "create" ? "꼭 필요한 정보만 입력해 빠르게 저장" : "매치 정보와 노출 상태"}
-            </h3>
-          </div>
-
-          <div className={styles.fieldGrid}>
-            {mode === "edit" ? (
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>매치 제목</span>
-                <input
-                  name="title"
-                  onChange={handleFieldChange}
-                  type="text"
-                  value={formValues.title}
-                />
-              </label>
-            ) : null}
+            <p className={styles.helperText}>
+              {selectedVenue
+                ? `${selectedVenue.label} 기준으로 장소 정보와 기본값이 채워집니다.`
+                : "경기장을 고르면 장소 정보와 기본값이 자동으로 채워집니다."}
+            </p>
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>경기장명</span>
@@ -244,24 +173,6 @@ export function AdminMatchEditor({
                 value={formValues.venueName}
               />
             </label>
-
-            {mode === "edit" ? (
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>운영 상태</span>
-                <select
-                  name="status"
-                  onChange={handleFieldChange}
-                  required
-                  value={formValues.status}
-                >
-                  <option value="">운영 상태를 선택하세요</option>
-                  <option value="draft">임시 저장</option>
-                  <option value="open">모집 중</option>
-                  <option value="closed">마감</option>
-                  <option value="cancelled">운영 취소</option>
-                </select>
-              </label>
-            ) : null}
 
             {mode === "edit" ? (
               <label className={styles.field}>
@@ -285,6 +196,45 @@ export function AdminMatchEditor({
                 value={formValues.address}
               />
             </label>
+          </div>
+        </section>
+
+        <section className={`${ui.sectionCard} ${styles.section}`}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.sectionEyebrow}>기본 정보</p>
+          </div>
+
+          <div className={styles.fieldGrid}>
+            <label className={`${styles.field} ${styles.fieldSpan}`}>
+              <span className={styles.fieldLabel}>매치 제목</span>
+              <input
+                name="title"
+                onChange={handleFieldChange}
+                placeholder={
+                  mode === "create" ? `비워두면 ${generatedTitle || "자동 제목"}으로 저장됩니다.` : undefined
+                }
+                type="text"
+                value={formValues.title}
+              />
+            </label>
+
+            {mode === "edit" ? (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>운영 상태</span>
+                <select
+                  name="status"
+                  onChange={handleFieldChange}
+                  required
+                  value={formValues.status}
+                >
+                  <option value="">운영 상태를 선택하세요</option>
+                  <option value="draft">임시 저장</option>
+                  <option value="open">모집 중</option>
+                  <option value="closed">마감</option>
+                  <option value="cancelled">운영 취소</option>
+                </select>
+              </label>
+            ) : null}
 
             <label className={styles.field}>
               <span className={styles.fieldLabel}>날짜</span>
@@ -309,7 +259,7 @@ export function AdminMatchEditor({
             </label>
 
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>경기시간</span>
+              <span className={styles.fieldLabel}>경기 시간</span>
               <select
                 name="durationMinutes"
                 onChange={handleFieldChange}
@@ -326,7 +276,7 @@ export function AdminMatchEditor({
             </label>
 
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>경기 방식</span>
+              <span className={styles.fieldLabel}>방식</span>
               <select name="format" onChange={handleFieldChange} required value={formValues.format}>
                 <option value="">경기 방식을 선택하세요</option>
                 <option value="3vs3">3vs3</option>
@@ -336,10 +286,9 @@ export function AdminMatchEditor({
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={`${ui.sectionCard} ${styles.section}`}>
           <div className={styles.sectionHeader}>
             <p className={styles.sectionEyebrow}>참가 조건</p>
-            <h3 className={styles.sectionTitle}>정원, 가격, 모집 기준</h3>
           </div>
 
           <div className={styles.fieldGrid}>
@@ -355,13 +304,6 @@ export function AdminMatchEditor({
               />
             </label>
 
-            {mode === "edit" ? (
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>현재 신청 현황</span>
-                <input readOnly type="text" value={formValues.participantSummary} />
-              </label>
-            ) : null}
-
             <label className={styles.field}>
               <span className={styles.fieldLabel}>참가비</span>
               <input
@@ -372,23 +314,6 @@ export function AdminMatchEditor({
                 type="text"
                 value={formValues.price}
               />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>성별 조건</span>
-              <select
-                name="genderCondition"
-                onChange={handleFieldChange}
-                required
-                value={formValues.genderCondition}
-              >
-                <option value="">성별 조건을 선택하세요</option>
-                {genderOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
             </label>
 
             <label className={styles.field}>
@@ -408,26 +333,49 @@ export function AdminMatchEditor({
               </select>
             </label>
 
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>성별 조건</span>
+              <select
+                name="genderCondition"
+                onChange={handleFieldChange}
+                required
+                value={formValues.genderCondition}
+              >
+                <option value="">성별 조건을 선택하세요</option>
+                {genderOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             {mode === "edit" ? (
-              <label className={`${styles.field} ${styles.fieldSpan}`}>
-                <span className={styles.fieldLabel}>준비물</span>
-                <input
-                  name="preparation"
-                  onChange={handleFieldChange}
-                  type="text"
-                  value={formValues.preparation}
-                />
-              </label>
+              <>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>현재 신청 현황</span>
+                  <input readOnly type="text" value={formValues.participantSummary} />
+                </label>
+
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>준비물</span>
+                  <input
+                    name="preparation"
+                    onChange={handleFieldChange}
+                    type="text"
+                    value={formValues.preparation}
+                  />
+                </label>
+              </>
             ) : null}
           </div>
         </section>
 
         {mode === "edit" ? (
           <>
-            <section className={styles.section}>
+            <section className={`${ui.sectionCard} ${styles.section}`}>
               <div className={styles.sectionHeader}>
                 <p className={styles.sectionEyebrow}>운영 카피</p>
-                <h3 className={styles.sectionTitle}>유저에게 보일 설명과 공지</h3>
               </div>
 
               <div className={styles.fieldGrid}>
@@ -463,10 +411,9 @@ export function AdminMatchEditor({
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section className={`${ui.sectionCard} ${styles.section}`}>
               <div className={styles.sectionHeader}>
                 <p className={styles.sectionEyebrow}>장소 안내</p>
-                <h3 className={styles.sectionTitle}>현장 운영 정보와 경기장 기본값</h3>
               </div>
 
               <div className={styles.fieldGrid}>
@@ -555,66 +502,42 @@ export function AdminMatchEditor({
         ) : null}
       </form>
 
-      <aside className={styles.aside}>
-        <section className={styles.previewCard}>
-          <div className={styles.previewHeader}>
-            <p className={styles.previewLabel}>미리 보는 운영 카드</p>
-            {formValues.status ? (
-              <AdminStatusBadge status={formValues.status} />
-            ) : (
-              <span className={styles.previewBadgeEmpty}>{previewStatusLabel}</span>
-            )}
-          </div>
-
-          <h3 className={styles.previewTitle}>{previewTitle}</h3>
-          <p className={styles.previewMeta}>
-            {previewDate} · {previewTime}
-          </p>
-          <p className={styles.previewMeta}>{previewVenue}</p>
-
-          <div className={styles.previewStats}>
-            <div>
-              <span>참가 현황</span>
-              <strong>{formValues.participantSummary}</strong>
+      {mode === "edit" ? (
+        <aside className={styles.aside}>
+          <section className={`${ui.sectionCard} ${styles.previewCard}`}>
+            <div className={styles.previewHeader}>
+              <p className={styles.sectionEyebrow}>미리 보기</p>
+              {formValues.status ? <AdminStatusBadge status={formValues.status} /> : null}
             </div>
-            <div>
-              <span>참가비</span>
-              <strong>{formatPreviewPrice(formValues.price)}</strong>
+
+            <h3 className={styles.previewTitle}>{formValues.title || generatedTitle || "매치 제목"}</h3>
+            <p className={styles.previewMeta}>
+              {formValues.date || "날짜 미정"} ·{" "}
+              {formValues.startTime && formValues.durationMinutes
+                ? `${formValues.startTime} 시작 · ${formatMatchDurationLabel(
+                    Number.parseInt(formValues.durationMinutes, 10),
+                  )}`
+                : "시간 미정"}
+            </p>
+            <p className={styles.previewMeta}>
+              {formValues.venueName
+                ? buildAdminVenueLabel(formValues.venueName, formValues.district)
+                : "경기장을 선택하거나 직접 입력하세요"}
+            </p>
+
+            <div className={styles.previewStats}>
+              <div>
+                <span>참가 현황</span>
+                <strong>{formValues.participantSummary}</strong>
+              </div>
+              <div>
+                <span>참가비</span>
+                <strong>{formatPreviewPrice(formValues.price)}</strong>
+              </div>
             </div>
-          </div>
-
-          <div className={styles.previewTags}>
-            {previewTags.map((tag) => (
-              <span key={tag} className={styles.previewTag}>
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <p className={styles.previewNotice}>{previewNotice}</p>
-        </section>
-
-        <section className={styles.previewCard}>
-          <p className={styles.previewLabel}>현재 입력 방식</p>
-          <ul className={styles.previewList}>
-            <li>
-              {formValues.venueEntryMode === "managed"
-                ? "관리 경기장을 기준으로 필요한 값을 채우고 있습니다."
-                : "새 경기장을 직접 입력하는 방식입니다."}
-            </li>
-            <li>
-              {selectedVenue
-                ? `선택된 경기장: ${selectedVenue.label}`
-                : "등록된 경기장을 고르면 경기장 정보, 이미지, 규칙, 안전 메모가 자동으로 채워집니다."}
-            </li>
-            <li>
-              {mode === "create"
-                ? "추가 운영 정보는 저장 뒤 편집 화면에서 이어서 보완할 수 있습니다."
-                : "경기장을 불러온 뒤 수정한 값은 이번 매치에만 저장됩니다."}
-            </li>
-          </ul>
-        </section>
-      </aside>
+          </section>
+        </aside>
+      ) : null}
     </div>
   );
 }

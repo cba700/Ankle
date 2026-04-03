@@ -6,6 +6,7 @@ import {
   getMatchLevelPreset,
 } from "./match-form";
 import type {
+  AdminBadgeTone,
   AdminMatchFormValue,
   AdminMatchRecord,
   AdminMatchRow,
@@ -50,7 +51,7 @@ export function getAdminStatusMeta(status: AdminMatchStatus) {
   if (status === "draft") {
     return {
       label: "임시 저장",
-      tone: "soft" as const,
+      tone: "neutral" as const,
       description: "카피나 일정 확정 전 내부 검토 상태",
     };
   }
@@ -81,30 +82,30 @@ export function buildAdminOverviewCards(matches: AdminMatchRecord[]): AdminOverv
   return [
     {
       id: "open",
-      label: "현재 모집 중",
+      label: "모집 중",
       value: `${openMatches.length}개`,
-      helper: "지금 바로 노출 중인 운영 매치 수",
+      helper: "지금 열려 있는 매치",
       tone: "accent",
     },
     {
       id: "draft",
       label: "임시 저장",
       value: `${draftMatches.length}개`,
-      helper: "카피나 일정 확정 대기 상태",
-      tone: "soft",
+      helper: "공개 전 검토 상태",
+      tone: "neutral",
     },
     {
       id: "near-closing",
       label: "마감 임박",
       value: `${nearClosing.length}개`,
-      helper: "정원의 75% 이상이 채워진 회차",
+      helper: "정원 75% 이상 신청",
       tone: "danger",
     },
     {
       id: "revenue",
       label: "예상 신청 매출",
       value: `${formatMoney(projectedRevenue)}원`,
-      helper: "현재 신청 인원 기준 단순 합계",
+      helper: "현재 신청 인원 기준",
       tone: "neutral",
     },
   ];
@@ -116,6 +117,10 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       getMatchDurationMinutes(match.startAt, match.endAt),
       10,
     );
+    const isNearClosing = match.status === "open" && getOccupancyRate(match) >= 0.75;
+    const displayStatus = isNearClosing
+      ? { label: "마감 임박", tone: "danger" as const }
+      : getAdminStatusMeta(match.status);
     const timeLabel = Number.isFinite(durationMinutes)
       ? `${timeInputFormatter.format(new Date(match.startAt))} 시작 · ${formatMatchDurationLabel(durationMinutes)}`
       : timeInputFormatter.format(new Date(match.startAt));
@@ -128,10 +133,15 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       timeLabel,
       participantLabel: `${match.currentParticipants} / ${match.capacity}명`,
       occupancyLabel: `잔여 ${Math.max(match.capacity - match.currentParticipants, 0)}석`,
+      participantCount: match.currentParticipants,
+      capacity: match.capacity,
       priceLabel: `${formatMoney(match.price)}원`,
       levelLabel: [match.levelCondition, match.levelRange].filter(Boolean).join(" · ") || "레벨 미설정",
       description: match.summary || "운영 설명 미입력",
       status: match.status,
+      displayStatusLabel: displayStatus.label,
+      displayStatusTone: displayStatus.tone,
+      isNearClosing,
       tags: match.tags,
       editHref: `/admin/matches/${match.id}/edit`,
     };
@@ -145,6 +155,7 @@ export function buildAdminVenueRows(venues: AdminVenueRecord[]): AdminVenueRow[]
     district: venue.district,
     address: venue.address,
     statusLabel: venue.isActive ? "운영 중" : "보관",
+    statusTone: venue.isActive ? "accent" : "neutral",
     matchCountLabel: `${venue.matchCount}개 매치 연결`,
     editHref: `/admin/venues/${venue.id}/edit`,
     createMatchHref: `/admin/matches/new?venueId=${venue.id}`,
@@ -267,6 +278,34 @@ export function applyVenueOptionToMatchFormValue(
     imageUrlsText: venue.defaultImageUrls.join("\n"),
     rulesText: venue.defaultRules.join("\n"),
     safetyNotesText: venue.defaultSafetyNotes.join("\n"),
+  };
+}
+
+export function getAdminBadgeMeta({
+  status,
+  label,
+  tone,
+}: {
+  status?: AdminMatchStatus;
+  label?: string;
+  tone?: AdminBadgeTone;
+}) {
+  if (label && tone) {
+    return { label, tone };
+  }
+
+  if (status) {
+    const meta = getAdminStatusMeta(status);
+
+    return {
+      label: label ?? meta.label,
+      tone: tone ?? meta.tone,
+    };
+  }
+
+  return {
+    label: label ?? "",
+    tone: tone ?? "neutral",
   };
 }
 
