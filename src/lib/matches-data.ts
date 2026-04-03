@@ -23,12 +23,26 @@ export async function getPublicMatches() {
 }
 
 export async function getPublicMatchBySlug(slug: string) {
+  const normalizedSlug = normalizeMatchSlug(slug);
+
   if (!isSupabaseConfigured()) {
-    return getMockMatchBySlug(slug) ?? null;
+    return getMockMatchBySlug(normalizedSlug) ?? null;
   }
 
-  const entity = await getPublicMatchEntityBySlug(slug);
+  const entity = await getPublicMatchEntityBySlug(normalizedSlug);
   return entity ? mapEntityToMatchRecord(entity) : null;
+}
+
+function normalizeMatchSlug(slug: string) {
+  if (!slug.includes("%")) {
+    return slug;
+  }
+
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
 }
 
 function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
