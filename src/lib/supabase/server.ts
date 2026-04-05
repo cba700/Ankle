@@ -1,8 +1,14 @@
 import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getSupabasePublicEnv } from "./env";
+
+let publicServerClient:
+  | ReturnType<typeof createClient>
+  | null
+  | undefined;
 
 export async function getSupabaseServerClient() {
   const supabaseEnv = getSupabasePublicEnv();
@@ -33,4 +39,30 @@ export async function getSupabaseServerClient() {
       },
     },
   );
+}
+
+export function getSupabasePublicServerClient() {
+  if (publicServerClient !== undefined) {
+    return publicServerClient;
+  }
+
+  const supabaseEnv = getSupabasePublicEnv();
+
+  if (!supabaseEnv) {
+    publicServerClient = null;
+    return publicServerClient;
+  }
+
+  publicServerClient = createClient(
+    supabaseEnv.supabaseUrl,
+    supabaseEnv.supabasePublishableKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    },
+  );
+
+  return publicServerClient;
 }

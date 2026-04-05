@@ -3,7 +3,7 @@ import { MatchApplyPage } from "@/components/match/match-apply-page";
 import { buildMatchDetailViewModel } from "@/components/match/match-detail-view-model";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import { getPublicMatchBySlug } from "@/lib/matches-data";
-import { getServerAuthState } from "@/lib/supabase/auth";
+import { getServerUserState } from "@/lib/supabase/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -14,13 +14,14 @@ export default async function MatchApply({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const match = await getPublicMatchBySlug(slug);
+  const [match, { configured, user }] = await Promise.all([
+    getPublicMatchBySlug(slug),
+    getServerUserState(),
+  ]);
 
   if (!match) {
     notFound();
   }
-
-  const { configured, user } = await getServerAuthState();
 
   if (!configured || !user) {
     redirect(

@@ -1,6 +1,10 @@
 import "server-only";
 
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  getSupabasePublicServerClient,
+  getSupabaseServerClient,
+} from "@/lib/supabase/server";
 import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 
 export type MatchEntityStatus = "draft" | "open" | "closed" | "cancelled";
@@ -97,6 +101,8 @@ type MatchCountRow = {
   confirmed_count: number;
 };
 
+type MatchStoreClient = SupabaseClient;
+
 const MATCH_SELECT = `
   id,
   slug,
@@ -142,30 +148,62 @@ const MATCH_SELECT = `
 `;
 
 export async function listPublicMatchEntities() {
+  const supabase = getSupabasePublicServerClient();
+
+  if (!supabase) {
+    return [];
+  }
+
   return listMatchEntities({
     publicOnly: true,
+    supabase,
   });
 }
 
 export async function getPublicMatchEntityBySlug(slug: string) {
+  const supabase = getSupabasePublicServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
   const matches = await listMatchEntities({
     publicOnly: true,
     slug,
+    supabase,
   });
 
   return matches[0] ?? null;
 }
 
 export async function listAdminMatchEntities() {
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return [];
+  }
+
   return listMatchEntities({
     publicOnly: false,
+    runManagementChecks: true,
+    syncStartedStatuses: true,
+    supabase,
   });
 }
 
 export async function getAdminMatchEntityById(id: string) {
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
   const matches = await listMatchEntities({
     id,
     publicOnly: false,
+    runManagementChecks: true,
+    syncStartedStatuses: true,
+    supabase,
   });
 
   return matches[0] ?? null;
@@ -175,19 +213,24 @@ async function listMatchEntities({
   publicOnly,
   id,
   slug,
+  runManagementChecks = false,
+  syncStartedStatuses = false,
+  supabase,
 }: {
   publicOnly: boolean;
   id?: string;
   slug?: string;
+  runManagementChecks?: boolean;
+  syncStartedStatuses?: boolean;
+  supabase: MatchStoreClient;
 }) {
-  const supabase = await getSupabaseServerClient();
-
-  if (!supabase) {
-    return [];
+  if (runManagementChecks) {
+    await assertVenueManagementSchemaReady(supabase);
   }
 
-  await assertVenueManagementSchemaReady(supabase);
-  await syncStartedMatchStatuses(supabase);
+  if (syncStartedStatuses) {
+    await syncStartedMatchStatuses(supabase);
+  }
 
   let query = supabase
     .from("matches")
@@ -220,7 +263,7 @@ async function listMatchEntities({
     return [];
   }
 
-  const counts = await getConfirmedCountMap(rows.map((row) => row.id));
+  const counts = await getConfirmedCountMap(supabase, rows.map((row) => row.id));
 
   return rows
     .map((row) => {
@@ -279,10 +322,11 @@ async function listMatchEntities({
     .filter((match): match is MatchEntity => match !== null);
 }
 
-async function getConfirmedCountMap(matchIds: string[]) {
-  const supabase = await getSupabaseServerClient();
-
-  if (!supabase || matchIds.length === 0) {
+async function getConfirmedCountMap(
+  supabase: MatchStoreClient,
+  matchIds: string[],
+) {
+  if (matchIds.length === 0) {
     return new Map<string, number>();
   }
 
@@ -301,7 +345,7 @@ async function getConfirmedCountMap(matchIds: string[]) {
 }
 
 async function syncStartedMatchStatuses(
-  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  supabase: MatchStoreClient,
 ) {
   const { error } = await supabase.rpc("close_started_matches");
 
