@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { MyPageData } from "@/lib/mypage";
 import {
   ArrowRightIcon,
@@ -15,6 +14,7 @@ import {
   SearchIcon,
   UserIcon,
 } from "@/components/icons";
+import { AppLink } from "@/components/navigation/app-link";
 import styles from "./my-page.module.css";
 
 type MyPageProps = {
@@ -38,10 +38,11 @@ const MY_MENU_ITEMS: MenuItem[] = [
     statusText: "바로가기",
   },
   {
+    href: "#mypage-cash",
     icon: "history",
     key: "history",
-    label: "사용 내역",
-    statusText: "미구현",
+    label: "캐시 내역",
+    statusText: "바로가기",
   },
   {
     icon: "coupon",
@@ -91,10 +92,10 @@ export function MyPage({ data }: MyPageProps) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link className={styles.brand} href="/">
+          <AppLink className={styles.brand} href="/">
             <span className={styles.brandWord}>앵클</span>
             <span className={styles.brandDot}>.</span>
-          </Link>
+          </AppLink>
 
           <div className={styles.headerActions}>
             <label className={styles.search}>
@@ -115,14 +116,14 @@ export function MyPage({ data }: MyPageProps) {
             >
               <CalendarIcon className={styles.actionIcon} />
             </button>
-            <Link
+            <AppLink
               aria-current="page"
               aria-label="마이페이지"
               className={`${styles.iconButton} ${styles.iconButtonActive}`}
               href="/mypage"
             >
               <UserIcon className={styles.actionIcon} />
-            </Link>
+            </AppLink>
           </div>
         </div>
       </header>
@@ -193,11 +194,11 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.cashCard}>
             <div>
               <p className={styles.cashLabel}>나의 캐시</p>
-              <strong className={styles.cashAmount}>미구현</strong>
+              <strong className={styles.cashAmount}>{data.cashBalanceLabel}</strong>
             </div>
-            <button className={styles.chargeButton} disabled type="button">
-              충전하기
-            </button>
+            <AppLink className={styles.chargeButton} href="/cash/charge">
+              캐시 충전
+            </AppLink>
           </article>
 
           <article className={styles.guideCard}>
@@ -262,6 +263,46 @@ export function MyPage({ data }: MyPageProps) {
             </div>
           </article>
 
+          <section className={styles.applicationSection} id="mypage-cash">
+            <div className={styles.sectionHeading}>
+              <div>
+                <p className={styles.sectionEyebrow}>실제 데이터</p>
+                <h1 className={styles.sectionTitle}>캐시 내역</h1>
+              </div>
+              <span className={styles.sectionCount}>{data.cashTransactions.length}건</span>
+            </div>
+
+            {data.cashTransactions.length === 0 ? (
+              <div className={styles.emptyState}>
+                <strong>아직 반영된 캐시 거래가 없습니다.</strong>
+                <p>충전, 신청 차감, 환급이 발생하면 이 영역에서 바로 확인할 수 있습니다.</p>
+              </div>
+            ) : (
+              <div className={styles.cashTransactionList}>
+                {data.cashTransactions.map((transaction) => (
+                  <article className={styles.cashTransactionCard} key={transaction.id}>
+                    <div className={styles.cashTransactionTop}>
+                      <strong className={styles.cashTransactionTitle}>{transaction.title}</strong>
+                      <span
+                        className={`${styles.cashTransactionAmount} ${
+                          transaction.tone === "danger"
+                            ? styles.cashAmountDanger
+                            : transaction.tone === "muted"
+                              ? styles.cashAmountMuted
+                              : styles.cashAmountAccent
+                        }`}
+                      >
+                        {transaction.amountLabel}
+                      </span>
+                    </div>
+                    <p className={styles.cashTransactionMeta}>{transaction.metaLabel}</p>
+                    <p className={styles.cashTransactionBalance}>{transaction.balanceLabel}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section className={styles.applicationSection} id="mypage-applications">
             <div className={styles.sectionHeading}>
               <div>
@@ -275,9 +316,9 @@ export function MyPage({ data }: MyPageProps) {
               <div className={styles.emptyState}>
                 <strong>아직 신청한 매치가 없습니다.</strong>
                 <p>메인 화면에서 원하는 매치를 찾아 첫 신청을 시작해 보세요.</p>
-                <Link className={styles.homeLink} href="/">
+                <AppLink className={styles.homeLink} href="/">
                   홈에서 매치 보기
-                </Link>
+                </AppLink>
               </div>
             ) : (
               <div className={styles.applicationList}>
@@ -306,17 +347,18 @@ export function MyPage({ data }: MyPageProps) {
                       <strong className={styles.applicationTitle}>{application.title}</strong>
                       <p className={styles.applicationVenue}>{application.venueName}</p>
                       <p className={styles.applicationMeta}>{application.metaLabel}</p>
+                      <p className={styles.applicationCash}>{application.cashLabel}</p>
                     </>
                   );
 
                   return application.href ? (
-                    <Link
+                    <AppLink
                       className={styles.applicationCard}
                       href={application.href}
                       key={application.id}
                     >
                       {content}
-                    </Link>
+                    </AppLink>
                   ) : (
                     <div className={styles.applicationCard} key={application.id}>
                       {content}

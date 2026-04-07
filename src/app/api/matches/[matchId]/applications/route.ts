@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMatchApplicationError } from "@/lib/match-application-errors";
+import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(
@@ -27,6 +28,8 @@ export async function POST(
     );
   }
 
+  await assertCashFoundationSchemaReady(supabase);
+
   const { data, error } = await supabase.rpc("apply_to_match", {
     p_match_id: matchId,
   });
@@ -36,5 +39,5 @@ export async function POST(
     return NextResponse.json({ code: mapped.code }, { status: mapped.status });
   }
 
-  return NextResponse.json({ applicationId: data, ok: true });
+  return NextResponse.json({ ...(data ?? {}), ok: true });
 }

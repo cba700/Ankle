@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { CalendarIcon, SearchIcon, UserIcon } from "@/components/icons";
+import { AppLink } from "@/components/navigation/app-link";
+import { HomeAdminEntry } from "./home-admin-entry";
 import styles from "./home-header.module.css";
 
 type HomeHeaderProps = {
@@ -13,10 +14,10 @@ export function HomeHeader({ isAdmin, myPageHref, tabLabel }: HomeHeaderProps) {
     <header className={styles.header}>
       <div className={styles.inner}>
         <div className={styles.topRow}>
-          <Link className={styles.brand} href="/">
+          <AppLink className={styles.brand} href="/">
             <span className={styles.brandWord}>앵클</span>
             <span className={styles.brandDot}>.</span>
-          </Link>
+          </AppLink>
 
           <div className={styles.headerActions}>
             <label className={styles.search}>
@@ -28,17 +29,13 @@ export function HomeHeader({ isAdmin, myPageHref, tabLabel }: HomeHeaderProps) {
                 type="text"
               />
             </label>
-            {isAdmin ? (
-              <Link className={styles.adminButton} href="/admin">
-                관리자
-              </Link>
-            ) : null}
+            <HomeAdminEntry initialIsAdmin={isAdmin} />
             <button aria-label="일정" className={styles.iconButton} type="button">
               <CalendarIcon className={styles.actionIcon} />
             </button>
-            <Link aria-label="마이페이지" className={styles.iconButton} href={myPageHref}>
+            <AppLink aria-label="마이페이지" className={styles.iconButton} href={myPageHref}>
               <UserIcon className={styles.actionIcon} />
-            </Link>
+            </AppLink>
           </div>
         </div>
 

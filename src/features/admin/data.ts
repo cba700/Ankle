@@ -6,7 +6,17 @@ import {
   getAdminVenueOptions as getMockAdminVenueOptions,
   getAdminVenues as getMockAdminVenues,
 } from "@/features/admin/mock/admin-venues";
+import {
+  listCashAccounts,
+  listRecentCashChargeOrders,
+  listRecentCashChargeOrderEvents,
+  listRecentCashTransactions,
+} from "@/lib/cash";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
+import {
+  assertCashChargeOperationsSchemaReady,
+} from "@/lib/supabase/schema";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { buildAdminVenueLabel } from "./match-form";
@@ -55,6 +65,44 @@ export async function getAdminVenueOptions(): Promise<AdminVenueOption[]> {
 
   const entities = await listAdminVenueEntities();
   return entities.map(mapVenueEntityToOption);
+}
+
+export async function getAdminCashDashboardData() {
+  if (!isSupabaseConfigured()) {
+    return {
+      accounts: [],
+      chargeOrders: [],
+      chargeOrderEvents: [],
+      transactions: [],
+    };
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      accounts: [],
+      chargeOrders: [],
+      chargeOrderEvents: [],
+      transactions: [],
+    };
+  }
+
+  await assertCashChargeOperationsSchemaReady(supabase);
+
+  const [accounts, chargeOrders, chargeOrderEvents, transactions] = await Promise.all([
+    listCashAccounts(supabase),
+    listRecentCashChargeOrders(supabase),
+    listRecentCashChargeOrderEvents(supabase),
+    listRecentCashTransactions(supabase),
+  ]);
+
+  return {
+    accounts,
+    chargeOrders,
+    chargeOrderEvents,
+    transactions,
+  };
 }
 
 function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {

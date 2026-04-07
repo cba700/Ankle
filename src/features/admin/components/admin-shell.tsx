@@ -1,15 +1,16 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { AppLink } from "@/components/navigation/app-link";
 import {
   BadgeIcon,
   BasketIcon,
   CalendarIcon,
   MapPinIcon,
+  WalletIcon,
 } from "@/components/icons";
 import styles from "./admin-shell.module.css";
 
 type AdminShellProps = {
-  activeNav: "dashboard" | "matches" | "venues" | "create";
+  activeNav: "dashboard" | "matches" | "venues" | "cash" | "create";
   eyebrow: string;
   title: string;
   description?: string;
@@ -37,6 +38,12 @@ const NAV_ITEMS = [
     icon: MapPinIcon,
   },
   {
+    id: "cash",
+    label: "캐시 현황",
+    href: "/admin/cash",
+    icon: WalletIcon,
+  },
+  {
     id: "create",
     label: "새 매치",
     href: "/admin/matches/new",
@@ -56,10 +63,10 @@ export function AdminShell({
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
           <div className={styles.brandBlock}>
-            <Link className={styles.brand} href="/">
+            <AppLink className={styles.brand} href="/">
               <span className={styles.brandWord}>앵클</span>
               <span className={styles.brandDot}>.</span>
-            </Link>
+            </AppLink>
             <p className={styles.brandLabel}>ADMIN CONSOLE</p>
           </div>
 
@@ -69,14 +76,14 @@ export function AdminShell({
               const Icon = item.icon;
 
               return (
-                <Link
+                <AppLink
                   key={item.id}
                   className={`${styles.navLink} ${active ? styles.navActive : ""}`}
                   href={item.href}
                 >
                   <Icon className={styles.navIcon} />
                   <span className={styles.navLabel}>{item.label}</span>
-                </Link>
+                </AppLink>
               );
             })}
           </nav>

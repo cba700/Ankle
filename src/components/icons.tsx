@@ -85,6 +85,16 @@ export function BadgeIcon({ className }: IconProps) {
   );
 }
 
+export function WalletIcon({ className }: IconProps) {
+  return (
+    <IconBase className={className}>
+      <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h10A2.5 2.5 0 0 1 19 7.5v9A2.5 2.5 0 0 1 16.5 19h-10A2.5 2.5 0 0 1 4 16.5Z" />
+      <path d="M4.8 8.5h12.7a1.7 1.7 0 0 1 1.7 1.7v.6h-4.1a2.2 2.2 0 0 0 0 4.4h4.1v1.3" />
+      <circle cx="15.2" cy="13" r=".7" fill="currentColor" stroke="none" />
+    </IconBase>
+  );
+}
+
 export function GenderIcon({ className }: IconProps) {
   return (
     <IconBase className={className}>

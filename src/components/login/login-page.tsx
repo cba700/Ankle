@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AppLink } from "@/components/navigation/app-link";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
 
@@ -118,10 +118,10 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <Link className={styles.logoWrap} href="/">
+        <AppLink className={styles.logoWrap} href="/">
           <span className={styles.logoWord}>앵클</span>
           <span className={styles.logoDot}>.</span>
-        </Link>
+        </AppLink>
         <p className={styles.tagline}>코트에서 만나는 모든 농구</p>
 
         {serverError || inlineError ? (
@@ -140,9 +140,9 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
             <p className={styles.accountEmail}>{loginStatus.email}</p>
 
             <div className={styles.actionRow}>
-              <Link className={styles.secondaryButton} href={nextPath}>
+              <AppLink className={styles.secondaryButton} href={nextPath}>
                 {nextPath === "/" ? "홈으로 이동" : "원래 화면으로 이동"}
-              </Link>
+              </AppLink>
 
               <form action="/auth/signout" className={styles.actionForm} method="post">
                 <button className={styles.ghostButton} type="submit">

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import { CopyIcon, EyeIcon, HeartIcon, MapPinIcon } from "@/components/icons";
 import styles from "./match-sidebar.module.css";
 
@@ -96,9 +96,9 @@ export function MatchSidebar({
           <HeartIcon filled={saved} />
         </button>
         {canApply ? (
-          <Link className={styles.secondaryButton} href={applyHref}>
+          <AppLink className={styles.secondaryButton} href={applyHref}>
             바로 신청
-          </Link>
+          </AppLink>
         ) : (
           <button className={styles.secondaryButtonDisabled} disabled type="button">
             신청 마감

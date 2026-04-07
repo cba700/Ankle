@@ -1,0 +1,83 @@
+.layout {
+  display: grid;
+  gap: 12px;
+}
+
+.section {
+  display: grid;
+  gap: 10px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sectionMeta {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.metaBlock {
+  display: grid;
+  gap: 4px;
+}
+
+.adjustForm {
+  display: grid;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.fieldLabel {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field input {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: rgba(224, 90, 40, 0.55);
+  box-shadow: 0 0 0 4px rgba(243, 109, 33, 0.12);
+}
+
+@media (min-width: 900px) {
+  .adjustForm {
+    grid-template-columns: 1.3fr 0.9fr 1.4fr auto;
+    align-items: end;
+  }
+
+  .fieldWide {
+    min-width: 260px;
+  }
+}

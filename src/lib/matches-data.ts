@@ -49,6 +49,10 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
   const date = new Date(entity.startAt);
   const dateKey = toDateKey(date);
   const levelDistribution = getLevelDistribution(entity);
+  const currentParticipants = entity.confirmedCount;
+  const remainingSlots = Math.max(entity.capacity - currentParticipants, 0);
+  const isSoldOut = remainingSlots === 0;
+  const isClosed = entity.status === "closed";
 
   return {
     id: entity.id,
@@ -67,7 +71,10 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
     format: entity.format,
     durationText: getDurationText(entity.startAt, entity.endAt),
     capacity: entity.capacity,
-    currentParticipants: entity.confirmedCount,
+    currentParticipants,
+    remainingSlots,
+    isSoldOut,
+    canApply: !isClosed && !isSoldOut,
     preparation: entity.preparation,
     price: entity.price,
     status: getPublicStatus(entity),

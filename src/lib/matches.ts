@@ -32,6 +32,9 @@ export type MatchRecord = {
   durationText: string;
   capacity: number;
   currentParticipants: number;
+  remainingSlots: number;
+  isSoldOut: boolean;
+  canApply: boolean;
   preparation: string;
   price: number;
   status: MatchStatus;
@@ -75,8 +78,8 @@ type MatchTemplate = {
 };
 
 export const REFUND_POLICY = [
-  { point: "매치 시작 24시간 전", detail: "전액 환불" },
-  { point: "매치 시작 12시간 전", detail: "50% 환불" },
+  { point: "매치 시작 24시간 이상 전", detail: "전액 환불" },
+  { point: "매치 시작 6시간 이상 전", detail: "50% 환불" },
   { point: "매치 시작 6시간 이내", detail: "환불 불가" },
   { point: "천재지변 또는 운영 취소", detail: "전액 환불" },
 ];
@@ -431,6 +434,9 @@ export function getMatches() {
     const date = addDays(today, template.dayOffset);
     const dateKey = toDateKey(date);
     const compactDate = dateKey.replaceAll("-", "");
+    const currentParticipants = template.currentParticipants;
+    const remainingSlots = Math.max(template.capacity - currentParticipants, 0);
+    const isSoldOut = remainingSlots === 0;
 
     return {
       ...template,
@@ -438,7 +444,11 @@ export function getMatches() {
       dateKey,
       dateLabel: formatDateLabel(date),
       dateTitle: `${formatDateLabel(date)} 매치`,
-      status: getMatchStatus(template.format, template.currentParticipants, template.capacity),
+      currentParticipants,
+      remainingSlots,
+      isSoldOut,
+      canApply: !isSoldOut,
+      status: getMatchStatus(template.format, currentParticipants, template.capacity),
     };
   }).sort((a, b) => {
     const left = `${a.dateKey} ${a.time}`;
@@ -486,4 +496,3 @@ export function getParticipantSummary(match: MatchRecord) {
 export function getPriceLabel(amount: number) {
   return `${formatMoney(amount)}원`;
 }
-

@@ -3,8 +3,15 @@
 import { redirect } from "next/navigation";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import { getServerAuthState } from "@/lib/supabase/auth";
-import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  assertCashFoundationSchemaReady,
+  assertCashChargeOperationsSchemaReady,
+  assertVenueManagementSchemaReady,
+} from "@/lib/supabase/schema";
+import {
+  getSupabaseServerClient,
+  getSupabaseServiceRoleClient,
+} from "@/lib/supabase/server";
 import {
   buildGeneratedMatchTitle,
   getMatchLevelValues,
@@ -100,6 +107,7 @@ export async function createAdminMatchAction(formData: FormData) {
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
+  await assertCashFoundationSchemaReady(supabase);
   const values = readUpdateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
@@ -148,15 +156,12 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
   }
 
   if (values.status === "cancelled") {
-    const { error: cancelError } = await supabase
-      .from("match_applications")
-      .update({
-        status: "cancelled_by_admin",
-        cancel_reason: "admin_cancelled",
-        cancelled_at: new Date().toISOString(),
-      })
-      .eq("match_id", matchId)
-      .eq("status", "confirmed");
+    const { error: cancelError } = await supabase.rpc(
+      "cancel_match_applications_by_admin",
+      {
+        p_match_id: matchId,
+      },
+    );
 
     if (cancelError) {
       throw new Error(cancelError.message);
@@ -204,6 +209,45 @@ export async function updateAdminVenueAction(venueId: string, formData: FormData
   }
 
   redirect(`/admin/venues/${venueId}/edit`);
+}
+
+export async function adjustAdminCashBalanceAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashChargeOperationsSchemaReady(supabase);
+
+  const admin = getSupabaseServiceRoleClient() as any;
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  const amount = Number.parseInt(String(formData.get("amount") ?? "").trim(), 10);
+  const memo = String(formData.get("memo") ?? "").trim();
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  if (!Number.isInteger(amount) || amount === 0) {
+    throw new Error("Amount must be a non-zero integer");
+  }
+
+  if (!memo) {
+    throw new Error("Memo is required");
+  }
+
+  const { error } = await admin.rpc("adjust_cash_balance_by_admin", {
+    p_amount: amount,
+    p_memo: memo,
+    p_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
 }
 
 async function requireAdminSupabase() {

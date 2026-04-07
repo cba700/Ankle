@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import { AdminMatchList } from "@/features/admin/components/admin-match-list";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import ui from "@/features/admin/components/admin-ui.module.css";
@@ -12,9 +12,9 @@ export default async function AdminMatchesPage() {
     <AdminShell
       activeNav="matches"
       actions={
-        <Link className={`${ui.button} ${ui.buttonBrand}`} href="/admin/matches/new">
+        <AppLink className={`${ui.button} ${ui.buttonBrand}`} href="/admin/matches/new">
           + 새 매치 만들기
-        </Link>
+        </AppLink>
       }
       eyebrow="MATCHES"
       title="매치 운영 리스트"
