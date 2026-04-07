@@ -4,23 +4,17 @@ import styles from "./match-sections.module.css";
 
 type MatchLevelSectionProps = {
   distribution: MatchDetailDistributionItem[];
-  averageLevel: string;
   hint: string;
 };
 
 export function MatchLevelSection({
   distribution,
-  averageLevel,
   hint,
 }: MatchLevelSectionProps) {
   const maxValue = Math.max(...distribution.map((item) => item.value), 1);
 
   return (
     <MatchSection title="매치 데이터">
-      <p className={styles.levelSummary}>
-        예상 평균 레벨은 <strong>{averageLevel}</strong> 입니다.
-      </p>
-
       <div className={styles.barGrid}>
         {distribution.map((item) => (
           <div className={styles.barColumn} key={item.label}>
@@ -42,8 +36,7 @@ export function MatchLevelSection({
         ))}
       </div>
 
-      <div className={styles.hintBox}>{hint}</div>
+      <p className={styles.levelSummary}>{hint}</p>
     </MatchSection>
   );
 }
-

@@ -76,11 +76,12 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
     infoItems: buildInfoItems(match),
     levelDistribution: match.levelDistribution,
     averageLevel: match.averageLevel,
-    levelHint: "팀 밸런스를 위해 함께 온 인원도 다른 조로 배정될 수 있어요.",
+    levelHint: match.averageLevel,
     facilities: buildFacilities(match, override),
     courtNotes: override.courtNotes ?? buildCourtNotes(match),
     rules: match.rules,
     howTo: override.howTo ?? buildHowTo(match),
+    safetyNotes: match.safetyNotes,
     refundRows: override.refundRows ?? REFUND_POLICY.map((row) => ({
       condition: row.point,
       policy: row.detail,
@@ -149,7 +150,7 @@ function buildHowTo(match: MatchRecord) {
     `${match.preparation}만 준비해 오면 됩니다.`,
     "매니저가 출석 확인과 팀 밸런스 조정을 도와드립니다.",
     `${match.levelCondition} 기준으로 코트 템포와 매치 경험을 맞춰 팀을 나눕니다.`,
-    "친구와 함께 와도 현장 밸런스에 따라 다른 팀으로 배정될 수 있습니다.",
+    "친구와 함께 와도 현장 상황에 맞춰 팀을 다시 조정할 수 있습니다.",
   ];
 }
 
@@ -198,5 +199,5 @@ function getStatusTone(kind: MatchRecord["status"]["kind"]): MatchDetailStatusTo
 }
 
 function formatMatchFormat(format: MatchRecord["format"]) {
-  return format === "5vs5" ? "5on5 3파전" : "3on3 로테이션";
+  return format === "5vs5" ? "5vs5" : "3vs3";
 }

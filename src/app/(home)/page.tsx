@@ -14,7 +14,6 @@ export default async function Page() {
     <HomePage
       isAdmin={false}
       dates={dates}
-      myPageHref="/mypage"
       rows={rows}
     />
   );

@@ -1,7 +1,5 @@
 .section {
-  background: #fff;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  overflow: hidden;
 }
 
 .row {
@@ -10,9 +8,9 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  padding: 12px 12px 14px;
+  padding-bottom: 2px;
   scrollbar-width: none;
-  scroll-padding-inline: 12px;
+  scroll-padding-inline: 0;
   touch-action: pan-x;
 }
 
@@ -24,18 +22,19 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 38px;
+  min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(201, 193, 183, 0.72);
   border-radius: 999px;
   background: #fff;
   color: var(--text-secondary);
+  font-size: 13px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .chipActive {
-  border-color: rgba(255, 107, 0, 0.35);
+  border-color: rgba(255, 107, 0, 0.28);
   background: rgba(255, 107, 0, 0.08);
   color: var(--accent-strong);
   font-weight: 700;
@@ -44,11 +43,4 @@
 .chevron {
   width: 14px;
   height: 14px;
-}
-
-@media (min-width: 768px) {
-  .row {
-    padding: 12px 24px 16px;
-    scroll-padding-inline: 24px;
-  }
 }

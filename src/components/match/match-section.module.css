@@ -1,9 +1,6 @@
 .section {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.05);
+  padding: 28px 0;
+  border-top: 1px solid rgba(201, 193, 183, 0.56);
 }
 
 .header {
@@ -12,7 +9,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 20px 22px;
+  padding: 0;
   border: 0;
   background: transparent;
   text-align: left;
@@ -31,9 +28,9 @@
 }
 
 .title {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 
 .toggleIcon {
@@ -48,20 +45,19 @@
 }
 
 .body {
-  padding: 0 22px 22px;
+  padding-top: 16px;
 }
 
 @media (max-width: 720px) {
   .section {
-    border-radius: 18px;
+    padding: 24px 0;
   }
 
-  .header {
-    padding: 18px 18px;
+  .title {
+    font-size: 20px;
   }
 
   .body {
-    padding: 0 18px 18px;
+    padding-top: 14px;
   }
 }
-

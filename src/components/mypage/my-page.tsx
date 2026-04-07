@@ -4,7 +4,6 @@ import {
   BadgeIcon,
   BellIcon,
   BasketIcon,
-  CalendarIcon,
   ClockIcon,
   CogIcon,
   CopyIcon,
@@ -12,9 +11,9 @@ import {
   PencilIcon,
   QuestionIcon,
   SearchIcon,
-  UserIcon,
 } from "@/components/icons";
 import { AppLink } from "@/components/navigation/app-link";
+import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
 import styles from "./my-page.module.css";
 
 type MyPageProps = {
@@ -98,6 +97,11 @@ export function MyPage({ data }: MyPageProps) {
           </AppLink>
 
           <div className={styles.headerActions}>
+            <UserHeaderMenu
+              currentSection="mypage"
+              initialIsAdmin={data.profile.role === "admin"}
+              initialSignedIn
+            />
             <label className={styles.search}>
               <SearchIcon className={styles.searchIcon} />
               <span className="visuallyHidden">검색</span>
@@ -108,22 +112,6 @@ export function MyPage({ data }: MyPageProps) {
                 type="text"
               />
             </label>
-            <button
-              aria-label="일정 준비 중"
-              className={styles.iconButton}
-              disabled
-              type="button"
-            >
-              <CalendarIcon className={styles.actionIcon} />
-            </button>
-            <AppLink
-              aria-current="page"
-              aria-label="마이페이지"
-              className={`${styles.iconButton} ${styles.iconButtonActive}`}
-              href="/mypage"
-            >
-              <UserIcon className={styles.actionIcon} />
-            </AppLink>
           </div>
         </div>
       </header>

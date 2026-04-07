@@ -6,41 +6,24 @@ type AppHeaderSkeletonProps = {
 };
 
 export function AppHeaderSkeleton({ variant }: AppHeaderSkeletonProps) {
-  if (variant === "home") {
-    return (
-      <header className={`${styles.header} ${styles.homeHeader}`}>
-        <div className={styles.homeFrame}>
-          <div className={styles.homeTopRow}>
-            <SkeletonBlock className={styles.brand} tone="strong" />
-
-            <div className={styles.actions}>
-              <SkeletonBlock className={styles.search} />
-              <SkeletonBlock className={styles.iconButton} />
-              <SkeletonBlock className={styles.iconButton} />
-            </div>
-          </div>
-
-          <div className={styles.homeNav}>
-            <SkeletonBlock className={styles.tab} tone="strong" />
-          </div>
-        </div>
-      </header>
-    );
-  }
-
   return (
-    <header className={`${styles.header} ${styles.pageHeader}`}>
+    <header className={styles.header}>
       <div
-        className={`${styles.pageInner} ${
-          variant === "mypage" ? styles.pageInnerNarrow : ""
+        className={`${styles.inner} ${
+          variant === "mypage" ? styles.innerMypage : ""
         }`}
       >
         <SkeletonBlock className={styles.brand} tone="strong" />
 
         <div className={styles.actions}>
+          <div className={styles.menu}>
+            <SkeletonBlock className={styles.menuItem} />
+            {variant === "mypage" ? (
+              <SkeletonBlock className={styles.menuItemWide} />
+            ) : null}
+            <SkeletonBlock className={styles.menuItem} />
+          </div>
           <SkeletonBlock className={styles.search} />
-          <SkeletonBlock className={styles.iconButton} />
-          <SkeletonBlock className={styles.iconButton} />
         </div>
       </div>
     </header>

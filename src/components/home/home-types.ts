@@ -39,8 +39,7 @@ export type HomeMatchRow = {
   isClosed: boolean;
   venueName: string;
   title: string;
-  meta: string[];
+  meta: string;
   badges: HomeMatchBadge[];
   isNew: boolean;
 };
-

@@ -20,7 +20,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
-    width: min(calc(100% - 4px), 720px);
+    width: min(calc(100% - 4px), var(--content-max));
     margin: 0 auto;
     padding: 14px;
     border: 1px solid var(--line);
