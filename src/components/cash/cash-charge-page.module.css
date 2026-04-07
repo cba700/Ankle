@@ -1,9 +1,7 @@
 .page {
   min-height: 100vh;
   padding: 28px 0 calc(138px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at top left, rgba(243, 109, 33, 0.08), transparent 28%),
-    linear-gradient(180deg, #fbfaf8 0%, var(--background) 100%);
+  background: var(--user-page-background);
 }
 
 .main {

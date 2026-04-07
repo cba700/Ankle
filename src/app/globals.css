@@ -22,6 +22,9 @@
   --radius-sm: 14px;
   --content-max: 1050px;
   --page-width: min(calc(100% - 24px), var(--content-max));
+  --user-page-background:
+    radial-gradient(circle at top center, rgba(243, 109, 33, 0.08), transparent 34%),
+    linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
   --font-sans: "SUIT", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR",
     sans-serif;
 }
