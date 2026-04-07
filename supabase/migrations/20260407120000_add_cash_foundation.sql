@@ -217,6 +217,8 @@ begin
 end;
 $$;
 
+drop function if exists public.apply_to_match(uuid);
+
 create or replace function public.apply_to_match(p_match_id uuid)
 returns jsonb
 language plpgsql
@@ -340,6 +342,8 @@ exception
     raise exception 'ALREADY_APPLIED';
 end;
 $$;
+
+drop function if exists public.cancel_match_application(uuid);
 
 create or replace function public.cancel_match_application(p_match_id uuid)
 returns jsonb
