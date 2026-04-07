@@ -38,10 +38,11 @@ const MY_MENU_ITEMS: MenuItem[] = [
     statusText: "바로가기",
   },
   {
+    href: "#mypage-cash",
     icon: "history",
     key: "history",
-    label: "사용 내역",
-    statusText: "미구현",
+    label: "캐시 내역",
+    statusText: "바로가기",
   },
   {
     icon: "coupon",
@@ -193,10 +194,10 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.cashCard}>
             <div>
               <p className={styles.cashLabel}>나의 캐시</p>
-              <strong className={styles.cashAmount}>미구현</strong>
+              <strong className={styles.cashAmount}>{data.cashBalanceLabel}</strong>
             </div>
             <button className={styles.chargeButton} disabled type="button">
-              충전하기
+              충전 준비중
             </button>
           </article>
 
@@ -262,6 +263,46 @@ export function MyPage({ data }: MyPageProps) {
             </div>
           </article>
 
+          <section className={styles.applicationSection} id="mypage-cash">
+            <div className={styles.sectionHeading}>
+              <div>
+                <p className={styles.sectionEyebrow}>실제 데이터</p>
+                <h1 className={styles.sectionTitle}>캐시 내역</h1>
+              </div>
+              <span className={styles.sectionCount}>{data.cashTransactions.length}건</span>
+            </div>
+
+            {data.cashTransactions.length === 0 ? (
+              <div className={styles.emptyState}>
+                <strong>아직 반영된 캐시 거래가 없습니다.</strong>
+                <p>충전, 신청 차감, 환급이 발생하면 이 영역에서 바로 확인할 수 있습니다.</p>
+              </div>
+            ) : (
+              <div className={styles.cashTransactionList}>
+                {data.cashTransactions.map((transaction) => (
+                  <article className={styles.cashTransactionCard} key={transaction.id}>
+                    <div className={styles.cashTransactionTop}>
+                      <strong className={styles.cashTransactionTitle}>{transaction.title}</strong>
+                      <span
+                        className={`${styles.cashTransactionAmount} ${
+                          transaction.tone === "danger"
+                            ? styles.cashAmountDanger
+                            : transaction.tone === "muted"
+                              ? styles.cashAmountMuted
+                              : styles.cashAmountAccent
+                        }`}
+                      >
+                        {transaction.amountLabel}
+                      </span>
+                    </div>
+                    <p className={styles.cashTransactionMeta}>{transaction.metaLabel}</p>
+                    <p className={styles.cashTransactionBalance}>{transaction.balanceLabel}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section className={styles.applicationSection} id="mypage-applications">
             <div className={styles.sectionHeading}>
               <div>
@@ -306,6 +347,7 @@ export function MyPage({ data }: MyPageProps) {
                       <strong className={styles.applicationTitle}>{application.title}</strong>
                       <p className={styles.applicationVenue}>{application.venueName}</p>
                       <p className={styles.applicationMeta}>{application.metaLabel}</p>
+                      <p className={styles.applicationCash}>{application.cashLabel}</p>
                     </>
                   );
 

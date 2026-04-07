@@ -487,6 +487,73 @@
   scroll-margin-top: 92px;
 }
 
+.cashTransactionList {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cashTransactionCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff 0%, #fbfbfb 100%);
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.03);
+}
+
+.cashTransactionTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cashTransactionTitle {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.cashTransactionAmount {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cashAmountAccent {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+}
+
+.cashAmountDanger {
+  background: rgba(191, 61, 53, 0.12);
+  color: var(--red-text);
+}
+
+.cashAmountMuted {
+  background: var(--gray-soft);
+  color: var(--text-secondary);
+}
+
+.cashTransactionMeta,
+.cashTransactionBalance {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.cashTransactionBalance {
+  color: var(--text-tertiary);
+}
+
 .sectionHeading {
   display: flex;
   align-items: flex-end;
@@ -597,6 +664,14 @@
 
 .applicationMeta {
   color: var(--text-tertiary);
+}
+
+.applicationCash {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
 }
 
 .emptyState {

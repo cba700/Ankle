@@ -15,6 +15,9 @@ export default async function AdminPage() {
       activeNav="dashboard"
       actions={
         <>
+          <AppLink className={ui.button} href="/admin/cash">
+            캐시 현황
+          </AppLink>
           <AppLink className={ui.button} href="/admin/venues">
             경기장 관리
           </AppLink>
