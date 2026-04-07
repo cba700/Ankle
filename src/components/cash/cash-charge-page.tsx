@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeftIcon, ClockIcon, QuestionIcon, WalletIcon } from "@/components/icons";
+import { ArrowLeftIcon, ClockIcon, WalletIcon } from "@/components/icons";
 import { AppLink } from "@/components/navigation/app-link";
 import {
   buildCashChargePackageLabel,
@@ -21,6 +21,7 @@ type ChargeOrderSummary = {
 type CashChargePageProps = {
   accountLabel: string;
   cashBalanceLabel: string;
+  customerKey: string;
   displayName: string;
   nextPath: string | null;
   recentOrders: ChargeOrderSummary[];
@@ -34,7 +35,7 @@ type ChargeOrderResponse = {
 };
 
 type TossPaymentsFactory = (clientKey: string) => {
-  payment: () => {
+  payment: (params: { customerKey: string }) => {
     requestPayment: (params: {
       amount: number;
       customerEmail?: string;
@@ -59,6 +60,7 @@ let tossPaymentsPromise: Promise<TossPaymentsFactory> | null = null;
 export function CashChargePage({
   accountLabel,
   cashBalanceLabel,
+  customerKey,
   displayName,
   nextPath,
   recentOrders,
@@ -103,7 +105,9 @@ export function CashChargePage({
       }
 
       const TossPayments = await loadTossPayments();
-      const payment = TossPayments(tossClientKey).payment();
+      const payment = TossPayments(tossClientKey).payment({
+        customerKey,
+      });
       const origin = window.location.origin;
       const successUrl = new URL("/cash/charge/success", origin);
       const failUrl = new URL("/cash/charge/fail", origin);
@@ -123,8 +127,8 @@ export function CashChargePage({
         orderName: payload.orderName,
         successUrl: successUrl.toString(),
       });
-    } catch {
-      setFeedbackMessage("결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    } catch (error) {
+      setFeedbackMessage(getSdkErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -322,6 +326,14 @@ function getChargeErrorMessage(code?: string) {
     default:
       return "충전 주문을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
+}
+
+function getSdkErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.trim()) {
+    return `결제창을 열지 못했습니다. ${error.message}`;
+  }
+
+  return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
 function loadTossPayments() {

@@ -56,6 +56,7 @@ export default async function CashChargeRoute({
     <CashChargePage
       accountLabel={user.email ?? "카카오 계정"}
       cashBalanceLabel={`${formatMoney(cashAccount?.balance ?? 0)}원`}
+      customerKey={user.id}
       displayName={getDisplayName(user)}
       nextPath={normalizeInternalNextPath(params.next ?? null)}
       recentOrders={recentOrders.map((order) => ({
