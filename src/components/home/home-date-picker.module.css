@@ -1,6 +1,8 @@
 .section {
   --date-gap: 8px;
   display: block;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .arrowButton {
@@ -15,13 +17,15 @@
 .list {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(56px, calc((100% - (var(--date-gap) * 4)) / 5));
+  grid-auto-columns: 68px;
   gap: var(--date-gap);
+  width: 100%;
   min-width: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   padding-right: 12px;
+  scroll-padding-inline: 0;
   scrollbar-width: none;
   scroll-snap-type: x proximity;
   touch-action: pan-x;
@@ -116,6 +120,7 @@
 
   .list {
     grid-auto-columns: calc((100% - (var(--date-gap) * 6)) / 7);
+    width: auto;
     padding-right: 0;
   }
 
