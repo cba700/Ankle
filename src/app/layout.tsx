@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { RouteTransitionProvider } from "@/components/navigation/route-transition-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <Suspense fallback={children}>
+          <RouteTransitionProvider>{children}</RouteTransitionProvider>
+        </Suspense>
+      </body>
     </html>
   );
 }

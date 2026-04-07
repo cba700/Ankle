@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import { AdminVenueList } from "@/features/admin/components/admin-venue-list";
 import ui from "@/features/admin/components/admin-ui.module.css";
@@ -12,9 +12,9 @@ export default async function AdminVenuesPage() {
     <AdminShell
       activeNav="venues"
       actions={
-        <Link className={`${ui.button} ${ui.buttonBrand}`} href="/admin/venues/new">
+        <AppLink className={`${ui.button} ${ui.buttonBrand}`} href="/admin/venues/new">
           + 새 경기장 추가
-        </Link>
+        </AppLink>
       }
       eyebrow="VENUES"
       title="경기장 관리"

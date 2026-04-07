@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { AppLink } from "@/components/navigation/app-link";
 import type { AdminMatchRow } from "../types";
 import { AdminStatusBadge } from "./admin-status-badge";
 import ui from "./admin-ui.module.css";
@@ -109,9 +109,9 @@ export function AdminMatchList({
                           />
                         </td>
                         <td className={`${ui.tableCell} ${styles.actionCell}`}>
-                          <Link className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
+                          <AppLink className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
                             편집
-                          </Link>
+                          </AppLink>
                         </td>
                       </>
                     ) : (
@@ -147,9 +147,9 @@ export function AdminMatchList({
                           />
                         </td>
                         <td className={`${ui.tableCell} ${styles.actionCell}`}>
-                          <Link className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
+                          <AppLink className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
                             편집
-                          </Link>
+                          </AppLink>
                         </td>
                       </>
                     )}

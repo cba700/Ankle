@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AppLink } from "@/components/navigation/app-link";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
@@ -92,9 +92,9 @@ export function MatchApplyPage({
     <div className={styles.page}>
       <div className="pageShell">
         <main className={styles.main}>
-          <Link className={styles.backLink} href={detailHref}>
+          <AppLink className={styles.backLink} href={detailHref}>
             매치 상세로 돌아가기
-          </Link>
+          </AppLink>
 
           <section className={styles.heroCard}>
             <p className={styles.eyebrow}>Match Apply</p>
@@ -214,9 +214,9 @@ export function MatchApplyPage({
           </div>
 
           {isComplete ? (
-            <Link className={styles.primaryLink} href={detailHref}>
+            <AppLink className={styles.primaryLink} href={detailHref}>
               매치 상세로 돌아가기
-            </Link>
+            </AppLink>
           ) : (
             <button
               className={styles.primaryButton}

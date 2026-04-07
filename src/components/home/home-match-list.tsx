@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import { HeartIcon } from "@/components/icons";
 import type { HomeMatchRow } from "./home-types";
 import styles from "./home-match-list.module.css";
@@ -30,7 +30,7 @@ export function HomeMatchList({
 
         return (
           <article className={styles.row} key={row.id}>
-            <Link
+            <AppLink
               className={styles.rowLink}
               href={`/match/${row.slug}`}
               prefetch={false}
@@ -89,7 +89,7 @@ export function HomeMatchList({
                   ))}
                 </div>
               </div>
-            </Link>
+            </AppLink>
 
             <button
               aria-label={liked ? "관심 매치 해제" : "관심 매치 저장"}

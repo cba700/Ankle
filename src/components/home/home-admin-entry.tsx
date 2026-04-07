@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AppLink } from "@/components/navigation/app-link";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import styles from "./home-header.module.css";
 
@@ -82,9 +82,9 @@ export function HomeAdminEntry({ initialIsAdmin }: HomeAdminEntryProps) {
   }
 
   return (
-    <Link className={styles.adminButton} href="/admin">
+    <AppLink className={styles.adminButton} href="/admin">
       관리자
-    </Link>
+    </AppLink>
   );
 }
 

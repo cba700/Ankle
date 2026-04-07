@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import type { AdminVenueRow } from "../types";
 import { AdminStatusBadge } from "./admin-status-badge";
 import ui from "./admin-ui.module.css";
@@ -22,15 +22,15 @@ export function AdminVenueList({ rows }: AdminVenueListProps) {
 
           <div className={styles.actions}>
             <AdminStatusBadge label={row.statusLabel} tone={row.statusTone} />
-            <Link className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
+            <AppLink className={`${ui.button} ${ui.buttonSmall}`} href={row.editHref}>
               수정
-            </Link>
-            <Link
+            </AppLink>
+            <AppLink
               className={`${ui.button} ${ui.buttonBrand} ${ui.buttonSmall}`}
               href={row.createMatchHref}
             >
               이 경기장으로 새 매치
-            </Link>
+            </AppLink>
           </div>
         </article>
       ))}

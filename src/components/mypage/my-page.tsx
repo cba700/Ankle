@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { MyPageData } from "@/lib/mypage";
 import {
   ArrowRightIcon,
@@ -15,6 +14,7 @@ import {
   SearchIcon,
   UserIcon,
 } from "@/components/icons";
+import { AppLink } from "@/components/navigation/app-link";
 import styles from "./my-page.module.css";
 
 type MyPageProps = {
@@ -91,10 +91,10 @@ export function MyPage({ data }: MyPageProps) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link className={styles.brand} href="/">
+          <AppLink className={styles.brand} href="/">
             <span className={styles.brandWord}>앵클</span>
             <span className={styles.brandDot}>.</span>
-          </Link>
+          </AppLink>
 
           <div className={styles.headerActions}>
             <label className={styles.search}>
@@ -115,14 +115,14 @@ export function MyPage({ data }: MyPageProps) {
             >
               <CalendarIcon className={styles.actionIcon} />
             </button>
-            <Link
+            <AppLink
               aria-current="page"
               aria-label="마이페이지"
               className={`${styles.iconButton} ${styles.iconButtonActive}`}
               href="/mypage"
             >
               <UserIcon className={styles.actionIcon} />
-            </Link>
+            </AppLink>
           </div>
         </div>
       </header>
@@ -275,9 +275,9 @@ export function MyPage({ data }: MyPageProps) {
               <div className={styles.emptyState}>
                 <strong>아직 신청한 매치가 없습니다.</strong>
                 <p>메인 화면에서 원하는 매치를 찾아 첫 신청을 시작해 보세요.</p>
-                <Link className={styles.homeLink} href="/">
+                <AppLink className={styles.homeLink} href="/">
                   홈에서 매치 보기
-                </Link>
+                </AppLink>
               </div>
             ) : (
               <div className={styles.applicationList}>
@@ -310,13 +310,13 @@ export function MyPage({ data }: MyPageProps) {
                   );
 
                   return application.href ? (
-                    <Link
+                    <AppLink
                       className={styles.applicationCard}
                       href={application.href}
                       key={application.id}
                     >
                       {content}
-                    </Link>
+                    </AppLink>
                   ) : (
                     <div className={styles.applicationCard} key={application.id}>
                       {content}

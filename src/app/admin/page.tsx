@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import { AdminDashboard } from "@/features/admin/components/admin-dashboard";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import ui from "@/features/admin/components/admin-ui.module.css";
@@ -15,15 +15,15 @@ export default async function AdminPage() {
       activeNav="dashboard"
       actions={
         <>
-          <Link className={ui.button} href="/admin/venues">
+          <AppLink className={ui.button} href="/admin/venues">
             경기장 관리
-          </Link>
-          <Link className={`${ui.button} ${ui.buttonBrand}`} href="/admin/matches/new">
+          </AppLink>
+          <AppLink className={`${ui.button} ${ui.buttonBrand}`} href="/admin/matches/new">
             + 새 매치
-          </Link>
-          <Link className={ui.button} href="/admin/matches">
+          </AppLink>
+          <AppLink className={ui.button} href="/admin/matches">
             전체 일정
-          </Link>
+          </AppLink>
         </>
       }
       eyebrow="DASHBOARD"

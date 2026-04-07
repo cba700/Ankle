@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import { CalendarIcon, SearchIcon, UserIcon } from "@/components/icons";
 import styles from "./match-detail-header.module.css";
 
@@ -6,10 +6,10 @@ export function MatchDetailHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link className={styles.brand} href="/">
+        <AppLink className={styles.brand} href="/">
           <span className={styles.brandWord}>앵클</span>
           <span className={styles.brandDot}>.</span>
-        </Link>
+        </AppLink>
 
         <div className={styles.actions}>
           <label className={styles.search}>
@@ -24,9 +24,9 @@ export function MatchDetailHeader() {
           <button aria-label="일정" className={styles.iconButton} type="button">
             <CalendarIcon className={styles.actionIcon} />
           </button>
-          <Link aria-label="로그인" className={styles.iconButton} href="/login">
+          <AppLink aria-label="로그인" className={styles.iconButton} href="/login">
             <UserIcon className={styles.actionIcon} />
-          </Link>
+          </AppLink>
         </div>
       </div>
     </header>

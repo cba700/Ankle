@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 
 export default function NotFound() {
   return (
@@ -21,9 +21,9 @@ export default function NotFound() {
           textAlign: "center",
         }}
       >
-        <Link className="sectionLabel" href="/" style={{ margin: "0 auto 16px" }}>
+        <AppLink className="sectionLabel" href="/" style={{ margin: "0 auto 16px" }}>
           앵클
-        </Link>
+        </AppLink>
         <h1 style={{ margin: "0 0 10px", fontSize: "32px", letterSpacing: "-0.04em" }}>
           매치를 찾을 수 없습니다
         </h1>
@@ -31,7 +31,7 @@ export default function NotFound() {
           링크가 바뀌었거나 준비 중인 매치일 수 있습니다. 메인 페이지에서 다른 날짜의
           매치를 확인해 주세요.
         </p>
-        <Link
+        <AppLink
           href="/"
           style={{
             display: "inline-flex",
@@ -46,7 +46,7 @@ export default function NotFound() {
           }}
         >
           메인으로 돌아가기
-        </Link>
+        </AppLink>
       </div>
     </main>
   );

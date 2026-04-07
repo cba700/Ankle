@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/navigation/app-link";
 import styles from "./match-sticky-apply-bar.module.css";
 
 type MatchStickyApplyBarProps = {
@@ -20,9 +20,9 @@ export function MatchStickyApplyBar({
         </div>
 
         {canApply ? (
-          <Link className={styles.applyButton} href={applyHref}>
+          <AppLink className={styles.applyButton} href={applyHref}>
             신청하기
-          </Link>
+          </AppLink>
         ) : (
           <button className={styles.applyButtonDisabled} disabled type="button">
             신청 마감
