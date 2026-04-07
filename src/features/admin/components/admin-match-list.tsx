@@ -169,7 +169,7 @@ function getMatchFilterTabs(rows: AdminMatchRow[]) {
     { id: "all" as const, label: `전체 (${rows.length})` },
     {
       id: "open" as const,
-      label: `모집 중 (${rows.filter((row) => row.status === "open" && !row.isNearClosing).length})`,
+      label: `모집 중 (${rows.filter((row) => row.status === "open" && !row.isNearClosing && !row.isSoldOut).length})`,
     },
     {
       id: "draft" as const,
@@ -184,7 +184,7 @@ function getMatchFilterTabs(rows: AdminMatchRow[]) {
 
 function filterRows(rows: AdminMatchRow[], activeFilter: MatchFilter) {
   if (activeFilter === "open") {
-    return rows.filter((row) => row.status === "open" && !row.isNearClosing);
+    return rows.filter((row) => row.status === "open" && !row.isNearClosing && !row.isSoldOut);
   }
 
   if (activeFilter === "draft") {

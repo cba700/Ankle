@@ -118,7 +118,6 @@ export function MatchApplyPage({
               {view.dateText} {view.time} · {view.courtName}
             </p>
             <div className={styles.metaRow}>
-              <span>{view.participantSummary}</span>
               <span>{view.address}</span>
             </div>
           </section>

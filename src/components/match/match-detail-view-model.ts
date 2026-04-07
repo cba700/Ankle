@@ -1,5 +1,5 @@
 import { formatMoney } from "@/lib/date";
-import { REFUND_POLICY, getParticipantSummary, type MatchRecord } from "@/lib/matches";
+import { REFUND_POLICY, type MatchRecord } from "@/lib/matches";
 import type {
   MatchDetailFacility,
   MatchDetailInfoItem,
@@ -71,7 +71,6 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
     views: override.views ?? 72 + numericId * 17 + match.currentParticipants * 3,
     notice: override.notice ?? getDefaultNotice(match),
     priceLabel: `${formatMoney(match.price)}원`,
-    participantSummary: getParticipantSummary(match),
     images: match.imageUrls,
     infoItems: buildInfoItems(match),
     levelDistribution: match.levelDistribution,
@@ -95,7 +94,6 @@ function buildInfoItems(match: MatchRecord): MatchDetailInfoItem[] {
     { key: "gender", label: "성별", value: match.genderCondition },
     { key: "duration", label: "진행 시간", value: match.durationText },
     { key: "format", label: "경기 방식", value: formatMatchFormat(match.format) },
-    { key: "headcount", label: "참가 인원", value: `${match.currentParticipants} / ${match.capacity}명` },
     { key: "shoes", label: "준비물", value: match.preparation },
   ];
 }

@@ -155,6 +155,7 @@ export type AdminMatchRow = {
   displayStatusLabel: string;
   displayStatusTone: AdminBadgeTone;
   isNearClosing: boolean;
+  isSoldOut: boolean;
   tags: string[];
   editHref: string;
 };

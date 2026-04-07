@@ -5,7 +5,6 @@ export type MatchDetailInfoKey =
   | "gender"
   | "duration"
   | "format"
-  | "headcount"
   | "shoes";
 
 export type MatchDetailInfoItem = {
@@ -61,7 +60,6 @@ export type MatchDetailViewModel = {
   views: number;
   notice: string;
   priceLabel: string;
-  participantSummary: string;
   images: string[];
   infoItems: MatchDetailInfoItem[];
   levelDistribution: MatchDetailDistributionItem[];
