@@ -28,16 +28,21 @@ type CashChargePageProps = {
 };
 
 type ChargeOrderResponse = {
-  amount: number;
+  amount: number | string;
   code?: string;
   orderId: string;
   orderName: string;
 };
 
+type TossPaymentAmount = {
+  currency: "KRW";
+  value: number;
+};
+
 type TossPaymentsFactory = (clientKey: string) => {
   payment: (params: { customerKey: string }) => {
     requestPayment: (params: {
-      amount: number;
+      amount: TossPaymentAmount;
       customerEmail?: string;
       customerName?: string;
       failUrl: string;
@@ -104,6 +109,16 @@ export function CashChargePage({
         return;
       }
 
+      const chargeAmount =
+        typeof payload.amount === "number"
+          ? payload.amount
+          : Number.parseInt(payload.amount, 10);
+
+      if (!Number.isFinite(chargeAmount) || chargeAmount <= 0) {
+        setFeedbackMessage("충전 금액 정보를 확인하지 못해 결제를 시작할 수 없습니다.");
+        return;
+      }
+
       const TossPayments = await loadTossPayments();
       const payment = TossPayments(tossClientKey).payment({
         customerKey,
@@ -118,7 +133,10 @@ export function CashChargePage({
       }
 
       await payment.requestPayment({
-        amount: payload.amount,
+        amount: {
+          currency: "KRW",
+          value: chargeAmount,
+        },
         customerEmail: accountLabel.includes("@") ? accountLabel : undefined,
         customerName: displayName,
         failUrl: failUrl.toString(),
