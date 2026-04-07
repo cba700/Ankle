@@ -48,7 +48,7 @@
 ## 관리자 흐름
 
 1. 관리자 권한 사용자가 `/admin`에 접근합니다.
-2. `profiles.role = 'admin'` 또는 사용자 메타데이터의 `role = 'admin'`이면 관리자 화면에 진입합니다.
+2. `profiles.role = 'admin'`인 계정만 관리자 화면에 진입합니다.
 3. `/admin/venues`에서 경기장을 관리하고, `/admin/matches`에서 매치를 운영합니다.
 4. 경기장 기본값은 새 매치 작성 시 재사용할 수 있습니다.
 5. 시작 시간이 지난 공개 매치는 DB 함수 `close_started_matches()`로 자동 마감 처리됩니다.

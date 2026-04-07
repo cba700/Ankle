@@ -38,11 +38,7 @@ export function HomeAdminEntry({ initialIsAdmin }: HomeAdminEntryProps) {
           return;
         }
 
-        let role = normalizeUserRole(
-          user.app_metadata?.role ?? user.user_metadata?.role,
-        );
-
-        const { data: profile } = await activeSupabase
+        const { data: profile, error } = await activeSupabase
           .from("profiles")
           .select("role")
           .eq("id", user.id)
@@ -52,11 +48,12 @@ export function HomeAdminEntry({ initialIsAdmin }: HomeAdminEntryProps) {
           return;
         }
 
-        if (profile?.role) {
-          role = normalizeUserRole(profile.role);
+        if (error) {
+          setIsAdmin(false);
+          return;
         }
 
-        setIsAdmin(role === "admin");
+        setIsAdmin(normalizeUserRole(profile?.role) === "admin");
       } catch {
         if (!isMounted) {
           return;

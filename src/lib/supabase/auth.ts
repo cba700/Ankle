@@ -64,23 +64,23 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
     };
   }
 
-  let role = normalizeUserRole(
-    user.app_metadata?.role ?? user.user_metadata?.role,
-  );
-
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.role) {
-    role = normalizeUserRole(profile.role);
+  if (error) {
+    return {
+      configured: true,
+      role: "user",
+      user,
+    };
   }
 
   return {
     configured: true,
-    role,
+    role: normalizeUserRole(profile?.role),
     user,
   };
 }
