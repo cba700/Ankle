@@ -8,6 +8,7 @@ import {
 import type {
   CashAccountEntity,
   CashChargeOrderEntity,
+  CashChargeOrderEventEntity,
   CashTransactionEntity,
 } from "@/lib/cash";
 import {
@@ -20,6 +21,7 @@ import type {
   AdminBadgeTone,
   AdminCashAccountRow,
   AdminCashChargeOrderRow,
+  AdminCashChargeOrderEventRow,
   AdminCashTransactionRow,
   AdminMatchFormValue,
   AdminMatchRecord,
@@ -175,12 +177,30 @@ export function buildAdminCashChargeOrderRows(
 ): AdminCashChargeOrderRow[] {
   return chargeOrders.map((order) => ({
     amountLabel: `${formatMoney(order.amount)}원`,
+    detailLabel:
+      order.lastErrorMessage ??
+      order.failureMessage ??
+      order.cancelReason ??
+      (order.approvedAt ? "승인 완료" : "추가 확인 필요 없음"),
     id: order.id,
     metaLabel: `${formatCompactDateLabel(new Date(order.createdAt))} · ${compactUserId(order.userId)}`,
     orderId: order.orderId,
+    paymentKeyLabel: order.tossPaymentKey ? compactPaymentKey(order.tossPaymentKey) : "-",
     statusLabel: getChargeOrderStatusLabel(order.status),
     statusTone: getChargeOrderStatusTone(order.status),
     userId: order.userId,
+  }));
+}
+
+export function buildAdminCashChargeOrderEventRows(
+  events: CashChargeOrderEventEntity[],
+): AdminCashChargeOrderEventRow[] {
+  return events.map((event) => ({
+    eventType: event.eventType,
+    id: event.id,
+    metaLabel: `${formatCompactDateLabel(new Date(event.createdAt))} · ${compactEventId(event.providerEventId)}`,
+    orderId: event.orderId,
+    processedResultLabel: event.processedResult,
   }));
 }
 
@@ -398,6 +418,8 @@ function getCashTransactionTitle(transaction: CashTransactionEntity) {
   switch (transaction.type) {
     case "charge":
       return "캐시 충전";
+    case "charge_refund":
+      return "충전 환불";
     case "match_refund":
       return "매치 환급";
     case "adjustment":
@@ -452,4 +474,20 @@ function getChargeOrderStatusTone(status: CashChargeOrderEntity["status"]): Admi
 
 function compactUserId(userId: string) {
   return `${userId.slice(0, 8)}...`;
+}
+
+function compactPaymentKey(paymentKey: string) {
+  if (paymentKey.length <= 16) {
+    return paymentKey;
+  }
+
+  return `${paymentKey.slice(0, 10)}...${paymentKey.slice(-4)}`;
+}
+
+function compactEventId(eventId: string) {
+  if (eventId.length <= 18) {
+    return eventId;
+  }
+
+  return `${eventId.slice(0, 12)}...`;
 }

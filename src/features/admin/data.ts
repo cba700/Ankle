@@ -9,11 +9,12 @@ import {
 import {
   listCashAccounts,
   listRecentCashChargeOrders,
+  listRecentCashChargeOrderEvents,
   listRecentCashTransactions,
 } from "@/lib/cash";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import {
-  assertCashFoundationSchemaReady,
+  assertCashChargeOperationsSchemaReady,
 } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
@@ -71,6 +72,7 @@ export async function getAdminCashDashboardData() {
     return {
       accounts: [],
       chargeOrders: [],
+      chargeOrderEvents: [],
       transactions: [],
     };
   }
@@ -81,21 +83,24 @@ export async function getAdminCashDashboardData() {
     return {
       accounts: [],
       chargeOrders: [],
+      chargeOrderEvents: [],
       transactions: [],
     };
   }
 
-  await assertCashFoundationSchemaReady(supabase);
+  await assertCashChargeOperationsSchemaReady(supabase);
 
-  const [accounts, chargeOrders, transactions] = await Promise.all([
+  const [accounts, chargeOrders, chargeOrderEvents, transactions] = await Promise.all([
     listCashAccounts(supabase),
     listRecentCashChargeOrders(supabase),
+    listRecentCashChargeOrderEvents(supabase),
     listRecentCashTransactions(supabase),
   ]);
 
   return {
     accounts,
     chargeOrders,
+    chargeOrderEvents,
     transactions,
   };
 }

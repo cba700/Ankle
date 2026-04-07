@@ -273,6 +273,8 @@ function getCashTransactionTitle(type: CashTransactionEntity["type"]) {
   switch (type) {
     case "charge":
       return "캐시 충전";
+    case "charge_refund":
+      return "충전 환불";
     case "match_refund":
       return "매치 환급";
     case "adjustment":

@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export type CashTransactionType =
   | "charge"
+  | "charge_refund"
   | "match_debit"
   | "match_refund"
   | "adjustment";
@@ -40,15 +41,29 @@ export type CashTransactionEntity = {
 export type CashChargeOrderEntity = {
   amount: number;
   approvedAt: string | null;
+  cancelReason: string | null;
   createdAt: string;
   failureCode: string | null;
   failureMessage: string | null;
   id: string;
+  lastErrorCode: string | null;
+  lastErrorMessage: string | null;
   orderId: string;
+  refundedAmount: number;
+  refundedAt: string | null;
   status: CashChargeOrderStatus;
   tossPaymentKey: string | null;
   updatedAt: string;
   userId: string;
+};
+
+export type CashChargeOrderEventEntity = {
+  createdAt: string;
+  eventType: string;
+  id: string;
+  orderId: string;
+  processedResult: string;
+  providerEventId: string;
 };
 
 type CashAccountRow = {
@@ -72,15 +87,29 @@ type CashTransactionRow = {
 type CashChargeOrderRow = {
   amount: number;
   approved_at: string | null;
+  cancel_reason: string | null;
   created_at: string;
   failure_code: string | null;
   failure_message: string | null;
   id: string;
+  last_error_code: string | null;
+  last_error_message: string | null;
   order_id: string;
+  refunded_amount: number;
+  refunded_at: string | null;
   status: CashChargeOrderStatus;
   toss_payment_key: string | null;
   updated_at: string;
   user_id: string;
+};
+
+type CashChargeOrderEventRow = {
+  created_at: string;
+  event_type: string;
+  id: string;
+  order_id: string;
+  processed_result: string;
+  provider_event_id: string;
 };
 
 type SupabaseServerClient = NonNullable<
@@ -158,7 +187,7 @@ export async function listRecentCashChargeOrders(
   const { data, error } = await supabase
     .from("cash_charge_orders")
     .select(
-      "id, user_id, order_id, amount, status, toss_payment_key, approved_at, failure_code, failure_message, created_at, updated_at",
+      "id, user_id, order_id, amount, status, toss_payment_key, approved_at, failure_code, failure_message, last_error_code, last_error_message, refunded_amount, refunded_at, cancel_reason, created_at, updated_at",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -168,6 +197,51 @@ export async function listRecentCashChargeOrders(
   }
 
   return ((data ?? []) as CashChargeOrderRow[]).map(mapCashChargeOrder);
+}
+
+export async function listCashChargeOrdersByUserId(
+  supabase: SupabaseServerClient,
+  userId: string,
+  limit = 20,
+) {
+  const { data, error } = await supabase
+    .from("cash_charge_orders")
+    .select(
+      "id, user_id, order_id, amount, status, toss_payment_key, approved_at, failure_code, failure_message, last_error_code, last_error_message, refunded_amount, refunded_at, cancel_reason, created_at, updated_at",
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to load cash charge orders: ${error.message}`);
+  }
+
+  return ((data ?? []) as CashChargeOrderRow[]).map(mapCashChargeOrder);
+}
+
+export async function listRecentCashChargeOrderEvents(
+  supabase: SupabaseServerClient,
+  limit = 20,
+) {
+  const { data, error } = await supabase
+    .from("cash_charge_order_events")
+    .select("id, order_id, provider_event_id, event_type, processed_result, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to load charge order events: ${error.message}`);
+  }
+
+  return ((data ?? []) as CashChargeOrderEventRow[]).map((row) => ({
+    createdAt: row.created_at,
+    eventType: row.event_type,
+    id: row.id,
+    orderId: row.order_id,
+    processedResult: row.processed_result,
+    providerEventId: row.provider_event_id,
+  }));
 }
 
 export async function listCashAccounts(
@@ -208,11 +282,16 @@ function mapCashChargeOrder(row: CashChargeOrderRow): CashChargeOrderEntity {
   return {
     amount: row.amount,
     approvedAt: row.approved_at,
+    cancelReason: row.cancel_reason,
     createdAt: row.created_at,
     failureCode: row.failure_code,
     failureMessage: row.failure_message,
     id: row.id,
+    lastErrorCode: row.last_error_code,
+    lastErrorMessage: row.last_error_message,
     orderId: row.order_id,
+    refundedAmount: row.refunded_amount,
+    refundedAt: row.refunded_at,
     status: row.status,
     tossPaymentKey: row.toss_payment_key,
     updatedAt: row.updated_at,

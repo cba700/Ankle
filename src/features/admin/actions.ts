@@ -5,9 +5,13 @@ import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
   assertCashFoundationSchemaReady,
+  assertCashChargeOperationsSchemaReady,
   assertVenueManagementSchemaReady,
 } from "@/lib/supabase/schema";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getSupabaseServerClient,
+  getSupabaseServiceRoleClient,
+} from "@/lib/supabase/server";
 import {
   buildGeneratedMatchTitle,
   getMatchLevelValues,
@@ -205,6 +209,45 @@ export async function updateAdminVenueAction(venueId: string, formData: FormData
   }
 
   redirect(`/admin/venues/${venueId}/edit`);
+}
+
+export async function adjustAdminCashBalanceAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashChargeOperationsSchemaReady(supabase);
+
+  const admin = getSupabaseServiceRoleClient() as any;
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  const amount = Number.parseInt(String(formData.get("amount") ?? "").trim(), 10);
+  const memo = String(formData.get("memo") ?? "").trim();
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  if (!Number.isInteger(amount) || amount === 0) {
+    throw new Error("Amount must be a non-zero integer");
+  }
+
+  if (!memo) {
+    throw new Error("Memo is required");
+  }
+
+  const { error } = await admin.rpc("adjust_cash_balance_by_admin", {
+    p_amount: amount,
+    p_memo: memo,
+    p_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
 }
 
 async function requireAdminSupabase() {

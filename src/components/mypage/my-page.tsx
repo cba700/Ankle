@@ -196,9 +196,9 @@ export function MyPage({ data }: MyPageProps) {
               <p className={styles.cashLabel}>나의 캐시</p>
               <strong className={styles.cashAmount}>{data.cashBalanceLabel}</strong>
             </div>
-            <button className={styles.chargeButton} disabled type="button">
-              충전 준비중
-            </button>
+            <AppLink className={styles.chargeButton} href="/cash/charge">
+              캐시 충전
+            </AppLink>
           </article>
 
           <article className={styles.guideCard}>

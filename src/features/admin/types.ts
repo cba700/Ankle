@@ -120,12 +120,22 @@ export type AdminCashTransactionRow = {
 
 export type AdminCashChargeOrderRow = {
   amountLabel: string;
+  detailLabel: string;
   id: string;
   metaLabel: string;
   orderId: string;
+  paymentKeyLabel: string;
   statusLabel: string;
   statusTone: AdminBadgeTone;
   userId: string;
+};
+
+export type AdminCashChargeOrderEventRow = {
+  eventType: string;
+  id: string;
+  metaLabel: string;
+  orderId: string;
+  processedResultLabel: string;
 };
 
 export type AdminMatchRow = {

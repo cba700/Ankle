@@ -82,6 +82,11 @@ export function MatchApplyPage({
         return;
       }
 
+      if (payload?.code === "INSUFFICIENT_CASH") {
+        window.location.href = `/cash/charge?next=${encodeURIComponent(applyPath)}`;
+        return;
+      }
+
       setFeedbackMessage(getErrorMessage(payload?.code));
     } catch {
       setFeedbackMessage("신청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
@@ -245,7 +250,7 @@ function getErrorMessage(code?: string) {
   }
 
   if (code === "INSUFFICIENT_CASH") {
-    return "보유 캐시가 부족합니다. 충전 기능 연결 전이라 현재는 신청을 완료할 수 없습니다.";
+    return "보유 캐시가 부족해 충전 페이지로 이동합니다.";
   }
 
   if (code === "MATCH_STARTED") {
