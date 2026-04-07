@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarIcon, SearchIcon, UserIcon } from "@/components/icons";
+import { HomeAdminEntry } from "./home-admin-entry";
 import styles from "./home-header.module.css";
 
 type HomeHeaderProps = {
@@ -28,11 +29,7 @@ export function HomeHeader({ isAdmin, myPageHref, tabLabel }: HomeHeaderProps) {
                 type="text"
               />
             </label>
-            {isAdmin ? (
-              <Link className={styles.adminButton} href="/admin">
-                관리자
-              </Link>
-            ) : null}
+            <HomeAdminEntry initialIsAdmin={isAdmin} />
             <button aria-label="일정" className={styles.iconButton} type="button">
               <CalendarIcon className={styles.actionIcon} />
             </button>
