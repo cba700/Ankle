@@ -18,8 +18,12 @@ export async function getPublicMatches() {
     return getMockMatches();
   }
 
-  const entities = await listPublicMatchEntities();
-  return entities.map(mapEntityToMatchRecord);
+  try {
+    const entities = await listPublicMatchEntities();
+    return entities.map(mapEntityToMatchRecord);
+  } catch {
+    return getMockMatches();
+  }
 }
 
 export async function getPublicMatchBySlug(slug: string) {
@@ -29,8 +33,12 @@ export async function getPublicMatchBySlug(slug: string) {
     return getMockMatchBySlug(normalizedSlug) ?? null;
   }
 
-  const entity = await getPublicMatchEntityBySlug(normalizedSlug);
-  return entity ? mapEntityToMatchRecord(entity) : null;
+  try {
+    const entity = await getPublicMatchEntityBySlug(normalizedSlug);
+    return entity ? mapEntityToMatchRecord(entity) : null;
+  } catch {
+    return getMockMatchBySlug(normalizedSlug) ?? null;
+  }
 }
 
 function normalizeMatchSlug(slug: string) {

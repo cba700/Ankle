@@ -63,17 +63,16 @@ export function HomeMatchBrowser({ dates, rows }: HomeMatchBrowserProps) {
         onSelect={handleSelectDate}
         selectedDateKey={selectedDateKey}
       />
-      <section className={styles.dateSummary}>
-        <p className={styles.dateSummaryEyebrow}>선택한 날짜</p>
-        <h2 className={styles.dateSummaryTitle}>
-          {selectedDate.month}월 {selectedDate.day}일 {selectedDate.weekdayLong} 매치
-        </h2>
-      </section>
       <HomeFilterBar
         activeFilterIds={activeFilterIds}
         items={HOME_FILTERS}
         onToggle={toggleFilter}
       />
+      {selectedDate ? (
+        <h2 className={styles.dateHeading}>
+          {selectedDate.month}월 {selectedDate.day}일 {selectedDate.weekdayLong} 매치
+        </h2>
+      ) : null}
       <HomeMatchList
         likedMatches={likedMatches}
         onToggleLike={toggleLike}

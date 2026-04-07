@@ -3,18 +3,28 @@ import { ArrowLeftIcon, ArrowRightIcon, ShareIcon } from "@/components/icons";
 import styles from "./match-hero.module.css";
 
 type MatchHeroProps = {
+  dateText: string;
   courtName: string;
   images: string[];
   imageIndex: number;
+  statusLabel: string;
+  statusTone: "neutral" | "accent" | "danger" | "open";
+  time: string;
+  title: string;
   onPrev: () => void;
   onNext: () => void;
   onCopyShare: () => void;
 };
 
 export function MatchHero({
+  dateText,
   courtName,
   images,
   imageIndex,
+  statusLabel,
+  statusTone,
+  time,
+  title,
   onPrev,
   onNext,
   onCopyShare,
@@ -31,7 +41,7 @@ export function MatchHero({
             className={styles.image}
             fill
             priority
-            sizes="(max-width: 1280px) 100vw, 1200px"
+            sizes="(max-width: 1080px) 100vw, 1050px"
             src={images[imageIndex]}
           />
         ) : (
@@ -49,6 +59,26 @@ export function MatchHero({
           <ShareIcon className={styles.shareIcon} />
           친구에게 공유하기
         </button>
+
+        <div className={styles.heroCopy}>
+          <span
+            className={`${styles.statusPill} ${
+              statusTone === "danger"
+                ? styles.statusDanger
+                : statusTone === "accent"
+                  ? styles.statusAccent
+                  : statusTone === "open"
+                    ? styles.statusOpen
+                    : styles.statusNeutral
+            }`}
+          >
+            {statusLabel}
+          </span>
+          <h1 className={styles.title}>{title}</h1>
+          <p className={styles.subTitle}>
+            {dateText} {time} · {courtName}
+          </p>
+        </div>
 
         <div className={styles.bottomBar}>
           <div className={styles.counter}>
@@ -69,4 +99,3 @@ export function MatchHero({
     </section>
   );
 }
-

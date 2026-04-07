@@ -71,6 +71,6 @@ export type MatchDetailViewModel = {
   courtNotes: string[];
   rules: string[];
   howTo: string[];
+  safetyNotes: string[];
   refundRows: MatchDetailRefundRow[];
 };
-

@@ -1,43 +1,16 @@
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 18px 28px;
 }
 
 .infoCard {
-  display: flex;
-  align-items: start;
-  gap: 12px;
-  min-height: 88px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fafafa;
-}
-
-.infoIconWrap {
   display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background: #fff;
-  color: var(--text-primary);
-  flex-shrink: 0;
-}
-
-.infoIcon {
-  width: 18px;
-  height: 18px;
-}
-
-.infoCopy {
-  display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .infoLabel {
-  color: var(--text-tertiary);
+  color: #8a8177;
   font-size: 12px;
   font-weight: 700;
 }
@@ -46,36 +19,14 @@
   color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
-  line-height: 1.45;
-}
-
-.viewerPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: #111;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.viewerIcon {
-  width: 15px;
-  height: 15px;
+  line-height: 1.55;
 }
 
 .levelSummary {
+  margin: 18px 0 0;
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.65;
-}
-
-.levelSummary strong {
-  color: var(--text-primary);
 }
 
 .barGrid {
@@ -83,7 +34,6 @@
   align-items: end;
   gap: 10px;
   height: 156px;
-  margin-top: 18px;
 }
 
 .barColumn {
@@ -132,32 +82,16 @@
   font-weight: 700;
 }
 
-.hintBox {
-  margin-top: 16px;
-  padding: 12px 14px;
-  border: 1px solid #ffe3c7;
-  border-radius: 14px;
-  background: #fff7ef;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
 .facilityGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 12px;
+  gap: 12px 20px;
 }
 
 .facilityItem {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fafafa;
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 700;
@@ -165,17 +99,16 @@
 
 .facilityItemOff {
   color: var(--text-tertiary);
-  text-decoration: line-through;
 }
 
 .facilityKey {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 8px;
-  background: #fff;
-  color: var(--accent-strong);
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 999px;
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 900;
   flex-shrink: 0;
@@ -183,7 +116,7 @@
 
 .notesTitle,
 .subTitle {
-  margin: 18px 0 8px;
+  margin: 22px 0 10px;
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 800;
@@ -192,7 +125,7 @@
 .noteList,
 .bulletList {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -215,32 +148,37 @@
   position: absolute;
   top: 10px;
   left: 0;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 999px;
   background: var(--accent);
 }
 
 .refundTable {
   display: grid;
-  gap: 10px;
 }
 
 .refundRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fafafa;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(201, 193, 183, 0.5);
+}
+
+.refundRow:first-child {
+  padding-top: 0;
+}
+
+.refundRow:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .refundCondition {
   color: var(--text-secondary);
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .refundPolicy {
@@ -261,12 +199,10 @@
   }
 
   .refundRow {
-    flex-direction: column;
-    align-items: start;
+    grid-template-columns: 1fr;
   }
 
   .refundPolicy {
     white-space: normal;
   }
 }
-

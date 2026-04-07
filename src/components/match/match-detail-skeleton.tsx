@@ -2,9 +2,9 @@ import { AppHeaderSkeleton } from "@/components/skeleton/app-header-skeleton";
 import { SkeletonBlock } from "@/components/skeleton/skeleton";
 import styles from "./match-detail-skeleton.module.css";
 
-const DETAIL_SECTION_COUNT = 4;
-const INFO_CARD_COUNT = 4;
+const INFO_ITEM_COUNT = 6;
 const FACILITY_COUNT = 6;
+const DETAIL_SECTION_COUNT = 3;
 
 export function MatchDetailSkeleton() {
   return (
@@ -15,7 +15,12 @@ export function MatchDetailSkeleton() {
         <div className={styles.heroFrame}>
           <SkeletonBlock className={styles.heroImage} tone="strong" />
           <SkeletonBlock className={styles.shareButton} />
-
+          <div className={styles.heroCopy}>
+            <SkeletonBlock className={styles.status} />
+            <SkeletonBlock className={styles.titlePrimary} tone="strong" />
+            <SkeletonBlock className={styles.titleSecondary} tone="strong" />
+            <SkeletonBlock className={styles.subTitle} />
+          </div>
           <div className={styles.bottomBar}>
             <SkeletonBlock className={styles.counter} />
             <div className={styles.controls}>
@@ -28,42 +33,26 @@ export function MatchDetailSkeleton() {
 
       <main className={styles.body}>
         <div className={styles.contentColumn}>
-          <section className={styles.leadCard}>
-            <SkeletonBlock className={styles.status} />
-            <SkeletonBlock className={styles.titlePrimary} tone="strong" />
-            <SkeletonBlock className={styles.titleSecondary} tone="strong" />
-            <SkeletonBlock className={styles.subTitle} />
-            <div className={styles.quickMeta}>
-              <SkeletonBlock className={styles.metaPill} />
-              <SkeletonBlock className={styles.metaPillWide} />
-            </div>
-          </section>
-
           <section className={styles.sectionCard}>
             <SkeletonBlock className={styles.sectionTitle} tone="strong" />
             <div className={styles.infoGrid}>
-              {Array.from({ length: INFO_CARD_COUNT }, (_, index) => (
-                <article className={styles.infoCard} key={`info-${index}`}>
-                  <SkeletonBlock className={styles.infoIcon} />
-                  <div className={styles.infoCopy}>
-                    <SkeletonBlock className={styles.infoLabel} />
-                    <SkeletonBlock className={styles.infoValue} tone="strong" />
-                  </div>
-                </article>
+              {Array.from({ length: INFO_ITEM_COUNT }, (_, index) => (
+                <div className={styles.infoItem} key={`info-${index}`}>
+                  <SkeletonBlock className={styles.infoLabel} />
+                  <SkeletonBlock className={styles.infoValue} tone="strong" />
+                </div>
               ))}
             </div>
-            <SkeletonBlock className={styles.viewerPill} tone="strong" />
           </section>
 
           <section className={styles.sectionCard}>
             <SkeletonBlock className={styles.sectionTitle} tone="strong" />
-            <SkeletonBlock className={styles.sectionLineLong} />
             <div className={styles.barGrid}>
               <SkeletonBlock className={styles.bar} tone="strong" />
               <SkeletonBlock className={styles.barTall} tone="strong" />
               <SkeletonBlock className={styles.barShort} tone="strong" />
             </div>
-            <SkeletonBlock className={styles.hintBox} />
+            <SkeletonBlock className={styles.sectionLineLong} />
           </section>
 
           <section className={styles.sectionCard}>
@@ -102,18 +91,10 @@ export function MatchDetailSkeleton() {
               <SkeletonBlock className={styles.linkButton} />
               <SkeletonBlock className={styles.linkButton} />
             </div>
-            <div className={styles.statsRow}>
-              <SkeletonBlock className={styles.stat} />
-              <SkeletonBlock className={styles.stat} />
-            </div>
-            <SkeletonBlock className={styles.noticeBox} />
             <SkeletonBlock className={styles.price} tone="strong" />
-            <SkeletonBlock className={styles.faqButton} />
-            <SkeletonBlock className={styles.noticeButton} />
             <div className={styles.ctaRow}>
+              <SkeletonBlock className={styles.ctaButton} tone="strong" />
               <SkeletonBlock className={styles.saveButton} />
-              <SkeletonBlock className={styles.ctaButton} tone="strong" />
-              <SkeletonBlock className={styles.ctaButton} tone="strong" />
             </div>
           </section>
         </aside>

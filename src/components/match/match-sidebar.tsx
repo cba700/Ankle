@@ -1,5 +1,5 @@
 import { AppLink } from "@/components/navigation/app-link";
-import { CopyIcon, EyeIcon, HeartIcon, MapPinIcon } from "@/components/icons";
+import { CopyIcon, HeartIcon, MapPinIcon } from "@/components/icons";
 import styles from "./match-sidebar.module.css";
 
 type MatchSidebarProps = {
@@ -8,17 +8,11 @@ type MatchSidebarProps = {
   courtName: string;
   address: string;
   mapUrl: string;
-  likes: number;
-  views: number;
-  notice: string;
   priceLabel: string;
   saved: boolean;
   applyHref: string;
   canApply: boolean;
   onCopyAddress: () => void;
-  onOpenFaq: () => void;
-  onOpenCancelInfo: () => void;
-  onReserve: () => void;
   onSave: () => void;
 };
 
@@ -28,17 +22,11 @@ export function MatchSidebar({
   courtName,
   address,
   mapUrl,
-  likes,
-  views,
-  notice,
   priceLabel,
   saved,
   applyHref,
   canApply,
   onCopyAddress,
-  onOpenFaq,
-  onOpenCancelInfo,
-  onReserve,
   onSave,
 }: MatchSidebarProps) {
   return (
@@ -47,65 +35,41 @@ export function MatchSidebar({
         {dateText} {time}
       </div>
       <h2 className={styles.courtName}>{courtName}</h2>
+      <p className={styles.address}>{address}</p>
 
-      <div className={styles.addressRow}>
-        <p className={styles.address}>{address}</p>
-        <div className={styles.linkRow}>
-          <button className={styles.linkButton} onClick={onCopyAddress} type="button">
-            <CopyIcon className={styles.linkIcon} />
-            주소 복사
-          </button>
-          <a className={styles.linkButton} href={mapUrl} rel="noreferrer" target="_blank">
-            <MapPinIcon className={styles.linkIcon} />
-            지도 보기
-          </a>
-        </div>
+      <div className={styles.linkRow}>
+        <button className={styles.linkButton} onClick={onCopyAddress} type="button">
+          <CopyIcon className={styles.linkIcon} />
+          주소 복사
+        </button>
+        <a className={styles.linkButton} href={mapUrl} rel="noreferrer" target="_blank">
+          <MapPinIcon className={styles.linkIcon} />
+          지도 보기
+        </a>
       </div>
-
-      <div className={styles.statsRow}>
-        <span>
-          <HeartIcon className={styles.statIcon} filled />
-          {likes}
-        </span>
-        <span>
-          <EyeIcon className={styles.statIcon} />
-          {views}
-        </span>
-      </div>
-
-      <div className={styles.notice}>{notice}</div>
 
       <div className={styles.priceBlock}>
+        <span className={styles.priceLabel}>참가비</span>
         <strong>{priceLabel}</strong>
       </div>
 
-      <button className={styles.faqButton} onClick={onOpenFaq} type="button">
-        매치 전 궁금증을 먼저 확인하세요
-      </button>
-      <button className={styles.noticeButton} onClick={onOpenCancelInfo} type="button">
-        매치가 취소될까 걱정되나요? 신청 대신 자리만 먼저 맡아보세요
-      </button>
-
       <div className={styles.ctaRow}>
+        {canApply ? (
+          <AppLink className={styles.applyButton} href={applyHref}>
+            신청하기
+          </AppLink>
+        ) : (
+          <button className={styles.applyButtonDisabled} disabled type="button">
+            신청하기
+          </button>
+        )}
         <button
           aria-label={saved ? "관심 매치 해제" : "관심 매치 저장"}
-          className={`${styles.saveIconButton} ${saved ? styles.saveIconButtonActive : ""}`}
+          className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
           onClick={onSave}
           type="button"
         >
           <HeartIcon filled={saved} />
-        </button>
-        {canApply ? (
-          <AppLink className={styles.secondaryButton} href={applyHref}>
-            바로 신청
-          </AppLink>
-        ) : (
-          <button className={styles.secondaryButtonDisabled} disabled type="button">
-            신청 마감
-          </button>
-        )}
-        <button className={styles.primaryButton} onClick={onReserve} type="button">
-          자리 맡기
         </button>
       </div>
     </div>

@@ -36,10 +36,6 @@ export function HomeMatchList({
               prefetch={false}
             >
               <div className={styles.timeColumn}>
-                <div className={`${styles.timeWrap} ${row.isUrgent ? styles.timeUrgent : ""}`}>
-                  {row.isUrgent ? <span className={styles.urgentDot} /> : null}
-                  <span className={styles.time}>{row.time}</span>
-                </div>
                 <span
                   className={`${styles.statusBadge} ${
                     row.statusTone === "danger"
@@ -53,6 +49,10 @@ export function HomeMatchList({
                 >
                   {row.statusLabel}
                 </span>
+                <div className={`${styles.timeWrap} ${row.isUrgent ? styles.timeUrgent : ""}`}>
+                  {row.isUrgent ? <span className={styles.urgentDot} /> : null}
+                  <span className={styles.time}>{row.time}</span>
+                </div>
               </div>
 
               <div className={styles.infoColumn}>
@@ -75,19 +75,11 @@ export function HomeMatchList({
                   </div>
                 ) : null}
 
-                <div className={styles.venueRow}>
-                  <strong>{row.venueName}</strong>
+                <div className={styles.titleRow}>
+                  <strong className={styles.matchTitle}>{row.title}</strong>
                   {row.isNew ? <span className={styles.newTag}>N</span> : null}
                 </div>
-                <p className={styles.matchTitle}>{row.title}</p>
-                <div className={styles.metaRow}>
-                  {row.meta.map((meta, index) => (
-                    <span className={styles.metaItem} key={`${row.id}-${meta}`}>
-                      {index > 0 ? <span className={styles.metaDot}>·</span> : null}
-                      {meta}
-                    </span>
-                  ))}
-                </div>
+                <p className={styles.metaRow}>{row.meta}</p>
               </div>
             </AppLink>
 

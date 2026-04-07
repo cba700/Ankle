@@ -1,22 +1,21 @@
 .section {
+  --date-gap: 8px;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) 24px;
+  grid-template-columns: 28px minmax(0, 1fr) 28px;
   align-items: center;
-  gap: 8px;
-  padding: 14px 14px 10px;
-  background: #fff;
-  border-bottom: 1px solid var(--line);
+  gap: 10px;
 }
 
 .arrowButton {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
-  background: transparent;
-  color: var(--text-tertiary);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-secondary);
 }
 
 .arrowIcon {
@@ -27,13 +26,15 @@
 .list {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(54px, 1fr);
-  gap: 6px;
+  grid-auto-columns: calc((100% - (var(--date-gap) * 6)) / 7);
+  gap: var(--date-gap);
   min-width: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x;
 }
 
 .list::-webkit-scrollbar {
@@ -43,19 +44,20 @@
 .chip {
   display: grid;
   justify-items: center;
-  gap: 3px;
-  min-height: 68px;
-  padding: 9px 6px 8px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  gap: 5px;
+  min-height: 78px;
+  padding: 11px 4px 10px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 18px;
   background: #fff;
   color: var(--text-primary);
+  scroll-snap-align: start;
 }
 
 .chipActive {
   border-color: transparent;
-  background: var(--accent);
-  box-shadow: 0 10px 18px rgba(255, 107, 0, 0.24);
+  background: #171717;
+  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.14);
 }
 
 .monthDay {
@@ -82,14 +84,14 @@
   min-height: 18px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--accent-strong);
+  background: rgba(23, 23, 23, 0.06);
+  color: var(--text-primary);
   font-size: 10px;
   font-weight: 800;
 }
 
 .chipActive .todayTag {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.14);
   color: #fff;
 }
 
@@ -103,9 +105,9 @@
 
 @media (min-width: 768px) {
   .section {
+    --date-gap: 10px;
     grid-template-columns: 32px minmax(0, 1fr) 32px;
     gap: 12px;
-    padding: 16px 18px 12px;
   }
 
   .arrowButton {
@@ -113,13 +115,8 @@
     height: 32px;
   }
 
-  .list {
-    grid-auto-columns: minmax(64px, 1fr);
-    gap: 8px;
-  }
-
   .chip {
-    min-height: 76px;
+    min-height: 86px;
   }
 
   .monthDay {

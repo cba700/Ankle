@@ -2,22 +2,18 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  padding: 8px 0 0;
-  background: rgba(247, 245, 241, 0.92);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(201, 193, 183, 0.56);
 }
 
 .inner {
-  margin: 0 12px;
-  border: 1px solid rgba(201, 193, 183, 0.78);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 10px 22px rgba(29, 24, 19, 0.05);
-}
-
-.topRow {
-  display: grid;
-  gap: 10px;
-  padding: 12px;
+  width: var(--page-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
 }
 
 .brand {
@@ -28,14 +24,14 @@
 }
 
 .brandWord {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.05em;
 }
 
 .brandDot {
   color: var(--accent);
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 900;
   line-height: 1;
 }
@@ -43,31 +39,30 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 16px;
   flex: 1;
+  flex-wrap: wrap;
   min-width: 0;
+  margin-left: auto;
 }
 
 .search {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: min(100%, 260px);
   min-width: 0;
-  flex: 1;
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #f8f5f0;
-}
-
-.searchIcon,
-.actionIcon {
-  width: 18px;
-  height: 18px;
+  border: 1px solid rgba(201, 193, 183, 0.74);
+  border-radius: 999px;
+  background: #faf8f4;
 }
 
 .searchIcon {
+  width: 18px;
+  height: 18px;
   color: var(--text-tertiary);
 }
 
@@ -84,123 +79,41 @@
   color: var(--text-tertiary);
 }
 
-.iconButton {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--text-primary);
-  flex-shrink: 0;
-}
-
 .adminButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  border-top: 1px solid rgba(201, 193, 183, 0.56);
-}
-
-.activeTab {
-  position: relative;
-  min-height: 40px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.activeLine {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--accent);
 }
 
 @media (min-width: 768px) {
-  .header {
-    padding: 0;
-    background: rgba(255, 255, 255, 0.94);
-    border-bottom: 1px solid var(--line);
-    backdrop-filter: blur(16px);
-  }
-
-  .inner {
-    margin: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .topRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 24px 14px;
-  }
-
-  .nav {
-    padding: 0 24px;
-    border-top: 0;
-  }
-
   .brandWord {
     font-size: 26px;
   }
 
   .search {
-    min-height: 46px;
+    width: 280px;
+    min-height: 42px;
   }
 
   .searchInput {
     font-size: 14px;
   }
+}
 
-  .adminButton {
-    min-height: 46px;
-    padding: 0 14px;
-    font-size: 14px;
+@media (max-width: 767px) {
+  .inner {
+    padding: 12px 0;
+  }
+
+  .search {
+    width: 100%;
+    order: 2;
   }
 }
 
 @media (max-width: 360px) {
-  .topRow {
-    gap: 8px;
-    padding: 10px 12px;
-  }
-
-  .headerActions {
-    gap: 6px;
-  }
-
   .brandWord {
     font-size: 20px;
   }
@@ -215,19 +128,6 @@
   }
 
   .searchInput {
-    font-size: 12px;
-  }
-
-  .iconButton {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-  }
-
-  .adminButton {
-    min-height: 36px;
-    padding: 0 10px;
-    border-radius: 10px;
     font-size: 12px;
   }
 }

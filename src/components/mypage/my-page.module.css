@@ -15,13 +15,13 @@
 }
 
 .headerInner {
-  width: min(calc(100% - 32px), 1100px);
+  width: var(--page-width);
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 12px 0;
+  gap: 16px;
+  padding: 14px 0;
 }
 
 .brand {
@@ -49,29 +49,35 @@
   .brandWord {
     font-size: 26px;
   }
+
+  .search {
+    width: 280px;
+    min-height: 42px;
+  }
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
   flex: 1;
   min-width: 0;
-  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .search {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
   min-width: 0;
-  max-width: 360px;
-  min-height: 42px;
+  width: min(100%, 260px);
+  min-height: 40px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #f5f5f5;
+  border: 1px solid rgba(201, 193, 183, 0.74);
+  border-radius: 999px;
+  background: #faf8f4;
 }
 
 .searchIcon,
@@ -101,7 +107,6 @@
   color: var(--text-tertiary);
 }
 
-.iconButton,
 .iconAction {
   display: inline-flex;
   align-items: center;
@@ -116,20 +121,8 @@
   flex-shrink: 0;
 }
 
-.iconButton:disabled,
-.iconAction:disabled {
-  cursor: default;
-  opacity: 0.55;
-}
-
-.iconButtonActive {
-  border-color: rgba(243, 109, 33, 0.28);
-  background: rgba(255, 107, 0, 0.08);
-  color: var(--accent-strong);
-}
-
 .main {
-  width: min(calc(100% - 32px), 1100px);
+  width: var(--page-width);
   margin: 0 auto;
   padding: 24px 0 40px;
   display: grid;
@@ -727,9 +720,8 @@
 
 @media (max-width: 767px) {
   .headerInner {
-    width: calc(100% - 24px);
     gap: 10px;
-    padding: 10px 0;
+    padding: 12px 0;
   }
 
   .brandWord {
@@ -741,15 +733,16 @@
   }
 
   .search {
+    width: 100%;
     min-height: 38px;
     padding: 0 10px;
+    order: 2;
   }
 
   .searchInput {
     font-size: 12px;
   }
 
-  .iconButton,
   .iconAction {
     width: 38px;
     height: 38px;
@@ -757,7 +750,6 @@
   }
 
   .main {
-    width: calc(100% - 32px);
     padding: 16px 0 36px;
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
@@ -833,7 +825,7 @@
   }
 
   .headerActions {
-    gap: 6px;
+    gap: 12px;
   }
 
   .search {

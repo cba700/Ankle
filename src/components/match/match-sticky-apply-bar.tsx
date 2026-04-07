@@ -25,7 +25,7 @@ export function MatchStickyApplyBar({
           </AppLink>
         ) : (
           <button className={styles.applyButtonDisabled} disabled type="button">
-            신청 마감
+            신청하기
           </button>
         )}
       </div>
