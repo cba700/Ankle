@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -600,22 +601,8 @@ function getDistrict(formData: FormData, address: string) {
 
 function buildMatchSlug(venueSlug: string, startAt: string) {
   const startDate = new Date(startAt);
-  const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  })
-    .format(startDate)
-    .replaceAll("-", "");
-  const time = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Seoul",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  })
-    .format(startDate)
-    .replace(":", "");
+  const date = formatSeoulDateInput(startDate).replaceAll("-", "");
+  const time = formatSeoulTime(startDate).replace(":", "");
 
   return `${venueSlug}-${date}-${time}`;
 }

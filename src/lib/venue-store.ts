@@ -90,7 +90,7 @@ async function listVenueEntities(id?: string) {
   }
 
   const rows = (data ?? []) as VenueRow[];
-  const matchCountMap = await getMatchCountMap(rows.map((row) => row.id));
+  const matchCountMap = await getMatchCountMap(supabase, rows.map((row) => row.id));
 
   return rows.map((row) => ({
     id: row.id,
@@ -110,10 +110,11 @@ async function listVenueEntities(id?: string) {
   }));
 }
 
-async function getMatchCountMap(venueIds: string[]) {
-  const supabase = await getSupabaseServerClient();
-
-  if (!supabase || venueIds.length === 0) {
+async function getMatchCountMap(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  venueIds: string[],
+) {
+  if (venueIds.length === 0) {
     return new Map<string, number>();
   }
 

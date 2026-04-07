@@ -1,4 +1,9 @@
-import { formatMoney } from "@/lib/date";
+import {
+  formatMoney,
+  formatSeoulDateInput,
+  formatSeoulDateShortLabel,
+  formatSeoulTime,
+} from "@/lib/date";
 import {
   buildAdminVenueLabel,
   formatMatchDurationLabel,
@@ -17,27 +22,6 @@ import type {
   AdminVenueRecord,
   AdminVenueRow,
 } from "./types";
-
-const dateLabelFormatter = new Intl.DateTimeFormat("ko-KR", {
-  timeZone: "Asia/Seoul",
-  month: "long",
-  day: "numeric",
-  weekday: "short",
-});
-
-const dateInputFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
-const timeInputFormatter = new Intl.DateTimeFormat("en-GB", {
-  timeZone: "Asia/Seoul",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
 
 export function getAdminStatusMeta(status: AdminMatchStatus) {
   if (status === "open") {
@@ -122,14 +106,14 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       ? { label: "마감 임박", tone: "danger" as const }
       : getAdminStatusMeta(match.status);
     const timeLabel = Number.isFinite(durationMinutes)
-      ? `${timeInputFormatter.format(new Date(match.startAt))} 시작 · ${formatMatchDurationLabel(durationMinutes)}`
-      : timeInputFormatter.format(new Date(match.startAt));
+      ? `${formatSeoulTime(new Date(match.startAt))} 시작 · ${formatMatchDurationLabel(durationMinutes)}`
+      : formatSeoulTime(new Date(match.startAt));
 
     return {
       id: match.id,
       title: match.title,
       venueLabel: buildAdminVenueLabel(match.venueName, match.district),
-      dateLabel: dateLabelFormatter.format(new Date(match.startAt)),
+      dateLabel: formatSeoulDateShortLabel(new Date(match.startAt)),
       timeLabel,
       participantLabel: `${match.currentParticipants} / ${match.capacity}명`,
       occupancyLabel: `잔여 ${Math.max(match.capacity - match.currentParticipants, 0)}석`,
@@ -235,8 +219,8 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
     venueName: match.venueName,
     district: match.district,
     address: match.address,
-    date: dateInputFormatter.format(new Date(match.startAt)),
-    startTime: timeInputFormatter.format(new Date(match.startAt)),
+    date: formatSeoulDateInput(new Date(match.startAt)),
+    startTime: formatSeoulTime(new Date(match.startAt)),
     durationMinutes: getMatchDurationMinutes(match.startAt, match.endAt),
     status: match.status,
     format: match.format,

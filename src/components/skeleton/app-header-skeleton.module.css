@@ -1,0 +1,150 @@
+.header {
+  position: sticky;
+  top: 0;
+}
+
+.homeHeader {
+  z-index: 40;
+  padding: 8px 12px 0;
+  background: rgba(247, 245, 241, 0.92);
+}
+
+.homeFrame {
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 22px rgba(29, 24, 19, 0.05);
+}
+
+.homeTopRow {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.pageHeader {
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+}
+
+.pageInner {
+  width: min(calc(100% - 32px), 1200px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.pageInnerNarrow {
+  width: min(calc(100% - 32px), 1100px);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.brand {
+  width: 86px;
+  height: 30px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.search {
+  min-width: 0;
+  flex: 1;
+  min-height: 42px;
+  border-radius: 14px;
+}
+
+.iconButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.homeNav {
+  padding: 0 12px 12px;
+  border-top: 1px solid rgba(201, 193, 183, 0.56);
+}
+
+.tab {
+  width: 90px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+@media (min-width: 768px) {
+  .homeHeader {
+    padding: 0;
+    background: rgba(255, 255, 255, 0.94);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(16px);
+  }
+
+  .homeFrame {
+    width: min(calc(100% - 0px), 1120px);
+    margin: 0 auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .homeTopRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px 14px;
+  }
+
+  .homeNav {
+    width: min(calc(100% - 0px), 1120px);
+    margin: 0 auto;
+    padding: 0 24px 12px;
+    border-top: 0;
+  }
+
+  .search {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 767px) {
+  .pageInner,
+  .pageInnerNarrow {
+    width: calc(100% - 24px);
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .homeTopRow {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .search {
+    min-height: 38px;
+  }
+
+  .iconButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+}

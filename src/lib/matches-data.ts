@@ -1,6 +1,6 @@
 import "server-only";
 
-import { formatDateLabel, toDateKey } from "@/lib/date";
+import { formatDateLabel, formatSeoulTime, toDateKey } from "@/lib/date";
 import {
   getMatchBySlug as getMockMatchBySlug,
   getMatches as getMockMatches,
@@ -56,7 +56,7 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
     dateKey,
     dateLabel: formatDateLabel(date),
     dateTitle: `${formatDateLabel(date)} 매치`,
-    time: formatTime(entity.startAt),
+    time: formatSeoulTime(new Date(entity.startAt)),
     venueName: entity.venue.name,
     district: entity.venue.district,
     address: entity.venue.address,
@@ -101,15 +101,6 @@ function getDurationText(startAt: string, endAt: string) {
   }
 
   return `${hours}시간 ${minutes}분`;
-}
-
-function formatTime(startAt: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Seoul",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date(startAt));
 }
 
 function getPublicStatus(entity: MatchEntity): MatchStatus {

@@ -1,0 +1,429 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: 24px;
+  background: linear-gradient(180deg, #fbfaf8 0%, #f5f2ed 100%);
+  isolation: isolate;
+}
+
+.pageBranded {
+  overflow: hidden;
+}
+
+.wordmark {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(128, 128, 128, 0.32);
+  font-size: clamp(56px, 15vw, 168px);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  text-shadow: 0 18px 44px rgba(79, 79, 79, 0.12);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.frame {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.main {
+  display: grid;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 12px;
+  padding: 26px 18px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 244, 232, 0.92) 0%, rgba(255, 255, 255, 0.96) 52%, rgba(244, 242, 238, 0.92) 100%);
+  box-shadow: 0 18px 34px rgba(29, 24, 19, 0.06);
+}
+
+.heroGlow {
+  position: absolute;
+  top: -60px;
+  right: -30px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(243, 109, 33, 0.14) 0%, rgba(243, 109, 33, 0) 72%);
+}
+
+.heroBody {
+  position: relative;
+  display: grid;
+  gap: 18px;
+}
+
+.heroCopy {
+  display: grid;
+  gap: 12px;
+}
+
+.eyebrow {
+  width: 122px;
+  height: 14px;
+}
+
+.heroTitlePrimary {
+  width: min(100%, 320px);
+  height: 34px;
+}
+
+.heroTitleSecondary {
+  width: min(100%, 278px);
+  height: 34px;
+}
+
+.heroDescription {
+  width: min(100%, 360px);
+  height: 16px;
+}
+
+.heroBadge {
+  justify-self: end;
+  display: grid;
+  gap: 10px;
+  min-width: 116px;
+  padding: 18px 16px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.heroBadgeValue {
+  width: 74px;
+  height: 32px;
+}
+
+.heroBadgeLabel {
+  width: 58px;
+  height: 14px;
+}
+
+.quickMenuSection,
+.noticeBar,
+.browserPanel {
+  margin: 0 12px;
+}
+
+.quickMenuSection {
+  padding: 10px 0 0;
+}
+
+.quickMenuRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.quickMenuItem {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 10px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.quickMenuIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+}
+
+.quickMenuLabel {
+  width: 56px;
+  height: 12px;
+}
+
+.noticeBar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 58px;
+  padding: 0 18px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.noticeIcon,
+.noticeArrow {
+  width: 20px;
+  height: 20px;
+}
+
+.noticeCopy {
+  height: 14px;
+}
+
+.browserPanel {
+  overflow: hidden;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(29, 24, 19, 0.04);
+}
+
+.datePicker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 14px 14px 0;
+}
+
+.dateArrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.dateChipList {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.dateChip {
+  flex: 0 0 74px;
+  height: 66px;
+  border-radius: 18px;
+}
+
+.dateChipActive {
+  flex-basis: 82px;
+}
+
+.dateSummary {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 0;
+}
+
+.dateSummaryEyebrow {
+  width: 82px;
+  height: 12px;
+}
+
+.dateSummaryTitle {
+  width: min(100%, 286px);
+  height: 28px;
+}
+
+.filterBar {
+  display: flex;
+  gap: 8px;
+  padding: 14px 14px 0;
+  overflow: hidden;
+}
+
+.filterChip {
+  flex: 0 0 auto;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.list {
+  margin-top: 14px;
+  background: #fff;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 16px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.rowLink {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.timeColumn {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding-top: 3px;
+}
+
+.time {
+  width: 42px;
+  height: 16px;
+}
+
+.status {
+  width: 44px;
+  height: 20px;
+  border-radius: 7px;
+}
+
+.infoColumn {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.badgeRow,
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.infoBadge,
+.infoBadgeShort {
+  height: 18px;
+  border-radius: 999px;
+}
+
+.infoBadge {
+  width: 58px;
+}
+
+.infoBadgeShort {
+  width: 72px;
+}
+
+.venue {
+  width: min(100%, 168px);
+  height: 16px;
+}
+
+.title {
+  width: min(100%, 236px);
+  height: 13px;
+}
+
+.meta,
+.metaShort {
+  height: 12px;
+}
+
+.meta {
+  width: 56px;
+}
+
+.metaShort {
+  width: 42px;
+}
+
+.likeButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding: 24px 0 40px;
+    background:
+      radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 34%),
+      linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
+  }
+
+  .frame {
+    width: min(calc(100% - 24px), 1120px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    box-shadow: 0 26px 56px rgba(17, 17, 17, 0.08);
+  }
+
+  .main {
+    gap: 16px;
+    padding-top: 16px;
+  }
+
+  .hero,
+  .quickMenuSection,
+  .noticeBar,
+  .browserPanel {
+    margin: 0 24px;
+  }
+
+  .hero {
+    padding: 34px 28px;
+    border-radius: 28px;
+  }
+
+  .heroBody {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .heroTitlePrimary,
+  .heroTitleSecondary {
+    height: 40px;
+  }
+
+  .heroBadge {
+    min-width: 128px;
+  }
+
+  .quickMenuRow {
+    gap: 12px;
+  }
+
+  .browserPanel {
+    border-radius: 24px;
+  }
+
+  .dateSummary {
+    padding: 12px 24px 0;
+  }
+
+  .datePicker,
+  .filterBar {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .row {
+    gap: 16px;
+    padding: 20px 24px;
+  }
+
+  .rowLink {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .time {
+    width: 48px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .quickMenuRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

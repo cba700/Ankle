@@ -1,7 +1,11 @@
 import "server-only";
 
 import type { User } from "@supabase/supabase-js";
-import { formatDateLabel } from "@/lib/date";
+import {
+  formatCompactDateLabel,
+  formatDateLabel,
+  formatSeoulTime,
+} from "@/lib/date";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/auth";
 
@@ -172,26 +176,12 @@ function getMetaLabel(match: MatchRow | null, appliedAt: string) {
 
 function formatSchedule(startAt: string) {
   const date = new Date(startAt);
-  const time = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    hour12: false,
-    minute: "2-digit",
-    timeZone: "Asia/Seoul",
-  }).format(date);
 
-  return `${formatDateLabel(date)} ${time}`;
+  return `${formatDateLabel(date)} ${formatSeoulTime(date)}`;
 }
 
 function formatAppliedDate(appliedAt: string) {
-  const date = new Date(appliedAt);
-  const label = new Intl.DateTimeFormat("ko-KR", {
-    day: "numeric",
-    month: "short",
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-  }).format(date);
-
-  return label.replace(/\s/g, "");
+  return formatCompactDateLabel(new Date(appliedAt));
 }
 
 function getStatusLabel(status: MyPageApplicationStatus) {
