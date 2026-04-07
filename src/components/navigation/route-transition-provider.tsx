@@ -1,5 +1,9 @@
 "use client";
 
+import { HomePageSkeleton } from "@/components/home/home-page-skeleton";
+import { MatchApplyPageSkeleton } from "@/components/match/match-apply-page-skeleton";
+import { MatchDetailSkeleton } from "@/components/match/match-detail-skeleton";
+import { MyPageSkeleton } from "@/components/mypage/my-page-skeleton";
 import type { ReactNode } from "react";
 import {
   createContext,
@@ -13,8 +17,10 @@ import {
 import { usePathname, useSearchParams } from "next/navigation";
 import styles from "./route-transition.module.css";
 
+type RouteTransitionView = "home" | "matchApply" | "matchDetail" | "mypage";
+
 type RouteTransitionContextValue = {
-  beginTransition: () => void;
+  beginTransition: (href: string) => void;
   isPending: boolean;
 };
 
@@ -40,6 +46,7 @@ export function RouteTransitionProvider({
   const search = searchParams.toString();
   const routeKey = search ? `${pathname}?${search}` : pathname;
   const [isPending, setIsPending] = useState(false);
+  const [pendingView, setPendingView] = useState<RouteTransitionView | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const routeKeyAtStartRef = useRef<string | null>(null);
   const hideTimerRef = useRef<number | null>(null);
@@ -62,12 +69,20 @@ export function RouteTransitionProvider({
     startedAtRef.current = null;
     routeKeyAtStartRef.current = null;
     setIsPending(false);
+    setPendingView(null);
   }, [clearTimers]);
 
-  const beginTransition = useCallback(() => {
+  const beginTransition = useCallback((href: string) => {
+    const nextView = getTransitionView(href);
+
+    if (!nextView) {
+      return;
+    }
+
     clearTimers();
     startedAtRef.current = Date.now();
     routeKeyAtStartRef.current = routeKey;
+    setPendingView(nextView);
     setIsPending(true);
     safetyTimerRef.current = window.setTimeout(() => {
       finishTransition();
@@ -112,9 +127,9 @@ export function RouteTransitionProvider({
   return (
     <RouteTransitionContext.Provider value={value}>
       {children}
-      {isPending ? (
+      {isPending && pendingView ? (
         <div aria-hidden="true" className={styles.overlay}>
-          <div className={styles.wordmark}>앵클</div>
+          {renderTransitionView(pendingView)}
         </div>
       ) : null}
     </RouteTransitionContext.Provider>
@@ -123,4 +138,47 @@ export function RouteTransitionProvider({
 
 export function useRouteTransition() {
   return useContext(RouteTransitionContext);
+}
+
+function renderTransitionView(view: RouteTransitionView) {
+  if (view === "home") {
+    return <HomePageSkeleton />;
+  }
+
+  if (view === "matchApply") {
+    return <MatchApplyPageSkeleton />;
+  }
+
+  if (view === "matchDetail") {
+    return <MatchDetailSkeleton />;
+  }
+
+  return <MyPageSkeleton />;
+}
+
+function getTransitionView(href: string): RouteTransitionView | null {
+  try {
+    const nextUrl = new URL(href, window.location.origin);
+    const normalizedPath = nextUrl.pathname.replace(/\/$/, "") || "/";
+
+    if (normalizedPath === "/") {
+      return "home";
+    }
+
+    if (normalizedPath === "/mypage") {
+      return "mypage";
+    }
+
+    if (/^\/match\/[^/]+\/apply$/.test(normalizedPath)) {
+      return "matchApply";
+    }
+
+    if (/^\/match\/[^/]+$/.test(normalizedPath)) {
+      return "matchDetail";
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }

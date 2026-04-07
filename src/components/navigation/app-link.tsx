@@ -46,7 +46,7 @@ export function AppLink({
       return;
     }
 
-    beginTransition();
+    beginTransition(href);
   }
 
   return (
