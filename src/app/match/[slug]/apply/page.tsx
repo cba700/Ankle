@@ -2,7 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { MatchApplyPage } from "@/components/match/match-apply-page";
 import { buildMatchDetailViewModel } from "@/components/match/match-detail-view-model";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { formatMoney } from "@/lib/date";
 import { getPublicMatchBySlug } from "@/lib/matches-data";
+import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -36,21 +38,37 @@ export default async function MatchApply({
     user.email ??
     (typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "카카오 계정");
   const supabase = await getSupabaseServerClient();
-  const { data: existingApplication } = supabase
-    ? await supabase
+  let cashBalance = 0;
+  let existingApplication = null;
+
+  if (supabase) {
+    await assertCashFoundationSchemaReady(supabase);
+
+    const [{ data: application }, { data: cashAccount }] = await Promise.all([
+      supabase
         .from("match_applications")
         .select("id")
         .eq("match_id", match.id)
         .eq("user_id", user.id)
         .eq("status", "confirmed")
-        .maybeSingle()
-    : { data: null };
+        .maybeSingle(),
+      supabase
+        .from("cash_accounts")
+        .select("balance")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
+
+    existingApplication = application;
+    cashBalance = cashAccount?.balance ?? 0;
+  }
 
   return (
     <MatchApplyPage
       accountLabel={accountLabel}
       alreadyApplied={Boolean(existingApplication)}
-      isClosed={match.status.kind === "closed"}
+      canApply={match.canApply}
+      cashBalanceLabel={`${formatMoney(cashBalance)}원`}
       view={buildMatchDetailViewModel(match)}
     />
   );

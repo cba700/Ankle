@@ -103,6 +103,31 @@ export type AdminOverviewCard = {
   tone: AdminOverviewTone;
 };
 
+export type AdminCashAccountRow = {
+  balanceLabel: string;
+  userId: string;
+};
+
+export type AdminCashTransactionRow = {
+  amountLabel: string;
+  balanceLabel: string;
+  id: string;
+  metaLabel: string;
+  title: string;
+  tone: AdminBadgeTone;
+  userId: string;
+};
+
+export type AdminCashChargeOrderRow = {
+  amountLabel: string;
+  id: string;
+  metaLabel: string;
+  orderId: string;
+  statusLabel: string;
+  statusTone: AdminBadgeTone;
+  userId: string;
+};
+
 export type AdminMatchRow = {
   id: string;
   title: string;

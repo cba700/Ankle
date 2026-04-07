@@ -15,7 +15,7 @@ import styles from "./match-detail.module.css";
 export function MatchDetail({ match }: { match: MatchRecord }) {
   const view = buildMatchDetailViewModel(match);
   const applyHref = `/match/${match.slug}/apply`;
-  const canApply = match.status.kind !== "closed";
+  const canApply = match.canApply;
 
   return (
     <MatchDetailFeedbackProvider>

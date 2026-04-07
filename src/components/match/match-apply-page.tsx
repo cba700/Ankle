@@ -10,7 +10,8 @@ import styles from "./match-apply-page.module.css";
 type MatchApplyPageProps = {
   accountLabel: string;
   alreadyApplied: boolean;
-  isClosed: boolean;
+  canApply: boolean;
+  cashBalanceLabel: string;
   view: MatchDetailViewModel;
 };
 
@@ -23,7 +24,8 @@ const CHECK_ITEMS = [
 export function MatchApplyPage({
   accountLabel,
   alreadyApplied,
-  isClosed,
+  canApply,
+  cashBalanceLabel,
   view,
 }: MatchApplyPageProps) {
   const router = useRouter();
@@ -37,7 +39,7 @@ export function MatchApplyPage({
   const detailHref = `/match/${view.slug}`;
   const applyPath = `${detailHref}/apply`;
   const allConfirmed = checkedIds.length === CHECK_ITEMS.length || alreadyApplied;
-  const canSubmit = allConfirmed && !isClosed && !isComplete && !isSubmitting;
+  const canSubmit = allConfirmed && canApply && !isComplete && !isSubmitting;
 
   function toggleCheck(id: string) {
     setCheckedIds((current) =>
@@ -68,7 +70,7 @@ export function MatchApplyPage({
         setFeedbackMessage(
           payload?.code === "ALREADY_APPLIED"
             ? "이미 신청이 완료된 매치입니다."
-            : "현재 계정으로 매치 신청이 저장되었습니다.",
+            : "캐시 차감 후 현재 계정으로 매치 신청이 확정되었습니다.",
         );
         startTransition(() => router.refresh());
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -121,10 +123,10 @@ export function MatchApplyPage({
               <div className={styles.completeBadge}>
                 {alreadyApplied ? "이미 신청된 매치" : "신청 완료"}
               </div>
-              <h2 className={styles.sectionTitle}>매치 참가가 계정에 저장되었습니다.</h2>
+              <h2 className={styles.sectionTitle}>매치 참가가 계정에 확정되었습니다.</h2>
               <p className={styles.completeText}>
                 {feedbackMessage ??
-                  "결제 연동 전 단계라 별도 결제는 진행되지 않았고, 신청 상태만 먼저 저장됩니다."}
+                  "캐시 차감과 신청 확정이 함께 반영되었습니다."}
               </p>
             </section>
           ) : (
@@ -137,6 +139,10 @@ export function MatchApplyPage({
                 <div className={styles.accountBox}>
                   <span className={styles.accountLabel}>카카오 계정</span>
                   <strong className={styles.accountValue}>{accountLabel}</strong>
+                </div>
+                <div className={styles.accountBox}>
+                  <span className={styles.accountLabel}>현재 보유 캐시</span>
+                  <strong className={styles.accountValue}>{cashBalanceLabel}</strong>
                 </div>
               </section>
 
@@ -184,7 +190,7 @@ export function MatchApplyPage({
                   </div>
                 </fieldset>
 
-                {isClosed ? (
+                {!canApply ? (
                   <p className={styles.warningText}>
                     현재 마감된 매치라 신청을 진행할 수 없습니다.
                   </p>
@@ -201,14 +207,14 @@ export function MatchApplyPage({
       <div className={styles.actionWrap}>
         <div className={styles.actionBar}>
           <div className={styles.actionCopy}>
-            <strong>{isComplete ? "신청 저장 완료" : "신청 전 최종 확인"}</strong>
+            <strong>{isComplete ? "신청 확정 완료" : "신청 전 최종 확인"}</strong>
             <p>
               {isComplete
-                ? "현재 계정 기준 신청 상태가 저장되었습니다."
-                : isClosed
+                ? "현재 계정 기준 신청과 캐시 차감이 반영되었습니다."
+                : !canApply
                   ? "마감된 매치는 신청할 수 없습니다."
                   : canSubmit
-                    ? "체크 완료 후 바로 신청이 저장됩니다."
+                    ? "체크 완료 후 캐시 차감과 함께 신청이 확정됩니다."
                     : "체크 3개를 모두 완료하면 다음으로 진행됩니다."}
             </p>
           </div>
@@ -224,7 +230,7 @@ export function MatchApplyPage({
               onClick={handleConfirm}
               type="button"
             >
-              {isClosed ? "신청 마감" : isSubmitting ? "신청 저장 중..." : "신청 확정"}
+              {!canApply ? "신청 마감" : isSubmitting ? "신청 처리 중..." : "캐시로 신청 확정"}
             </button>
           )}
         </div>
@@ -236,6 +242,10 @@ export function MatchApplyPage({
 function getErrorMessage(code?: string) {
   if (code === "MATCH_FULL") {
     return "정원이 모두 차서 신청할 수 없습니다.";
+  }
+
+  if (code === "INSUFFICIENT_CASH") {
+    return "보유 캐시가 부족합니다. 충전 기능 연결 전이라 현재는 신청을 완료할 수 없습니다.";
   }
 
   if (code === "MATCH_STARTED") {

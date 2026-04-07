@@ -44,7 +44,7 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
       statusLabel: status.label,
       statusTone: status.tone,
       isUrgent: status.isUrgent,
-      isClosed: match.status.kind === "closed",
+      isClosed: !match.canApply,
       venueName: match.venueName,
       title: match.title,
       meta: [
@@ -53,7 +53,7 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
         getParkingMeta(match.venueInfo.parking),
       ],
       badges,
-      isNew: match.status.kind === "open" && match.currentParticipants <= 3,
+      isNew: match.canApply && match.status.kind === "open" && match.currentParticipants <= 3,
     };
   });
 }
@@ -75,7 +75,7 @@ function getHomeMatchBadges(match: MatchRecord): HomeMatchBadge[] {
 }
 
 function getHomeStatus(match: MatchRecord) {
-  if (match.status.kind === "closed") {
+  if (!match.canApply) {
     return { label: "마감", tone: "neutral" as const, isUrgent: false };
   }
 

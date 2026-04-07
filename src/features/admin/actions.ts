@@ -3,7 +3,10 @@
 import { redirect } from "next/navigation";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import { getServerAuthState } from "@/lib/supabase/auth";
-import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
+import {
+  assertCashFoundationSchemaReady,
+  assertVenueManagementSchemaReady,
+} from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   buildGeneratedMatchTitle,
@@ -100,6 +103,7 @@ export async function createAdminMatchAction(formData: FormData) {
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
+  await assertCashFoundationSchemaReady(supabase);
   const values = readUpdateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
@@ -148,15 +152,12 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
   }
 
   if (values.status === "cancelled") {
-    const { error: cancelError } = await supabase
-      .from("match_applications")
-      .update({
-        status: "cancelled_by_admin",
-        cancel_reason: "admin_cancelled",
-        cancelled_at: new Date().toISOString(),
-      })
-      .eq("match_id", matchId)
-      .eq("status", "confirmed");
+    const { error: cancelError } = await supabase.rpc(
+      "cancel_match_applications_by_admin",
+      {
+        p_match_id: matchId,
+      },
+    );
 
     if (cancelError) {
       throw new Error(cancelError.message);
