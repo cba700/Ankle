@@ -6,7 +6,7 @@ import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
-  title: "마이페이지 | 앵클",
+  title: "마이페이지",
   description: "앵클 계정 정보와 신청 내역을 확인하는 마이페이지",
 };
 

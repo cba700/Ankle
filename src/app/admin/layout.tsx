@@ -5,7 +5,7 @@ import { buildLoginHref } from "@/lib/auth/redirect";
 import { getServerAuthState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
-  title: "Admin | 앵클",
+  title: "Admin",
   description: "앵클 관리자 목업 콘솔",
 };
 
