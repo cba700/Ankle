@@ -14,10 +14,16 @@ const FILTER_CHIP_WIDTHS = [92, 78, 70, 74, 108];
 export function HomePageSkeleton({
   branded = false,
 }: HomePageSkeletonProps) {
-  return (
-    <div className={`${styles.page} ${branded ? styles.pageBranded : ""}`}>
-      {branded ? <div className={styles.wordmark}>앵클</div> : null}
+  if (branded) {
+    return (
+      <div className={`${styles.page} ${styles.pageBrandOnly}`}>
+        <div className={styles.wordmark}>앵클</div>
+      </div>
+    );
+  }
 
+  return (
+    <div className={styles.page}>
       <div className={styles.content}>
         <div className={styles.frame}>
           <AppHeaderSkeleton variant="home" />

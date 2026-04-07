@@ -7,22 +7,26 @@
   isolation: isolate;
 }
 
-.pageBranded {
+.pageBrandOnly {
   overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding-bottom: 0;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 44%),
+    linear-gradient(180deg, #fbfaf8 0%, #f5f2ed 100%);
 }
 
 .wordmark {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: rgba(128, 128, 128, 0.32);
   font-size: clamp(56px, 15vw, 168px);
   font-weight: 900;
   letter-spacing: -0.08em;
   text-shadow: 0 18px 44px rgba(79, 79, 79, 0.12);
   pointer-events: none;
-  z-index: 3;
 }
 
 .content {
