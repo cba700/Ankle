@@ -11,13 +11,17 @@ type ServerAuthState = {
   user: User | null;
 };
 
-export async function getServerAuthState(): Promise<ServerAuthState> {
+type ServerUserState = {
+  configured: boolean;
+  user: User | null;
+};
+
+export async function getServerUserState(): Promise<ServerUserState> {
   const supabase = await getSupabaseServerClient();
 
   if (!supabase) {
     return {
       configured: false,
-      role: "user",
       user: null,
     };
   }
@@ -29,6 +33,32 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
   if (!user) {
     return {
       configured: true,
+      user: null,
+    };
+  }
+
+  return {
+    configured: true,
+    user,
+  };
+}
+
+export async function getServerAuthState(): Promise<ServerAuthState> {
+  const { configured, user } = await getServerUserState();
+
+  if (!configured || !user) {
+    return {
+      configured,
+      role: "user",
+      user,
+    };
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      configured: false,
       role: "user",
       user: null,
     };

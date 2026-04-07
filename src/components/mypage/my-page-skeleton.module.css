@@ -1,0 +1,367 @@
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 30%),
+    linear-gradient(180deg, #f9f8f6 0%, #f2f2f2 100%);
+}
+
+.main {
+  width: min(calc(100% - 32px), 1100px);
+  margin: 0 auto;
+  padding: 24px 0 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.leftColumn,
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profileCard,
+.cashCard,
+.guideCard,
+.menuSection,
+.applicationSection {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.04);
+}
+
+.profileCard {
+  padding: 20px;
+}
+
+.profileTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profileIdentity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  flex-shrink: 0;
+}
+
+.profileCopy {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.profileName {
+  width: min(100%, 156px);
+  height: 24px;
+}
+
+.profileEmail {
+  width: min(100%, 220px);
+  height: 14px;
+}
+
+.profileActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.secondaryButton {
+  width: 122px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.iconAction {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.statRow {
+  margin-top: 18px;
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.statBox {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.statDivider {
+  width: 1px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+
+.statLabel {
+  width: 44px;
+  height: 12px;
+}
+
+.statValue {
+  width: 68px;
+  height: 16px;
+}
+
+.cashCard {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(180deg, #ff7b1b 0%, #ff6b00 100%);
+  box-shadow: 0 16px 30px rgba(255, 107, 0, 0.26);
+}
+
+.cashCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.cashLabel {
+  width: 58px;
+  height: 12px;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0.82) 50%, rgba(255, 255, 255, 0.46) 100%);
+}
+
+.cashAmount {
+  width: 86px;
+  height: 24px;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.92) 50%, rgba(255, 255, 255, 0.58) 100%);
+}
+
+.chargeButton {
+  width: 98px;
+  height: 42px;
+  border-radius: 11px;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0.96) 50%, rgba(255, 255, 255, 0.74) 100%);
+}
+
+.guideCard {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.guideCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.guideEyebrow {
+  width: 72px;
+  height: 12px;
+}
+
+.guideTitle {
+  width: min(100%, 196px);
+  height: 16px;
+}
+
+.guideMeta {
+  width: min(100%, 260px);
+  height: 13px;
+}
+
+.guideBadge {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.menuSection {
+  overflow: hidden;
+}
+
+.menuSectionTitle {
+  width: 76px;
+  height: 14px;
+  margin: 16px 20px 10px;
+}
+
+.menuList {
+  display: flex;
+  flex-direction: column;
+}
+
+.menuRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid #f1f1f1;
+}
+
+.menuIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+.menuLabel {
+  width: min(100%, 112px);
+  height: 15px;
+}
+
+.menuMeta {
+  width: 56px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.applicationSection {
+  padding: 20px;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sectionCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.sectionEyebrow {
+  width: 52px;
+  height: 12px;
+}
+
+.sectionTitle {
+  width: 112px;
+  height: 26px;
+}
+
+.sectionCount {
+  width: 52px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.applicationList {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.applicationCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff 0%, #fbfbfb 100%);
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.03);
+}
+
+.applicationTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.statusBadge {
+  width: 68px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.detailLink {
+  width: 56px;
+  height: 13px;
+}
+
+.applicationTitle {
+  width: min(100%, 220px);
+  height: 18px;
+}
+
+.applicationVenue,
+.applicationMeta {
+  height: 13px;
+}
+
+.applicationVenue {
+  width: min(100%, 180px);
+}
+
+.applicationMeta {
+  width: min(100%, 210px);
+}
+
+@media (max-width: 767px) {
+  .main {
+    width: calc(100% - 32px);
+    padding: 16px 0 36px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .profileCard,
+  .applicationSection {
+    padding: 18px;
+  }
+
+  .profileTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profileActions {
+    justify-content: flex-start;
+  }
+
+  .cashCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chargeButton {
+    width: 100%;
+  }
+
+  .sectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    overflow-x: hidden;
+  }
+}
