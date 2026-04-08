@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import {
   confirmTossPayment,
   getTossErrorCode,
   getTossErrorMessage,
-  summarizeTossPayment,
+  validateConfirmedTossPayment,
 } from "@/lib/payments/toss-server";
 import { assertCashChargeOperationsSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient, getSupabaseServiceRoleClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
   if (!supabase) {
     return NextResponse.json(
       { code: "SUPABASE_NOT_CONFIGURED", message: "Supabase is not configured." },
-      { status: 503 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
   }
 
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json(
       { code: "AUTH_REQUIRED", message: "로그인이 필요한 기능입니다." },
-      { status: 401 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 401 },
     );
   }
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
   if (!Number.isInteger(amount) || amount <= 0 || !orderId || !paymentKey) {
     return NextResponse.json(
       { code: "INVALID_CONFIRM_REQUEST", message: "결제 승인 요청값이 올바르지 않습니다." },
-      { status: 400 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
     );
   }
 
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
   if (!admin) {
     return NextResponse.json(
       { code: "SERVICE_ROLE_NOT_CONFIGURED", message: "서버 결제 권한이 설정되지 않았습니다." },
-      { status: 503 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
   }
 
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
   if (orderError) {
     return NextResponse.json(
       { code: "CHARGE_ORDER_LOOKUP_FAILED", message: orderError.message },
-      { status: 500 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
     );
   }
 
@@ -86,14 +87,14 @@ export async function POST(request: Request) {
   if (!typedOrder) {
     return NextResponse.json(
       { code: "CHARGE_ORDER_NOT_FOUND", message: "충전 주문을 찾을 수 없습니다." },
-      { status: 404 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 404 },
     );
   }
 
   if (typedOrder.user_id !== user.id) {
     return NextResponse.json(
       { code: "FORBIDDEN_ORDER_ACCESS", message: "다른 사용자의 주문에는 접근할 수 없습니다." },
-      { status: 403 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 403 },
     );
   }
 
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
         code: "AMOUNT_MISMATCH",
         message: "결제 인증 금액이 주문 금액과 일치하지 않습니다.",
       },
-      { status: 400 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
     );
   }
 
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
           code: "ORDER_ALREADY_PAID",
           message: "이미 다른 결제 키로 완료된 주문입니다.",
         },
-        { status: 409 },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
       );
     }
 
@@ -140,6 +141,8 @@ export async function POST(request: Request) {
       orderId: typedOrder.order_id,
       remainingCash: typedCashAccount?.balance ?? 0,
       status: "paid",
+    }, {
+      headers: PRIVATE_NO_STORE_HEADERS,
     });
   }
 
@@ -149,7 +152,7 @@ export async function POST(request: Request) {
         code: "ORDER_NOT_PENDING",
         message: "대기 중인 주문만 승인할 수 있습니다.",
       },
-      { status: 409 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
     );
   }
 
@@ -176,14 +179,39 @@ export async function POST(request: Request) {
           code: errorCode,
           message: errorMessage,
         },
-        { status: confirmResult.status >= 500 ? 502 : 400 },
+        {
+          headers: PRIVATE_NO_STORE_HEADERS,
+          status: confirmResult.status >= 500 ? 502 : 400,
+        },
       );
     }
 
-    const summary = summarizeTossPayment(confirmResult.payload);
+    const validatedPayment = validateConfirmedTossPayment(confirmResult.payload, {
+      amount,
+      orderId,
+      paymentKey,
+    });
+
+    if (!validatedPayment.ok) {
+      await markChargeOrderError(admin, typedOrder.id, {
+        errorCode: validatedPayment.code,
+        errorMessage: validatedPayment.message,
+        providerSnapshot: confirmResult.payload,
+        status: null,
+      });
+
+      return NextResponse.json(
+        {
+          code: validatedPayment.code,
+          message: validatedPayment.message,
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+      );
+    }
+
     const { data, error } = await admin.rpc("approve_cash_charge_order", {
       p_order_id: orderId,
-      p_provider_snapshot: confirmResult.payload ?? {},
+      p_provider_snapshot: validatedPayment.payload,
       p_toss_payment_key: paymentKey,
     });
 
@@ -200,7 +228,7 @@ export async function POST(request: Request) {
           code: "CASH_LEDGER_APPLY_FAILED",
           message: "결제 승인은 완료됐지만 캐시 적립 반영에 실패했습니다.",
         },
-        { status: 500 },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
       );
     }
 
@@ -219,9 +247,11 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ...approvedPayload,
       chargedAmount: typedOrder.amount,
-      method: summary.method ?? null,
+      method: validatedPayment.method,
       ok: true,
       orderId,
+    }, {
+      headers: PRIVATE_NO_STORE_HEADERS,
     });
   } catch (error) {
     await markChargeOrderError(admin, typedOrder.id, {
@@ -238,7 +268,7 @@ export async function POST(request: Request) {
         code: "TOSS_CONFIRM_REQUEST_FAILED",
         message: "토스 승인 서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.",
       },
-      { status: 502 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 502 },
     );
   }
 }

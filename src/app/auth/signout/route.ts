@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -10,6 +11,7 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.redirect(new URL("/", requestUrl.origin), {
+    headers: PRIVATE_NO_STORE_HEADERS,
     status: 303,
   });
 }

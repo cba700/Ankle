@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import { assertCashChargeOperationsSchemaReady } from "@/lib/supabase/schema";
 import {
   getSupabaseServerClient,
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   const supabase = await getSupabaseServerClient();
 
   if (!supabase) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const {
@@ -30,14 +31,14 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const body = (await request.json().catch(() => null)) as FailBody | null;
   const orderId = typeof body?.orderId === "string" ? body.orderId.trim() : "";
 
   if (!orderId) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   await assertCashChargeOperationsSchemaReady(supabase);
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
   const admin = getSupabaseServiceRoleClient() as any;
 
   if (!admin) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const { data: order } = await admin
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
   const typedOrder = order as ChargeOrderLookup | null;
 
   if (!typedOrder || typedOrder.user_id !== user.id || typedOrder.status !== "pending") {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const errorCode =
@@ -81,5 +82,5 @@ export async function POST(request: Request) {
     })
     .eq("id", typedOrder.id);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
 }

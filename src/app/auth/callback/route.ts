@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import { buildLoginHref, normalizeNextPath } from "@/lib/auth/redirect";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   if (oauthError) {
     return NextResponse.redirect(
       new URL(buildLoginHref(nextPath, "oauth_failed"), requestUrl.origin),
-      { status: 303 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 303 },
     );
   }
 
@@ -20,14 +21,14 @@ export async function GET(request: Request) {
   if (!supabase) {
     return NextResponse.redirect(
       new URL(buildLoginHref(nextPath, "supabase_not_configured"), requestUrl.origin),
-      { status: 303 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 303 },
     );
   }
 
   if (!code) {
     return NextResponse.redirect(
       new URL(buildLoginHref(nextPath, "callback_code_missing"), requestUrl.origin),
-      { status: 303 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 303 },
     );
   }
 
@@ -36,11 +37,12 @@ export async function GET(request: Request) {
   if (error) {
     return NextResponse.redirect(
       new URL(buildLoginHref(nextPath, "oauth_failed"), requestUrl.origin),
-      { status: 303 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 303 },
     );
   }
 
   return NextResponse.redirect(new URL(nextPath, requestUrl.origin), {
+    headers: PRIVATE_NO_STORE_HEADERS,
     status: 303,
   });
 }

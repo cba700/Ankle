@@ -16,6 +16,18 @@ type TossPaymentSummary = {
   totalAmount?: number | null;
 };
 
+type ValidatedTossPayment =
+  | {
+      code: string;
+      message: string;
+      ok: false;
+    }
+  | {
+      method: string | null;
+      ok: true;
+      payload: Record<string, unknown>;
+    };
+
 export async function confirmTossPayment({
   amount,
   orderId,
@@ -63,6 +75,63 @@ export function summarizeTossPayment(
     status: typeof payload.status === "string" ? payload.status : null,
     totalAmount:
       typeof payload.totalAmount === "number" ? payload.totalAmount : null,
+  };
+}
+
+export function validateConfirmedTossPayment(
+  payload: Record<string, unknown> | null,
+  {
+    amount,
+    orderId,
+    paymentKey,
+  }: TossConfirmParams,
+): ValidatedTossPayment {
+  if (!payload) {
+    return {
+      code: "TOSS_RESPONSE_INVALID",
+      message: "토스 승인 응답을 해석할 수 없습니다.",
+      ok: false,
+    };
+  }
+
+  const summary = summarizeTossPayment(payload);
+
+  if (summary.status !== "DONE") {
+    return {
+      code: "TOSS_CONFIRM_INVALID_STATUS",
+      message: "결제 승인 상태가 완료가 아닙니다.",
+      ok: false,
+    };
+  }
+
+  if (summary.orderId !== orderId) {
+    return {
+      code: "TOSS_CONFIRM_ORDER_MISMATCH",
+      message: "토스 승인 응답 주문번호가 원장 주문과 일치하지 않습니다.",
+      ok: false,
+    };
+  }
+
+  if (summary.paymentKey !== paymentKey) {
+    return {
+      code: "TOSS_CONFIRM_PAYMENT_KEY_MISMATCH",
+      message: "토스 승인 응답 결제 키가 요청값과 일치하지 않습니다.",
+      ok: false,
+    };
+  }
+
+  if (summary.totalAmount !== amount) {
+    return {
+      code: "TOSS_CONFIRM_AMOUNT_MISMATCH",
+      message: "토스 승인 응답 금액이 원장 금액과 일치하지 않습니다.",
+      ok: false,
+    };
+  }
+
+  return {
+    method: summary.method ?? null,
+    ok: true,
+    payload,
   };
 }
 
