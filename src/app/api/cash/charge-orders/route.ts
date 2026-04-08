@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import { buildCashChargeOrderId, buildCashChargeOrderName, isCashChargePackage } from "@/lib/payments/toss";
 import { assertCashChargeOperationsSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
   if (!isTossPaymentsConfigured()) {
     return NextResponse.json(
       { code: "TOSS_NOT_CONFIGURED" },
-      { status: 503 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
   }
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
   if (!supabase) {
     return NextResponse.json(
       { code: "SUPABASE_NOT_CONFIGURED" },
-      { status: 503 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
   }
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json(
       { code: "AUTH_REQUIRED" },
-      { status: 401 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 401 },
     );
   }
 
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
   if (!body || !isCashChargePackage(body.amount)) {
     return NextResponse.json(
       { code: "INVALID_CHARGE_AMOUNT" },
-      { status: 400 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
     );
   }
 
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json(
       { code: error.message || "CHARGE_ORDER_CREATE_FAILED" },
-      { status: 400 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
     );
   }
 
@@ -63,5 +64,7 @@ export async function POST(request: Request) {
     ok: true,
     orderId,
     orderName: buildCashChargeOrderName(body.amount),
+  }, {
+    headers: PRIVATE_NO_STORE_HEADERS,
   });
 }

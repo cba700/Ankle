@@ -55,12 +55,13 @@ function normalizeMatchSlug(slug: string) {
 
 function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
   const date = new Date(entity.startAt);
+  const isStarted = date.getTime() <= Date.now();
   const dateKey = toDateKey(date);
   const levelDistribution = getLevelDistribution(entity);
   const currentParticipants = entity.confirmedCount;
   const remainingSlots = Math.max(entity.capacity - currentParticipants, 0);
   const isSoldOut = remainingSlots === 0;
-  const isClosed = entity.status === "closed";
+  const canApply = entity.status === "open" && !isStarted && !isSoldOut;
 
   return {
     id: entity.id,
@@ -82,10 +83,10 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
     currentParticipants,
     remainingSlots,
     isSoldOut,
-    canApply: !isClosed && !isSoldOut,
+    canApply,
     preparation: entity.preparation,
     price: entity.price,
-    status: getPublicStatus(entity),
+    status: getPublicStatus(entity, { isSoldOut, isStarted }),
     imageUrls: entity.imageUrls.length > 0 ? entity.imageUrls : DEFAULT_IMAGE_URLS,
     venueInfo: {
       directions: entity.venue.directions,
@@ -118,8 +119,17 @@ function getDurationText(startAt: string, endAt: string) {
   return `${hours}시간 ${minutes}분`;
 }
 
-function getPublicStatus(entity: MatchEntity): MatchStatus {
-  if (entity.status === "closed" || entity.confirmedCount >= entity.capacity) {
+function getPublicStatus(
+  entity: MatchEntity,
+  {
+    isSoldOut,
+    isStarted,
+  }: {
+    isSoldOut: boolean;
+    isStarted: boolean;
+  },
+): MatchStatus {
+  if (entity.status === "closed" || isSoldOut || isStarted) {
     return { kind: "closed", label: "마감" };
   }
 

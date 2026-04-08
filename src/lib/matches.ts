@@ -432,11 +432,14 @@ export function getMatches() {
 
   return MATCH_TEMPLATES.map((template) => {
     const date = addDays(today, template.dayOffset);
+    const [hours, minutes] = template.time.split(":").map((value) => Number.parseInt(value, 10));
+    date.setHours(hours ?? 0, minutes ?? 0, 0, 0);
     const dateKey = toDateKey(date);
     const compactDate = dateKey.replaceAll("-", "");
     const currentParticipants = template.currentParticipants;
     const remainingSlots = Math.max(template.capacity - currentParticipants, 0);
     const isSoldOut = remainingSlots === 0;
+    const isStarted = date.getTime() <= Date.now();
 
     return {
       ...template,
@@ -447,8 +450,8 @@ export function getMatches() {
       currentParticipants,
       remainingSlots,
       isSoldOut,
-      canApply: !isSoldOut,
-      status: getMatchStatus(template.format, currentParticipants, template.capacity),
+      canApply: !isSoldOut && !isStarted,
+      status: getMatchStatus(template.format, currentParticipants, template.capacity, isStarted),
     };
   }).sort((a, b) => {
     const left = `${a.dateKey} ${a.time}`;
@@ -461,8 +464,13 @@ export function getMatchBySlug(slug: string) {
   return getMatches().find((match) => match.slug === slug);
 }
 
-function getMatchStatus(format: MatchFormat, currentParticipants: number, capacity: number): MatchStatus {
-  if (currentParticipants >= capacity) {
+function getMatchStatus(
+  format: MatchFormat,
+  currentParticipants: number,
+  capacity: number,
+  isStarted = false,
+): MatchStatus {
+  if (isStarted || currentParticipants >= capacity) {
     return { kind: "closed", label: "마감" };
   }
 
@@ -487,10 +495,6 @@ function getMatchStatus(format: MatchFormat, currentParticipants: number, capaci
   }
 
   return { kind: "open", label: "모집 중" };
-}
-
-export function getParticipantSummary(match: MatchRecord) {
-  return `${match.currentParticipants} / ${match.capacity}명 참여`;
 }
 
 export function getPriceLabel(amount: number) {

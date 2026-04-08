@@ -1,8 +1,7 @@
 .page {
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    linear-gradient(180deg, #fbfaf8 0%, #f5f2ed 100%);
+  background: var(--user-page-background);
 }
 
 .main {
@@ -25,12 +24,6 @@
 }
 
 @media (min-width: 768px) {
-  .page {
-    background:
-      radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 34%),
-      linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 100%);
-  }
-
   .main {
     gap: 32px;
     padding: 28px 0 56px;

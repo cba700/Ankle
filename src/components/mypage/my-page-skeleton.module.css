@@ -1,8 +1,6 @@
 .page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top center, rgba(255, 107, 0, 0.08), transparent 30%),
-    linear-gradient(180deg, #f9f8f6 0%, #f2f2f2 100%);
+  background: var(--user-page-background);
 }
 
 .main {

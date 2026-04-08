@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 
 type WebhookPayload = {
@@ -7,10 +8,8 @@ type WebhookPayload = {
 };
 
 type ChargeOrderRow = {
-  amount: number;
   id: string;
   order_id: string;
-  status: "pending" | "paid" | "failed" | "cancelled" | "expired";
 };
 
 type ChargeOrderEventRow = {
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
   if (!admin) {
     return NextResponse.json(
       { code: "SERVICE_ROLE_NOT_CONFIGURED" },
-      { status: 503 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
   }
 
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
   if (!payload) {
     return NextResponse.json(
       { code: "INVALID_WEBHOOK_PAYLOAD" },
-      { status: 400 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
     );
   }
 
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
 
   const { data: order } = await admin
     .from("cash_charge_orders")
-    .select("id, order_id, amount, status")
+    .select("id, order_id")
     .eq("order_id", orderId)
     .maybeSingle();
 
@@ -69,111 +68,42 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (eventError?.code === "23505") {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   if (eventError) {
     return NextResponse.json(
       { code: "WEBHOOK_EVENT_STORE_FAILED" },
-      { status: 500 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
     );
   }
 
   const typedEvent = event as ChargeOrderEventRow | null;
 
   if (!typedEvent) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   if (eventType !== "PAYMENT_STATUS_CHANGED") {
-    await updateWebhookEvent(admin, typedEvent.id, "ignored");
-    return NextResponse.json({ ok: true });
+    await updateWebhookEvent(admin, typedEvent.id, "logged");
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   if (!typedOrder) {
     await updateWebhookEvent(admin, typedEvent.id, "order_not_found");
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const paymentStatus =
     typeof data.status === "string" ? data.status : "UNKNOWN";
 
-  if (
-    paymentStatus === "DONE" &&
-    typeof data.paymentKey === "string" &&
-    typeof data.totalAmount === "number"
-  ) {
-    const { error } = await admin.rpc("approve_cash_charge_order", {
-      p_order_id: orderId,
-      p_provider_snapshot: payload,
-      p_toss_payment_key: data.paymentKey,
-    });
+  await updateWebhookEvent(
+    admin,
+    typedEvent.id,
+    getWebhookProcessedResult(paymentStatus),
+  );
 
-    if (error) {
-      await admin
-        .from("cash_charge_orders")
-        .update({
-          last_error_code: "WEBHOOK_APPROVE_FAILED",
-          last_error_message: error.message,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", typedOrder.id);
-      await updateWebhookEvent(admin, typedEvent.id, "approve_failed");
-
-      return NextResponse.json({ ok: true });
-    }
-
-    await admin
-      .from("cash_charge_orders")
-      .update({
-        failure_code: null,
-        failure_message: null,
-        last_error_code: null,
-        last_error_message: null,
-      })
-      .eq("id", typedOrder.id);
-    await updateWebhookEvent(admin, typedEvent.id, "approved");
-
-    return NextResponse.json({ ok: true });
-  }
-
-  if (typedOrder.status === "pending" && paymentStatus === "EXPIRED") {
-    await admin
-      .from("cash_charge_orders")
-      .update({
-        last_error_code: "PAYMENT_EXPIRED",
-        last_error_message: "결제 승인 시간 내에 완료되지 않아 주문이 만료되었습니다.",
-        status: "expired",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", typedOrder.id);
-    await updateWebhookEvent(admin, typedEvent.id, "expired");
-
-    return NextResponse.json({ ok: true });
-  }
-
-  if (
-    typedOrder.status === "pending" &&
-    (paymentStatus === "ABORTED" || paymentStatus === "CANCELED")
-  ) {
-    await admin
-      .from("cash_charge_orders")
-      .update({
-        failure_code: paymentStatus,
-        failure_message: "결제 상태가 실패 또는 취소로 변경되었습니다.",
-        last_error_code: paymentStatus,
-        last_error_message: "결제 상태가 실패 또는 취소로 변경되었습니다.",
-        status: "failed",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", typedOrder.id);
-    await updateWebhookEvent(admin, typedEvent.id, "failed");
-
-    return NextResponse.json({ ok: true });
-  }
-
-  await updateWebhookEvent(admin, typedEvent.id, `ignored:${paymentStatus}`);
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
 }
 
 async function updateWebhookEvent(
@@ -192,4 +122,19 @@ async function updateWebhookEvent(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function getWebhookProcessedResult(paymentStatus: string) {
+  switch (paymentStatus) {
+    case "DONE":
+      return "ignored:done_unverified";
+    case "EXPIRED":
+      return "ignored:expired_unverified";
+    case "ABORTED":
+      return "ignored:aborted_unverified";
+    case "CANCELED":
+      return "ignored:cancelled_unverified";
+    default:
+      return "logged";
+  }
 }

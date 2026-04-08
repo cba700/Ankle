@@ -67,7 +67,9 @@ export function getAdminStatusMeta(status: AdminMatchStatus) {
 }
 
 export function buildAdminOverviewCards(matches: AdminMatchRecord[]): AdminOverviewCard[] {
-  const openMatches = matches.filter((match) => match.status === "open");
+  const openMatches = matches.filter(
+    (match) => match.status === "open" && !isSoldOutMatch(match),
+  );
   const draftMatches = matches.filter((match) => match.status === "draft");
   const nearClosing = openMatches.filter((match) => getOccupancyRate(match) >= 0.75);
   const projectedRevenue = matches
@@ -210,10 +212,14 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       getMatchDurationMinutes(match.startAt, match.endAt),
       10,
     );
-    const isNearClosing = match.status === "open" && getOccupancyRate(match) >= 0.75;
-    const displayStatus = isNearClosing
-      ? { label: "마감 임박", tone: "danger" as const }
-      : getAdminStatusMeta(match.status);
+    const isSoldOut = isSoldOutMatch(match);
+    const isNearClosing =
+      match.status === "open" && !isSoldOut && getOccupancyRate(match) >= 0.75;
+    const displayStatus = isSoldOut
+      ? { label: "마감", tone: "neutral" as const }
+      : isNearClosing
+        ? { label: "마감 임박", tone: "danger" as const }
+        : getAdminStatusMeta(match.status);
     const timeLabel = Number.isFinite(durationMinutes)
       ? `${formatSeoulTime(new Date(match.startAt))} 시작 · ${formatMatchDurationLabel(durationMinutes)}`
       : formatSeoulTime(new Date(match.startAt));
@@ -235,6 +241,7 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       displayStatusLabel: displayStatus.label,
       displayStatusTone: displayStatus.tone,
       isNearClosing,
+      isSoldOut,
       tags: match.tags,
       editHref: `/admin/matches/${match.id}/edit`,
     };
@@ -408,6 +415,10 @@ function getOccupancyRate(match: AdminMatchRecord) {
   }
 
   return match.currentParticipants / match.capacity;
+}
+
+function isSoldOutMatch(match: AdminMatchRecord) {
+  return match.currentParticipants >= match.capacity;
 }
 
 function getCashTransactionTitle(transaction: CashTransactionEntity) {

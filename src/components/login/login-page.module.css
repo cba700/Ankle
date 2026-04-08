@@ -3,9 +3,7 @@
   display: grid;
   place-items: center;
   padding: 32px 20px 112px;
-  background:
-    radial-gradient(circle at top, rgba(243, 109, 33, 0.12), transparent 32%),
-    linear-gradient(180deg, #fffdf9 0%, #f6f2eb 100%);
+  background: var(--user-page-background);
 }
 
 .card {
