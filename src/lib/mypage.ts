@@ -12,6 +12,7 @@ import {
   listCashTransactionsByUserId,
   getCashAccountByUserId,
   type CashTransactionEntity,
+  type CashTransactionType,
 } from "@/lib/cash";
 import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -72,6 +73,7 @@ export type MyPageCashTransaction = {
   metaLabel: string;
   title: string;
   tone: "accent" | "danger" | "muted";
+  type: CashTransactionType;
 };
 
 export type MyPageData = {
@@ -179,6 +181,7 @@ function mapCashTransaction(transaction: CashTransactionEntity): MyPageCashTrans
     metaLabel: `${formatCompactDateLabel(new Date(transaction.createdAt))} · ${transaction.memo || getCashTransactionTitle(transaction.type)}`,
     title: getCashTransactionTitle(transaction.type),
     tone: getCashTransactionTone(transaction.type, transaction.deltaAmount),
+    type: transaction.type,
   };
 }
 
