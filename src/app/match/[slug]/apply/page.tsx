@@ -3,7 +3,7 @@ import { MatchApplyPage } from "@/components/match/match-apply-page";
 import { buildMatchDetailViewModel } from "@/components/match/match-detail-view-model";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import { formatMoney } from "@/lib/date";
-import { getPublicMatchBySlug } from "@/lib/matches-data";
+import { getPublicMatchByPublicId } from "@/lib/matches-data";
 import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,9 +15,9 @@ export default async function MatchApply({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const { slug: publicId } = await params;
   const [match, { configured, user }] = await Promise.all([
-    getPublicMatchBySlug(slug),
+    getPublicMatchByPublicId(publicId),
     getServerUserState(),
   ]);
 
@@ -28,7 +28,7 @@ export default async function MatchApply({
   if (!configured || !user) {
     redirect(
       buildLoginHref(
-        `/match/${match.slug}/apply`,
+        `/match/${match.publicId}/apply`,
         configured ? undefined : "supabase_not_configured",
       ),
     );

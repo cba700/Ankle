@@ -58,7 +58,7 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
 
   return {
     id: match.id,
-    slug: match.slug,
+    publicId: match.publicId,
     title: match.title,
     statusLabel: match.status.label,
     statusTone: getStatusTone(match.status.kind),

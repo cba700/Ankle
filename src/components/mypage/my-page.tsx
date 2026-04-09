@@ -82,7 +82,7 @@ export function MyPage({ data }: MyPageProps) {
       icon: "settings",
       key: "settings",
       label: "설정",
-      statusText: "미구현",
+      href: "/mypage/settings",
     },
   ];
 
@@ -262,12 +262,6 @@ export function MyPage({ data }: MyPageProps) {
               ))}
             </div>
           </article>
-
-          <form action="/auth/signout" className={styles.logoutForm} method="post">
-            <button className={styles.logoutButton} type="submit">
-              로그아웃
-            </button>
-          </form>
         </section>
       </main>
 

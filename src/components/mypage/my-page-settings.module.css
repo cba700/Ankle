@@ -1,0 +1,220 @@
+.page {
+  min-height: 100vh;
+  background: var(--user-page-background);
+}
+
+.main {
+  padding: 24px 0 40px;
+  display: grid;
+  gap: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.backIcon,
+.badgeIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.summaryCard,
+.infoCard,
+.actionCard {
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
+}
+
+.summaryCard {
+  padding: 24px;
+}
+
+.summaryTop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ff7b1b 0%, #ff6b00 100%);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.summaryCopy {
+  min-width: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 12px 0 0;
+  font-size: clamp(28px, 5vw, 38px);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.infoCard,
+.actionCard {
+  padding: 20px 22px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.infoList,
+.actionList {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.infoRow,
+.withdrawRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  padding: 0 16px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 18px;
+  background: rgba(247, 245, 241, 0.76);
+}
+
+.infoLabel,
+.withdrawMeta {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.infoValue {
+  min-width: 0;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+}
+
+.signOutButton,
+.withdrawButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 18px;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.signOutButton {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.withdrawButton {
+  flex: 1;
+  border: 1px solid rgba(217, 91, 91, 0.24);
+  background: rgba(255, 243, 243, 0.88);
+  color: rgba(168, 72, 72, 0.88);
+}
+
+.withdrawButton:disabled {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 16px 0 36px;
+    gap: 12px;
+  }
+
+  .summaryCard,
+  .infoCard,
+  .actionCard {
+    padding: 18px;
+  }
+
+  .summaryTop,
+  .infoRow,
+  .withdrawRow {
+    align-items: flex-start;
+  }
+
+  .infoRow,
+  .withdrawRow {
+    flex-direction: column;
+    min-height: 0;
+    padding: 14px 16px;
+  }
+
+  .infoValue {
+    width: 100%;
+    text-align: left;
+  }
+
+  .withdrawButton {
+    width: 100%;
+  }
+
+  .withdrawRow {
+    gap: 10px;
+  }
+}

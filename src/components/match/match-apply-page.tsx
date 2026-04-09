@@ -37,7 +37,7 @@ export function MatchApplyPage({
     alreadyApplied ? "이미 신청이 완료된 매치입니다." : null,
   );
 
-  const detailHref = `/match/${view.slug}`;
+  const detailHref = `/match/${view.publicId}`;
   const applyPath = `${detailHref}/apply`;
   const allConfirmed = checkedIds.length === CHECK_ITEMS.length || alreadyApplied;
   const canSubmit = allConfirmed && canApply && !isComplete && !isSubmitting;

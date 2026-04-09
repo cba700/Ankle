@@ -47,7 +47,7 @@ export type MatchToastState = {
 
 export type MatchDetailViewModel = {
   id: string;
-  slug: string;
+  publicId: string;
   title: string;
   statusLabel: string;
   statusTone: MatchDetailStatusTone;

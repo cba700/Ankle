@@ -25,7 +25,7 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
 
     return {
       id: match.id,
-      slug: match.slug,
+      publicId: match.publicId,
       dateKey: match.dateKey,
       time: match.time,
       statusLabel: status.label,

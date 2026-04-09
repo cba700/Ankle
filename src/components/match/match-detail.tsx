@@ -16,7 +16,7 @@ import styles from "./match-detail.module.css";
 
 export function MatchDetail({ match }: { match: MatchRecord }) {
   const view = buildMatchDetailViewModel(match);
-  const applyHref = `/match/${match.slug}/apply`;
+  const applyHref = `/match/${match.publicId}/apply`;
   const canApply = match.canApply;
 
   return (

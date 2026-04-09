@@ -16,6 +16,7 @@ export type DistributionEntry = {
 
 export type MatchRecord = {
   id: string;
+  publicId: string;
   slug: string;
   dateKey: string;
   dateLabel: string;
@@ -443,6 +444,7 @@ export function getMatches() {
 
     return {
       ...template,
+      publicId: getMockPublicId(template.id),
       slug: `${template.venueSlug}-${compactDate}-${template.time.replace(":", "")}`,
       dateKey,
       dateLabel: formatDateLabel(date),
@@ -462,6 +464,10 @@ export function getMatches() {
 
 export function getMatchBySlug(slug: string) {
   return getMatches().find((match) => match.slug === slug);
+}
+
+export function getMatchByPublicId(publicId: string) {
+  return getMatches().find((match) => match.publicId === publicId);
 }
 
 function getMatchStatus(
@@ -499,4 +505,10 @@ function getMatchStatus(
 
 export function getPriceLabel(amount: number) {
   return `${formatMoney(amount)}원`;
+}
+
+function getMockPublicId(matchId: string) {
+  const numericId = Number.parseInt(matchId.replace("match-", ""), 10);
+
+  return numericId.toString().padStart(10, "0");
 }
