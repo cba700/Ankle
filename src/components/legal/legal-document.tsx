@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { LegalFooter } from "./legal-footer";
 import styles from "./legal-document.module.css";
 
 type LegalDocumentProps = {
@@ -32,7 +31,6 @@ export function LegalDocument({
           </article>
         </main>
       </div>
-      <LegalFooter />
     </div>
   );
 }

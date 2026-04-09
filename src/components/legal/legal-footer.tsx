@@ -29,16 +29,15 @@ export function LegalFooter() {
           ))}
         </nav>
 
-        <section aria-labelledby="business-info-title" className={styles.businessCard}>
+        <section aria-labelledby="business-info-title" className={styles.businessInfo}>
           <h2 className={styles.businessTitle} id="business-info-title">
             사업자 정보
           </h2>
-          <div className={styles.businessGrid}>
+          <div className={styles.businessText}>
             {BUSINESS_INFO_FIELDS.map((field) => (
-              <div className={styles.businessItem} key={field}>
-                <span className={styles.businessLabel}>{field}</span>
-                <div aria-hidden="true" className={styles.businessValue} />
-              </div>
+              <span className={styles.businessField} key={field}>
+                {field}
+              </span>
             ))}
           </div>
         </section>

@@ -7,7 +7,7 @@
 .inner {
   display: grid;
   justify-items: stretch;
-  gap: 16px;
+  gap: 12px;
   padding-top: 18px;
   border-top: 1px solid rgba(201, 193, 183, 0.78);
 }
@@ -28,51 +28,37 @@
   text-underline-offset: 2px;
 }
 
-.businessCard {
+.businessInfo {
   width: min(100%, 820px);
   margin: 0 auto;
-  padding: 18px;
-  border: 1px solid rgba(201, 193, 183, 0.78);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 12px 28px rgba(29, 24, 19, 0.05);
 }
 
 .businessTitle {
   margin: 0;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.businessGrid {
-  display: grid;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.businessItem {
-  display: grid;
-  gap: 8px;
-}
-
-.businessLabel {
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 700;
 }
 
-.businessValue {
-  min-height: 20px;
-  border: 1px dashed rgba(201, 193, 183, 0.92);
-  border-radius: 12px;
-  background:
-    linear-gradient(90deg, rgba(247, 245, 241, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
+.businessText {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 6px;
 }
 
-@media (min-width: 768px) {
-  .businessGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.businessField {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.businessField::after {
+  content: "·";
+  margin-left: 12px;
+  color: rgba(122, 122, 122, 0.55);
+}
+
+.businessField:last-child::after {
+  content: none;
 }
