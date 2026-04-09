@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import type { MatchRecord } from "@/lib/matches";
-import { AppLink } from "@/components/navigation/app-link";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { MatchCourtSection } from "./match-court-section";
+import { MatchDetailBackLink } from "./match-detail-back-link";
 import { MatchDetailHeader } from "./match-detail-header";
 import { MatchDetailFeedbackProvider } from "./match-detail-feedback";
 import { MatchDetailHeroClient } from "./match-detail-hero-client";
@@ -16,10 +17,8 @@ import { MatchStickyApplyBar } from "./match-sticky-apply-bar";
 import styles from "./match-detail.module.css";
 
 export function MatchDetail({
-  backHref,
   match,
 }: {
-  backHref: string;
   match: MatchRecord;
 }) {
   const view = buildMatchDetailViewModel(match);
@@ -31,9 +30,9 @@ export function MatchDetail({
       <div className={styles.page}>
         <MatchDetailHeader />
         <div className={styles.backBar}>
-          <AppLink className={styles.backLink} href={backHref}>
-            ← 매치 목록으로
-          </AppLink>
+          <Suspense fallback={<a className={styles.backLink} href="/">← 매치 목록으로</a>}>
+            <MatchDetailBackLink className={styles.backLink} />
+          </Suspense>
         </div>
         <MatchDetailHeroClient
           courtName={view.courtName}
