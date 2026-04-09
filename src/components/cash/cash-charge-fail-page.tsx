@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { ArrowLeftIcon } from "@/components/icons";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import styles from "./cash-charge-page.module.css";
 
@@ -85,6 +86,8 @@ export function CashChargeFailPage({
           </section>
         </main>
       </div>
+
+      <LegalFooter />
     </div>
   );
 }

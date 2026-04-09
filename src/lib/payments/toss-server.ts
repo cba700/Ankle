@@ -61,6 +61,31 @@ export async function confirmTossPayment({
   };
 }
 
+export async function getTossPayment(paymentKey: string) {
+  const env = getTossPaymentsServerEnv();
+
+  if (!env) {
+    throw new Error("TOSS_NOT_CONFIGURED");
+  }
+
+  const response = await fetch(
+    `https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: buildTossAuthorizationHeader(env.secretKey),
+      },
+      cache: "no-store",
+    },
+  );
+
+  return {
+    ok: response.ok,
+    payload: (await response.json().catch(() => null)) as Record<string, unknown> | null,
+    status: response.status,
+  };
+}
+
 export function summarizeTossPayment(
   payload: Record<string, unknown> | null,
 ): TossPaymentSummary {

@@ -58,7 +58,7 @@ export type AdminVenueFormValue = {
   parking: string;
   smoking: string;
   showerLocker: string;
-  defaultImageUrlsText: string;
+  defaultImageUrls: string[];
   defaultRulesText: string;
   defaultSafetyNotesText: string;
   isActive: boolean;

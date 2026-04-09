@@ -6,11 +6,13 @@ import {
   formatDateLabel,
   formatMoney,
   formatSeoulTime,
+  toDateKey,
 } from "@/lib/date";
 import {
   listCashTransactionsByUserId,
   getCashAccountByUserId,
   type CashTransactionEntity,
+  type CashTransactionType,
 } from "@/lib/cash";
 import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -52,6 +54,8 @@ export type MyPageProfile = {
 };
 
 export type MyPageApplication = {
+  appliedAt: string;
+  appliedDateKey: string;
   cashLabel: string;
   href: string | null;
   id: string;
@@ -69,12 +73,14 @@ export type MyPageCashTransaction = {
   metaLabel: string;
   title: string;
   tone: "accent" | "danger" | "muted";
+  type: CashTransactionType;
 };
 
 export type MyPageData = {
   applications: MyPageApplication[];
   cashBalanceLabel: string;
   cashTransactions: MyPageCashTransaction[];
+  couponCount: number;
   profile: MyPageProfile;
 };
 
@@ -138,6 +144,7 @@ export async function getMyPageData({
     applications: ((applications ?? []) as ApplicationRow[]).map(mapApplication),
     cashBalanceLabel: `${formatMoney(cashAccount?.balance ?? 0)}원`,
     cashTransactions: cashTransactions.map(mapCashTransaction),
+    couponCount: 0,
     profile: {
       avatarUrl: typedProfile?.avatar_url ?? null,
       displayName: getDisplayName(user, typedProfile),
@@ -152,6 +159,8 @@ function mapApplication(application: ApplicationRow): MyPageApplication {
   const match = normalizeMatch(application.match);
 
   return {
+    appliedAt: application.applied_at,
+    appliedDateKey: toDateKey(new Date(application.applied_at)),
     cashLabel: getCashLabel(application),
     href: match?.slug ? `/match/${match.slug}` : null,
     id: application.id,
@@ -174,6 +183,7 @@ function mapCashTransaction(transaction: CashTransactionEntity): MyPageCashTrans
     metaLabel: `${formatCompactDateLabel(new Date(transaction.createdAt))} · ${transaction.memo || getCashTransactionTitle(transaction.type)}`,
     title: getCashTransactionTitle(transaction.type),
     tone: getCashTransactionTone(transaction.type, transaction.deltaAmount),
+    type: transaction.type,
   };
 }
 

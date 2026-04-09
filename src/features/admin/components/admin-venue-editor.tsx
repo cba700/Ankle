@@ -1,4 +1,5 @@
 import type { AdminVenueFormValue } from "../types";
+import { AdminVenueImageField } from "./admin-venue-image-field";
 import styles from "./admin-venue-editor.module.css";
 
 type AdminVenueEditorProps = {
@@ -13,7 +14,7 @@ export function AdminVenueEditor({
   formAction,
 }: AdminVenueEditorProps) {
   return (
-    <form action={formAction} className={styles.form}>
+    <form action={formAction} className={styles.form} encType="multipart/form-data">
       <div className={styles.actionBar}>
         <div>
           <p className={styles.eyebrow}>경기장 기본값 관리</p>
@@ -67,14 +68,10 @@ export function AdminVenueEditor({
             <textarea defaultValue={values.showerLocker} name="showerLocker" rows={3} />
           </label>
 
-          <label className={`${styles.field} ${styles.fieldSpan}`}>
-            <span className={styles.fieldLabel}>기본 이미지 URL</span>
-            <textarea
-              defaultValue={values.defaultImageUrlsText}
-              name="defaultImageUrlsText"
-              rows={4}
-            />
-          </label>
+          <div className={`${styles.field} ${styles.fieldSpan}`}>
+            <span className={styles.fieldLabel}>경기장 이미지</span>
+            <AdminVenueImageField initialUrls={values.defaultImageUrls} />
+          </div>
 
           <label className={`${styles.field} ${styles.fieldSpan}`}>
             <span className={styles.fieldLabel}>기본 운영 규칙</span>

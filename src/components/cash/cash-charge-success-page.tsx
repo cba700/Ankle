@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon } from "@/components/icons";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import styles from "./cash-charge-page.module.css";
 
@@ -164,6 +165,8 @@ export function CashChargeSuccessPage({
           ) : null}
         </main>
       </div>
+
+      <LegalFooter />
     </div>
   );
 }

@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { MyPage } from "@/components/mypage/my-page";
+import { MyPageCoupons } from "@/components/mypage/my-page-coupons";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
-  title: "마이페이지",
-  description: "앵클 계정 정보와 주요 메뉴를 확인하는 마이페이지",
+  title: "쿠폰",
+  description: "앵클 쿠폰 보유 수를 확인하는 페이지",
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function MyPageRoute() {
+export default async function MyPageCouponsRoute() {
   const { configured, role, user } = await getServerAuthState();
 
   if (!configured || !user) {
     redirect(
       buildLoginHref(
-        "/mypage",
+        "/mypage/coupons",
         configured ? undefined : "supabase_not_configured",
       ),
     );
@@ -29,5 +29,10 @@ export default async function MyPageRoute() {
     user,
   });
 
-  return <MyPage data={data} />;
+  return (
+    <MyPageCoupons
+      couponCount={data.couponCount}
+      initialIsAdmin={data.profile.role === "admin"}
+    />
+  );
 }

@@ -87,7 +87,10 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
     preparation: entity.preparation,
     price: entity.price,
     status: getPublicStatus(entity, { isSoldOut, isStarted }),
-    imageUrls: entity.imageUrls.length > 0 ? entity.imageUrls : DEFAULT_IMAGE_URLS,
+    imageUrls:
+      entity.venue.defaultImageUrls.length > 0
+        ? entity.venue.defaultImageUrls
+        : DEFAULT_IMAGE_URLS,
     venueInfo: {
       directions: entity.venue.directions,
       parking: entity.venue.parking,

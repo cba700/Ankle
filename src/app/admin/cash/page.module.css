@@ -45,6 +45,16 @@
   gap: 10px;
 }
 
+.retryForm {
+  margin-top: 4px;
+}
+
+.retryButton {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
 .field {
   display: grid;
   gap: 6px;

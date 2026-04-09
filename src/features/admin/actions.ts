@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
+import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
   assertCashFoundationSchemaReady,
@@ -12,6 +13,11 @@ import {
   getSupabaseServerClient,
   getSupabaseServiceRoleClient,
 } from "@/lib/supabase/server";
+import {
+  deleteVenueImageUrls,
+  isManagedVenueImageUrl,
+  uploadVenueImageFiles,
+} from "@/lib/venue-images";
 import {
   buildGeneratedMatchTitle,
   getMatchLevelValues,
@@ -37,11 +43,36 @@ type VenueFormValues = {
   parking: string;
   smoking: string;
   showerLocker: string;
+  imageFiles: File[];
+  imageOrder: VenueImageOrderEntry[];
+  defaultRules: string[];
+  defaultSafetyNotes: string[];
+  isActive: boolean;
+};
+
+type VenueWriteValues = {
+  name: string;
+  district: string;
+  address: string;
+  directions: string;
+  parking: string;
+  smoking: string;
+  showerLocker: string;
   defaultImageUrls: string[];
   defaultRules: string[];
   defaultSafetyNotes: string[];
   isActive: boolean;
 };
+
+type VenueImageOrderEntry =
+  | {
+      kind: "existing";
+      url: string;
+    }
+  | {
+      kind: "new";
+      fileName: string;
+    };
 
 type MatchCountResult = {
   confirmed_count: number;
@@ -174,8 +205,41 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
 export async function createAdminVenueAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
   const values = readVenueFormValues(formData);
-  const venue = await createVenue(supabase, values);
+  const venue = await createVenue(supabase, {
+    name: values.name,
+    district: values.district,
+    address: values.address,
+    directions: values.directions,
+    parking: values.parking,
+    smoking: values.smoking,
+    showerLocker: values.showerLocker,
+    defaultImageUrls: [],
+    defaultRules: values.defaultRules,
+    defaultSafetyNotes: values.defaultSafetyNotes,
+    isActive: values.isActive,
+  });
+  let uploadedUrls: string[] = [];
+
+  try {
+    const uploadedUrlMap = await uploadVenueImageFiles(admin, {
+      files: values.imageFiles,
+      venueId: venue.id,
+    });
+    uploadedUrls = Array.from(uploadedUrlMap.values());
+    const defaultImageUrls = buildVenueImageUrls({
+      imageOrder: values.imageOrder,
+      previousUrls: [],
+      uploadedUrls: uploadedUrlMap,
+    });
+
+    await updateVenueImages(supabase, venue.id, defaultImageUrls);
+  } catch (error) {
+    await safeDeleteVenueImageUrls(admin, uploadedUrls);
+    await cleanupFailedVenueCreation(admin, venue.id);
+    throw error;
+  }
 
   redirect(`/admin/venues/${venue.id}/edit`);
 }
@@ -183,30 +247,57 @@ export async function createAdminVenueAction(formData: FormData) {
 export async function updateAdminVenueAction(venueId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
   const values = readVenueFormValues(formData);
+  const previousImageUrls = await getVenueImageUrls(supabase, venueId);
   const slug = toSlug(`${values.district} ${values.name}`);
+  let uploadedUrls: string[] = [];
+  let defaultImageUrls: string[] = [];
 
-  const { error } = await supabase
-    .from("venues")
-    .update({
-      slug,
-      name: values.name,
-      district: values.district,
-      address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
-      default_image_urls: values.defaultImageUrls,
-      default_rules: values.defaultRules,
-      default_safety_notes: values.defaultSafetyNotes,
-      is_active: values.isActive,
-    })
-    .eq("id", venueId);
+  try {
+    const uploadedUrlMap = await uploadVenueImageFiles(admin, {
+      files: values.imageFiles,
+      venueId,
+    });
+    uploadedUrls = Array.from(uploadedUrlMap.values());
+    defaultImageUrls = buildVenueImageUrls({
+      imageOrder: values.imageOrder,
+      previousUrls: previousImageUrls,
+      uploadedUrls: uploadedUrlMap,
+    });
 
-  if (error) {
-    throw new Error(error.message);
+    const { error } = await supabase
+      .from("venues")
+      .update({
+        slug,
+        name: values.name,
+        district: values.district,
+        address: values.address,
+        directions: values.directions,
+        parking: values.parking,
+        smoking: values.smoking,
+        shower_locker: values.showerLocker,
+        default_image_urls: defaultImageUrls,
+        default_rules: values.defaultRules,
+        default_safety_notes: values.defaultSafetyNotes,
+        is_active: values.isActive,
+      })
+      .eq("id", venueId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    await safeDeleteVenueImageUrls(admin, uploadedUrls);
+    throw error;
   }
+
+  await safeDeleteVenueImageUrls(
+    admin,
+    previousImageUrls.filter(
+      (url) => isManagedVenueImageUrl(url) && !defaultImageUrls.includes(url),
+    ),
+  );
 
   redirect(`/admin/venues/${venueId}/edit`);
 }
@@ -245,6 +336,31 @@ export async function adjustAdminCashBalanceAction(formData: FormData) {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
+}
+
+export async function retryPendingCashChargeOrderAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashChargeOperationsSchemaReady(supabase);
+
+  const admin = getSupabaseServiceRoleClient() as any;
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  const orderId = String(formData.get("orderId") ?? "").trim();
+
+  if (!orderId) {
+    throw new Error("Order ID is required");
+  }
+
+  const result = await retryPendingTossChargeOrder(admin, orderId);
+
+  if (!result.ok) {
+    throw new Error(result.message);
   }
 
   redirect("/admin/cash");
@@ -333,7 +449,7 @@ async function resolveManualVenue(
 
 async function createVenue(
   supabase: AdminSupabaseClient,
-  values: VenueFormValues,
+  values: VenueWriteValues,
 ) {
   const slug = toSlug(`${values.district} ${values.name}`);
   const { data, error } = await supabase
@@ -514,7 +630,8 @@ function readVenueFormValues(formData: FormData): VenueFormValues {
     parking: getRequiredString(formData, "parking"),
     smoking: getRequiredString(formData, "smoking"),
     showerLocker: getRequiredString(formData, "showerLocker"),
-    defaultImageUrls: splitLineSeparated(getOptionalString(formData, "defaultImageUrlsText")),
+    imageFiles: getUploadedFiles(formData, "imageFiles"),
+    imageOrder: parseVenueImageOrder(getOptionalString(formData, "imageOrderJson")),
     defaultRules: splitLineSeparated(getOptionalString(formData, "defaultRulesText")),
     defaultSafetyNotes: splitLineSeparated(getOptionalString(formData, "defaultSafetyNotesText")),
     isActive: formData.get("isActive") === "on",
@@ -618,6 +735,60 @@ function splitLineSeparated(value: string) {
     .filter(Boolean);
 }
 
+function getUploadedFiles(formData: FormData, key: string) {
+  return formData
+    .getAll(key)
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+}
+
+function parseVenueImageOrder(value: string): VenueImageOrderEntry[] {
+  if (!value) {
+    return [];
+  }
+
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error("Invalid venue image payload");
+  }
+
+  if (!Array.isArray(parsed)) {
+    throw new Error("Invalid venue image payload");
+  }
+
+  return parsed.map((entry) => {
+    if (
+      entry &&
+      typeof entry === "object" &&
+      entry.kind === "existing" &&
+      typeof entry.url === "string" &&
+      entry.url.trim()
+    ) {
+      return {
+        kind: "existing" as const,
+        url: entry.url.trim(),
+      };
+    }
+
+    if (
+      entry &&
+      typeof entry === "object" &&
+      entry.kind === "new" &&
+      typeof entry.fileName === "string" &&
+      entry.fileName.trim()
+    ) {
+      return {
+        kind: "new" as const,
+        fileName: entry.fileName.trim(),
+      };
+    }
+
+    throw new Error("Invalid venue image payload");
+  });
+}
+
 function buildSeoulDateTime(date: string, time: string) {
   const iso = `${date}T${time}:00+09:00`;
   const parsed = new Date(iso);
@@ -661,4 +832,118 @@ function toSlug(value: string) {
     .replace(/^-|-$/g, "");
 
   return slug || "venue";
+}
+
+function requireServiceRoleClient() {
+  const admin = getSupabaseServiceRoleClient();
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  return admin as any;
+}
+
+async function getVenueImageUrls(
+  supabase: AdminSupabaseClient,
+  venueId: string,
+) {
+  const { data, error } = await supabase
+    .from("venues")
+    .select("default_image_urls")
+    .eq("id", venueId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data as { default_image_urls: string[] | null } | null)?.default_image_urls ?? []);
+}
+
+async function updateVenueImages(
+  supabase: AdminSupabaseClient,
+  venueId: string,
+  defaultImageUrls: string[],
+) {
+  const { error } = await supabase
+    .from("venues")
+    .update({
+      default_image_urls: defaultImageUrls,
+    })
+    .eq("id", venueId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function cleanupFailedVenueCreation(admin: any, venueId: string) {
+  const { error } = await admin.from("venues").delete().eq("id", venueId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function safeDeleteVenueImageUrls(admin: any, urls: string[]) {
+  if (urls.length === 0) {
+    return;
+  }
+
+  try {
+    await deleteVenueImageUrls(admin, urls);
+  } catch {
+    // Ignore storage cleanup failures after the main DB write succeeds.
+  }
+}
+
+function buildVenueImageUrls({
+  imageOrder,
+  previousUrls,
+  uploadedUrls,
+}: {
+  imageOrder: VenueImageOrderEntry[];
+  previousUrls: string[];
+  uploadedUrls: Map<string, string>;
+}) {
+  const previousUrlSet = new Set(previousUrls);
+  const seen = new Set<string>();
+  const orderedUrls: string[] = [];
+
+  for (const entry of imageOrder) {
+    const nextUrl =
+      entry.kind === "existing"
+        ? validateExistingVenueImageUrl(entry.url, previousUrlSet)
+        : uploadedUrls.get(entry.fileName);
+
+    if (!nextUrl) {
+      throw new Error("Missing uploaded venue image");
+    }
+
+    if (seen.has(nextUrl)) {
+      continue;
+    }
+
+    seen.add(nextUrl);
+    orderedUrls.push(nextUrl);
+  }
+
+  if (orderedUrls.length > 8) {
+    throw new Error("Venue images cannot exceed 8 files");
+  }
+
+  return orderedUrls;
+}
+
+function validateExistingVenueImageUrl(url: string, previousUrlSet: Set<string>) {
+  if (previousUrlSet.has(url)) {
+    return url;
+  }
+
+  if (url.startsWith("/")) {
+    return url;
+  }
+
+  throw new Error("Invalid retained venue image");
 }
