@@ -20,6 +20,7 @@ export type MatchVenueEntity = {
   parking: string;
   smoking: string;
   showerLocker: string;
+  defaultImageUrls: string[];
   isActive: boolean;
 };
 
@@ -60,6 +61,7 @@ type MatchVenueRow = {
   parking: string;
   smoking: string;
   shower_locker: string;
+  default_image_urls: string[] | null;
   is_active: boolean;
 };
 
@@ -143,6 +145,7 @@ const MATCH_SELECT = `
     parking,
     smoking,
     shower_locker,
+    default_image_urls,
     is_active
   )
 `;
@@ -315,6 +318,7 @@ async function listMatchEntities({
           parking,
           smoking,
           showerLocker,
+          defaultImageUrls: venue.default_image_urls ?? [],
           isActive: venue.is_active,
         },
       } satisfies MatchEntity;
