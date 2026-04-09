@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import { RouteTransitionProvider } from "@/components/navigation/route-transition-provider";
+import { SITE_DESCRIPTION, SITE_NAME, getSiteMetadataBase } from "@/lib/site-metadata";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: getSiteMetadataBase(),
   title: {
-    default: "앵클",
-    template: "%s | 앵클",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "혼자 와도 바로 참여할 수 있는 서울 한강 농구 매칭 플랫폼",
+  description: SITE_DESCRIPTION,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

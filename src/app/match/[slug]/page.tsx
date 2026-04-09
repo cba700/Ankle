@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { MatchDetail } from "@/components/match/match-detail";
-import { formatMoney } from "@/lib/date";
 import { getPublicMatchByPublicId } from "@/lib/matches-data";
+import {
+  SITE_LOCALE,
+  SITE_NAME,
+  getMainOgImageUrl,
+  resolveSiteUrl,
+} from "@/lib/site-metadata";
 
 export const revalidate = 60;
 
@@ -28,24 +33,33 @@ export async function generateMetadata({
     };
   }
 
-  const description = [
-    `${match.dateLabel} ${match.time}`,
-    match.venueName,
-    match.levelCondition,
-    match.genderCondition,
-    `참가비 ${formatMoney(match.price)}원`,
-  ].join(" · ");
+  const canonicalPath = `/match/${publicId}`;
+  const description = `${match.dateLabel} ${match.time} · ${match.venueName}`;
   const title = `${match.title} | ${match.dateLabel} ${match.time}`;
-  const imageUrl = match.imageUrls.find(isAbsoluteUrl);
+  const imageUrl = match.imageUrls[0]
+    ? resolveSiteUrl(match.imageUrls[0])
+    : getMainOgImageUrl();
 
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title,
       description,
+      url: canonicalPath,
       type: "website",
-      ...(imageUrl ? { images: [{ url: imageUrl }] } : {}),
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
+      images: [{ url: imageUrl }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
     },
   };
 }
@@ -63,8 +77,4 @@ export default async function MatchDetailPage({
   }
 
   return <MatchDetail match={match} />;
-}
-
-function isAbsoluteUrl(value: string) {
-  return value.startsWith("http://") || value.startsWith("https://");
 }
