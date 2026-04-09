@@ -6,15 +6,7 @@ import styles from "./legal-footer.module.css";
 const LEGAL_LINKS = [
   { href: "/terms", label: "이용약관" },
   { href: "/privacy", label: "개인정보처리방침" },
-] as const;
-
-const BUSINESS_INFO_FIELDS = [
-  "상호",
-  "주소",
-  "대표",
-  "메일",
-  "사업자등록번호",
-  "통신판매업신고",
+  { href: "/business-info", label: "사업자정보확인" },
 ] as const;
 
 export function LegalFooter() {
@@ -33,13 +25,13 @@ export function LegalFooter() {
           <h2 className={styles.businessTitle} id="business-info-title">
             사업자 정보
           </h2>
-          <div className={styles.businessText}>
-            {BUSINESS_INFO_FIELDS.map((field) => (
-              <span className={styles.businessField} key={field}>
-                {field}
-              </span>
-            ))}
-          </div>
+          <p className={styles.businessLine}>
+            앵클베스킷 | 서울특별시 도봉구 해등로 50 | 010-2354-0467
+          </p>
+          <p className={styles.businessLine}>대표: 남강현</p>
+          <p className={styles.businessLine}>메일: anklebasket@naver.com</p>
+          <p className={styles.businessLine}>사업자등록번호: 679-74-00694</p>
+          <p className={styles.businessLine}>통신판매업신고: 미기재</p>
         </section>
       </div>
     </footer>

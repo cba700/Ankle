@@ -40,25 +40,10 @@
   font-weight: 700;
 }
 
-.businessText {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  margin-top: 6px;
-}
-
-.businessField {
+.businessLine {
+  margin: 6px 0 0;
   color: var(--text-tertiary);
   font-size: 12px;
-  line-height: 1.6;
-}
-
-.businessField::after {
-  content: "·";
-  margin-left: 12px;
-  color: rgba(122, 122, 122, 0.55);
-}
-
-.businessField:last-child::after {
-  content: none;
+  line-height: 1.65;
+  text-align: center;
 }
