@@ -8,6 +8,15 @@ const LEGAL_LINKS = [
   { href: "/privacy", label: "개인정보처리방침" },
 ] as const;
 
+const BUSINESS_INFO_FIELDS = [
+  "상호",
+  "주소",
+  "대표",
+  "메일",
+  "사업자등록번호",
+  "통신판매업신고",
+] as const;
+
 export function LegalFooter() {
   return (
     <footer className={styles.footer}>
@@ -19,7 +28,20 @@ export function LegalFooter() {
             </AppLink>
           ))}
         </nav>
-        <p className={styles.copy}>정식 운영 문안은 추후 확정 예정입니다.</p>
+
+        <section aria-labelledby="business-info-title" className={styles.businessCard}>
+          <h2 className={styles.businessTitle} id="business-info-title">
+            사업자 정보
+          </h2>
+          <div className={styles.businessGrid}>
+            {BUSINESS_INFO_FIELDS.map((field) => (
+              <div className={styles.businessItem} key={field}>
+                <span className={styles.businessLabel}>{field}</span>
+                <div aria-hidden="true" className={styles.businessValue} />
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </footer>
   );

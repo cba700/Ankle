@@ -21,123 +21,169 @@
 }
 
 .document {
-  margin-top: 16px;
-  padding: 24px;
+  width: min(100%, 820px);
+  margin: 16px auto 0;
+  padding: 28px 24px;
   border: 1px solid rgba(201, 193, 183, 0.78);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
 }
 
-.eyebrow {
-  margin: 0 0 12px;
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .header {
   display: grid;
-  gap: 18px;
+  gap: 10px;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(28px, 4.6vw, 42px);
-  line-height: 1.08;
+  font-size: clamp(28px, 4.8vw, 40px);
+  line-height: 1.12;
   letter-spacing: -0.05em;
 }
 
-.lead {
-  margin: 12px 0 0;
-  color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.metaList {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-
-.metaItem {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #faf8f4;
-}
-
-.metaItem dt,
-.metaItem dd {
-  margin: 0;
-  font-size: 13px;
-}
-
-.metaItem dt {
-  color: var(--text-secondary);
-  font-weight: 700;
-}
-
-.metaItem dd {
-  color: var(--text-primary);
-  font-weight: 800;
-}
-
-.noticeBox {
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-  padding: 18px;
-  border: 1px solid rgba(243, 109, 33, 0.18);
-  border-radius: 18px;
-  background: #fff7f0;
-}
-
-.noticeBox strong {
-  font-size: 16px;
-}
-
-.noticeBox p {
+.effectiveDate {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
-.sectionList {
-  display: grid;
-  gap: 14px;
-  margin-top: 20px;
+.content {
+  margin-top: 28px;
 }
 
-.section {
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
+.content > p:first-child,
+.content > section:first-child {
+  margin-top: 0;
 }
 
-.sectionTitle {
+.content p,
+.dataValue,
+.contactItem,
+.definitionItem {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.25;
-  letter-spacing: -0.03em;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.82;
+  letter-spacing: -0.01em;
 }
 
-.sectionBody {
-  display: grid;
-  gap: 10px;
+.content > p + p {
   margin-top: 12px;
 }
 
-.paragraph {
+.content section + section {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(201, 193, 183, 0.72);
+}
+
+.content h2,
+.content h3 {
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+
+.content h2 {
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.content h3 {
+  margin-top: 20px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.content h2 + p,
+.content h2 + .dataGrid,
+.content h2 + .definitionList,
+.content h2 + .contactList,
+.content h2 + ul,
+.content h2 + ol,
+.content h3 + p,
+.content h3 + .dataGrid,
+.content h3 + ul,
+.content h3 + ol {
+  margin-top: 12px;
+}
+
+.content ul,
+.content ol,
+.definitionList,
+.contactList {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.definitionList,
+.contactList {
+  padding-left: 0;
+  list-style: none;
+}
+
+.content li {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.definitionItem {
+  padding: 14px 16px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 16px;
+  background: #fcfbf8;
+}
+
+.definitionTerm {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.65;
+}
+
+.dataGrid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dataRow {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 16px;
+  background: #fcfbf8;
+}
+
+.dataLabel {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.dataValue {
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.note {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-left: 3px solid rgba(243, 109, 33, 0.75);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.note,
+.note p {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
@@ -150,11 +196,6 @@
   }
 
   .document {
-    padding: 32px;
-  }
-
-  .header {
-    grid-template-columns: minmax(0, 1fr) 260px;
-    align-items: start;
+    padding: 36px 40px;
   }
 }
