@@ -1,28 +1,41 @@
 .list {
-  border-top: 1px solid rgba(201, 193, 183, 0.56);
+  display: grid;
+  gap: 14px;
 }
 
 .row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: start;
-  padding: 18px 0;
-  border-bottom: 1px solid rgba(201, 193, 183, 0.56);
+  position: relative;
+  padding: 18px 20px;
+  border: 1px solid rgba(222, 217, 209, 0.92);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(29, 24, 19, 0.05);
+  transition: box-shadow 160ms ease;
+}
+
+.row:hover {
+  box-shadow: 0 16px 30px rgba(29, 24, 19, 0.09);
 }
 
 .rowLink {
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr);
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
+  padding-right: 40px;
 }
 
-.timeColumn {
-  display: grid;
-  justify-items: start;
-  align-content: start;
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topMeta {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .statusBadge {
@@ -52,8 +65,8 @@
 }
 
 .statusOpen {
-  background: #eff9f5;
-  color: #159b68;
+  background: rgba(255, 107, 0, 0.12);
+  color: var(--accent-strong);
 }
 
 .timeWrap {
@@ -83,38 +96,6 @@
 
 .infoColumn {
   min-width: 0;
-}
-
-.badgeRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.infoBadge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 20px;
-  padding: 0 7px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.badgeGreen {
-  color: #128155;
-  background: #ecfaf5;
-}
-
-.badgeBlue {
-  color: #2f67c9;
-  background: #eef5ff;
-}
-
-.badgeOrange {
-  color: #cf621d;
-  background: #fff4ea;
 }
 
 .titleRow {
@@ -159,13 +140,18 @@
 }
 
 .likeButton {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   padding: 0;
-  border: 0;
-  background: transparent;
+  border: 1px solid rgba(222, 217, 209, 0.92);
+  border-radius: 999px;
+  background: #fff;
   color: #bbb;
 }
 
@@ -195,13 +181,7 @@
 
 @media (max-width: 767px) {
   .row {
-    gap: 10px;
-    padding: 16px 0;
-  }
-
-  .rowLink {
-    grid-template-columns: 62px minmax(0, 1fr);
-    gap: 14px;
+    padding: 16px 18px;
   }
 
   .time {

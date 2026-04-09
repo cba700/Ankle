@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { MatchDetail } from "@/components/match/match-detail";
+import {
+  getFirstSearchParam,
+  getHomeStateHref,
+  parseHomeFilterIds,
+} from "@/components/home/home-route-state";
 import { formatMoney } from "@/lib/date";
 import { getPublicMatchByPublicId } from "@/lib/matches-data";
 
@@ -52,17 +57,31 @@ export async function generateMetadata({
 
 export default async function MatchDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{
+    date?: string | string[];
+    filters?: string | string[];
+  }>;
 }) {
   const { slug: publicId } = await params;
   const match = await getMatch(publicId);
+  const resolvedSearchParams = await searchParams;
 
   if (!match) {
     notFound();
   }
 
-  return <MatchDetail match={match} />;
+  const backHref = getHomeStateHref({
+    dateKey: getFirstSearchParam(resolvedSearchParams.date),
+    filterIds: parseHomeFilterIds(
+      getFirstSearchParam(resolvedSearchParams.filters),
+      ["hideClosed", "region", "gender", "level", "shade"],
+    ),
+  });
+
+  return <MatchDetail backHref={backHref} match={match} />;
 }
 
 function isAbsoluteUrl(value: string) {

@@ -4,12 +4,27 @@
   background: var(--user-page-background);
 }
 
+.backBar {
+  width: var(--page-width);
+  margin: 14px auto 0;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 2px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .body {
   width: var(--page-width);
   margin: 28px auto 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
-  gap: 44px;
+  gap: 36px;
   align-items: start;
 }
 
@@ -33,6 +48,10 @@
 @media (max-width: 767px) {
   .page {
     padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .backBar {
+    margin-top: 12px;
   }
 
   .body {

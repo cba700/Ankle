@@ -9,17 +9,30 @@ import styles from "./home-page.module.css";
 type HomePageProps = {
   isAdmin: boolean;
   dates: CalendarDate[];
+  initialSelectedDateKey: string;
+  initialActiveFilterIds: string[];
   rows: HomeMatchRow[];
 };
 
-export function HomePage({ isAdmin, dates, rows }: HomePageProps) {
+export function HomePage({
+  isAdmin,
+  dates,
+  initialSelectedDateKey,
+  initialActiveFilterIds,
+  rows,
+}: HomePageProps) {
   return (
     <div className={styles.page}>
       <HomeHeader isAdmin={isAdmin} />
 
       <main className={`pageShell ${styles.main}`}>
         <HomeHero />
-        <HomeMatchBrowser dates={dates} rows={rows} />
+        <HomeMatchBrowser
+          dates={dates}
+          initialActiveFilterIds={initialActiveFilterIds}
+          initialSelectedDateKey={initialSelectedDateKey}
+          rows={rows}
+        />
       </main>
 
       <LegalFooter />

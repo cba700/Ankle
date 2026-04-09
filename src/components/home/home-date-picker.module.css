@@ -49,9 +49,9 @@
 }
 
 .chipActive {
-  border-color: transparent;
-  background: #171717;
-  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.14);
+  border-color: var(--accent);
+  background: rgba(255, 240, 227, 0.72);
+  box-shadow: 0 10px 24px rgba(243, 109, 33, 0.12);
 }
 
 .monthDay {
@@ -62,7 +62,7 @@
 
 .chipActive .monthDay,
 .chipActive .weekday {
-  color: #fff;
+  color: var(--accent-strong);
 }
 
 .weekday {
@@ -85,8 +85,8 @@
 }
 
 .chipActive .todayTag {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: rgba(243, 109, 33, 0.12);
+  color: var(--accent-strong);
 }
 
 .saturday {

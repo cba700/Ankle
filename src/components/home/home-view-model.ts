@@ -1,13 +1,9 @@
 import type { MatchRecord } from "@/lib/matches";
-import type { HomeFilterItem, HomeMatchBadge, HomeMatchRow } from "./home-types";
+import type { HomeFilterItem, HomeMatchRow } from "./home-types";
 
 export const HOME_HERO = {
-  eyebrow: "총 리워드 1,100만 원!",
-  title: ["앵클을 소개할", "300인의 앵클러를 찾아요"],
-  badgeNumber: "300",
-  badgeLabel: "앵클러",
-  description: "첫 배포 전 함께 확인할 앵클의 소셜 매치 홈을 먼저 공개합니다.",
-  slideLabel: "1 | 1",
+  eyebrow: "농구 매칭 플랫폼",
+  title: ["존중하고 격려하고", "함께 즐겨요"],
 };
 
 export const HOME_FILTERS: HomeFilterItem[] = [
@@ -20,7 +16,6 @@ export const HOME_FILTERS: HomeFilterItem[] = [
 
 export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
   return matches.map((match) => {
-    const badges = getHomeMatchBadges(match);
     const status = getHomeStatus(match);
 
     return {
@@ -35,26 +30,9 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
       venueName: match.venueName,
       title: match.title,
       meta: [match.venueName, match.genderCondition, match.format].join(" · "),
-      badges,
       isNew: match.canApply && match.status.kind === "open" && match.currentParticipants <= 3,
     };
   });
-}
-
-function getHomeMatchBadges(match: MatchRecord): HomeMatchBadge[] {
-  const badges: HomeMatchBadge[] = [];
-
-  if (match.levelCondition === "모든 레벨" || match.levelCondition.includes("초급")) {
-    badges.push({ label: "입문 환영", tone: "green" });
-  }
-
-  if (match.format === "5vs5") {
-    badges.push({ label: "밸런스 팀 배정", tone: "blue" });
-  } else if (match.price <= 5900) {
-    badges.push({ label: "가벼운 참가비", tone: "orange" });
-  }
-
-  return badges.slice(0, 2);
 }
 
 function getHomeStatus(match: MatchRecord) {

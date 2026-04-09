@@ -19,13 +19,6 @@ export type HomeFilterItem = {
   kind: HomeFilterKind;
 };
 
-export type HomeMatchBadgeTone = "green" | "blue" | "orange";
-
-export type HomeMatchBadge = {
-  label: string;
-  tone: HomeMatchBadgeTone;
-};
-
 export type HomeMatchStatusTone = "neutral" | "accent" | "danger" | "open";
 
 export type HomeMatchRow = {
@@ -40,6 +33,5 @@ export type HomeMatchRow = {
   venueName: string;
   title: string;
   meta: string;
-  badges: HomeMatchBadge[];
   isNew: boolean;
 };
