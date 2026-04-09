@@ -31,7 +31,7 @@ type MenuItem = {
 
 const MY_MENU_ITEMS: MenuItem[] = [
   {
-    href: "#mypage-applications",
+    href: "/mypage/applications",
     icon: "applications",
     key: "applications",
     label: "신청 내역",
@@ -204,31 +204,40 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.menuSection}>
             <p className={styles.menuSectionTitle}>나의 앵클</p>
             <div className={styles.menuList}>
-              {MY_MENU_ITEMS.map((item) =>
-                item.href ? (
-                  <a className={styles.menuRow} href={item.href} key={item.key}>
+              {MY_MENU_ITEMS.map((item) => {
+                const content = (
+                  <>
                     <span className={styles.menuIconWrap}>
                       {renderMenuIcon(item.icon)}
                     </span>
                     <span className={styles.menuLabel}>{item.label}</span>
                     <span className={styles.menuMeta}>{item.statusText}</span>
                     <ArrowRightIcon className={styles.menuArrow} />
+                  </>
+                );
+
+                if (!item.href) {
+                  return (
+                    <div
+                      aria-disabled="true"
+                      className={`${styles.menuRow} ${styles.menuRowDisabled}`}
+                      key={item.key}
+                    >
+                      {content}
+                    </div>
+                  );
+                }
+
+                return item.href.startsWith("#") ? (
+                  <a className={styles.menuRow} href={item.href} key={item.key}>
+                    {content}
                   </a>
                 ) : (
-                  <div
-                    aria-disabled="true"
-                    className={`${styles.menuRow} ${styles.menuRowDisabled}`}
-                    key={item.key}
-                  >
-                    <span className={styles.menuIconWrap}>
-                      {renderMenuIcon(item.icon)}
-                    </span>
-                    <span className={styles.menuLabel}>{item.label}</span>
-                    <span className={styles.menuMeta}>{item.statusText}</span>
-                    <ArrowRightIcon className={styles.menuArrow} />
-                  </div>
-                ),
-              )}
+                  <AppLink className={styles.menuRow} href={item.href} key={item.key}>
+                    {content}
+                  </AppLink>
+                );
+              })}
             </div>
           </article>
 
@@ -288,72 +297,6 @@ export function MyPage({ data }: MyPageProps) {
                     <p className={styles.cashTransactionBalance}>{transaction.balanceLabel}</p>
                   </article>
                 ))}
-              </div>
-            )}
-          </section>
-
-          <section className={styles.applicationSection} id="mypage-applications">
-            <div className={styles.sectionHeading}>
-              <div>
-                <p className={styles.sectionEyebrow}>실제 데이터</p>
-                <h1 className={styles.sectionTitle}>신청 내역</h1>
-              </div>
-              <span className={styles.sectionCount}>{data.applications.length}건</span>
-            </div>
-
-            {data.applications.length === 0 ? (
-              <div className={styles.emptyState}>
-                <strong>아직 신청한 매치가 없습니다.</strong>
-                <p>메인 화면에서 원하는 매치를 찾아 첫 신청을 시작해 보세요.</p>
-                <AppLink className={styles.homeLink} href="/">
-                  홈에서 매치 보기
-                </AppLink>
-              </div>
-            ) : (
-              <div className={styles.applicationList}>
-                {data.applications.map((application) => {
-                  const content = (
-                    <>
-                      <div className={styles.applicationTop}>
-                        <span
-                          className={`${styles.statusBadge} ${
-                            application.statusTone === "danger"
-                              ? styles.statusDanger
-                              : application.statusTone === "muted"
-                                ? styles.statusMuted
-                                : styles.statusAccent
-                          }`}
-                        >
-                          {application.statusLabel}
-                        </span>
-                        {application.href ? (
-                          <span className={styles.detailLink}>
-                            상세 보기
-                            <ArrowRightIcon className={styles.detailArrow} />
-                          </span>
-                        ) : null}
-                      </div>
-                      <strong className={styles.applicationTitle}>{application.title}</strong>
-                      <p className={styles.applicationVenue}>{application.venueName}</p>
-                      <p className={styles.applicationMeta}>{application.metaLabel}</p>
-                      <p className={styles.applicationCash}>{application.cashLabel}</p>
-                    </>
-                  );
-
-                  return application.href ? (
-                    <AppLink
-                      className={styles.applicationCard}
-                      href={application.href}
-                      key={application.id}
-                    >
-                      {content}
-                    </AppLink>
-                  ) : (
-                    <div className={styles.applicationCard} key={application.id}>
-                      {content}
-                    </div>
-                  );
-                })}
               </div>
             )}
           </section>

@@ -6,6 +6,7 @@ import {
   formatDateLabel,
   formatMoney,
   formatSeoulTime,
+  toDateKey,
 } from "@/lib/date";
 import {
   listCashTransactionsByUserId,
@@ -52,6 +53,8 @@ export type MyPageProfile = {
 };
 
 export type MyPageApplication = {
+  appliedAt: string;
+  appliedDateKey: string;
   cashLabel: string;
   href: string | null;
   id: string;
@@ -152,6 +155,8 @@ function mapApplication(application: ApplicationRow): MyPageApplication {
   const match = normalizeMatch(application.match);
 
   return {
+    appliedAt: application.applied_at,
+    appliedDateKey: toDateKey(new Date(application.applied_at)),
     cashLabel: getCashLabel(application),
     href: match?.slug ? `/match/${match.slug}` : null,
     id: application.id,
