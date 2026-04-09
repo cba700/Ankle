@@ -13,12 +13,6 @@ export function HomeHero() {
             <br />
             {HOME_HERO.title[1]}
           </h1>
-          <p className={styles.description}>{HOME_HERO.description}</p>
-        </div>
-
-        <div className={styles.badgeCard}>
-          <strong>{HOME_HERO.badgeNumber}</strong>
-          <span>{HOME_HERO.badgeLabel}</span>
         </div>
       </div>
     </section>

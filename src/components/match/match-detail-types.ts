@@ -5,7 +5,8 @@ export type MatchDetailInfoKey =
   | "gender"
   | "duration"
   | "format"
-  | "shoes";
+  | "shoes"
+  | "participants";
 
 export type MatchDetailInfoItem = {
   key: MatchDetailInfoKey;

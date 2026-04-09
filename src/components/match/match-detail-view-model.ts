@@ -95,6 +95,11 @@ function buildInfoItems(match: MatchRecord): MatchDetailInfoItem[] {
     { key: "duration", label: "진행 시간", value: match.durationText },
     { key: "format", label: "경기 방식", value: formatMatchFormat(match.format) },
     { key: "shoes", label: "준비물", value: match.preparation },
+    {
+      key: "participants",
+      label: "참가 인원",
+      value: `${match.currentParticipants}/${match.capacity}명`,
+    },
   ];
 }
 

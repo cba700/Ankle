@@ -1,4 +1,5 @@
 import type { MatchRecord } from "@/lib/matches";
+import { AppLink } from "@/components/navigation/app-link";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { MatchCourtSection } from "./match-court-section";
 import { MatchDetailHeader } from "./match-detail-header";
@@ -14,7 +15,13 @@ import { MatchSafetySection } from "./match-safety-section";
 import { MatchStickyApplyBar } from "./match-sticky-apply-bar";
 import styles from "./match-detail.module.css";
 
-export function MatchDetail({ match }: { match: MatchRecord }) {
+export function MatchDetail({
+  backHref,
+  match,
+}: {
+  backHref: string;
+  match: MatchRecord;
+}) {
   const view = buildMatchDetailViewModel(match);
   const applyHref = `/match/${match.publicId}/apply`;
   const canApply = match.canApply;
@@ -23,6 +30,11 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
     <MatchDetailFeedbackProvider>
       <div className={styles.page}>
         <MatchDetailHeader />
+        <div className={styles.backBar}>
+          <AppLink className={styles.backLink} href={backHref}>
+            ← 매치 목록으로
+          </AppLink>
+        </div>
         <MatchDetailHeroClient
           courtName={view.courtName}
           dateText={view.dateText}

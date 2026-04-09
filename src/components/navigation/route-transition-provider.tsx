@@ -1,9 +1,6 @@
 "use client";
 
 import { HomePageSkeleton } from "@/components/home/home-page-skeleton";
-import { MatchApplyPageSkeleton } from "@/components/match/match-apply-page-skeleton";
-import { MatchDetailSkeleton } from "@/components/match/match-detail-skeleton";
-import { MyPageSkeleton } from "@/components/mypage/my-page-skeleton";
 import type { ReactNode } from "react";
 import {
   createContext,
@@ -17,7 +14,7 @@ import {
 import { usePathname, useSearchParams } from "next/navigation";
 import styles from "./route-transition.module.css";
 
-type RouteTransitionView = "home" | "matchApply" | "matchDetail" | "mypage";
+type RouteTransitionView = "home";
 
 type RouteTransitionContextValue = {
   beginTransition: (href: string) => void;
@@ -141,19 +138,7 @@ export function useRouteTransition() {
 }
 
 function renderTransitionView(view: RouteTransitionView) {
-  if (view === "home") {
-    return <HomePageSkeleton />;
-  }
-
-  if (view === "matchApply") {
-    return <MatchApplyPageSkeleton />;
-  }
-
-  if (view === "matchDetail") {
-    return <MatchDetailSkeleton />;
-  }
-
-  return <MyPageSkeleton />;
+  return view === "home" ? <HomePageSkeleton /> : null;
 }
 
 function getTransitionView(href: string): RouteTransitionView | null {
@@ -163,18 +148,6 @@ function getTransitionView(href: string): RouteTransitionView | null {
 
     if (normalizedPath === "/") {
       return "home";
-    }
-
-    if (normalizedPath === "/mypage" || normalizedPath.startsWith("/mypage/")) {
-      return "mypage";
-    }
-
-    if (/^\/match\/[^/]+\/apply$/.test(normalizedPath)) {
-      return "matchApply";
-    }
-
-    if (/^\/match\/[^/]+$/.test(normalizedPath)) {
-      return "matchDetail";
     }
 
     return null;
