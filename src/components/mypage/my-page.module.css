@@ -469,6 +469,11 @@
   font-weight: 700;
 }
 
+.menuMetaPlaceholder {
+  width: 1px;
+  min-height: 1px;
+}
+
 .menuArrow {
   color: var(--line-strong);
 }

@@ -26,49 +26,8 @@ type MenuItem = {
   icon: "applications" | "history" | "coupon" | "wishlist" | "profile" | "settings" | "faq" | "notice";
   key: string;
   label: string;
-  statusText: string;
+  statusText?: string;
 };
-
-const MY_MENU_ITEMS: MenuItem[] = [
-  {
-    href: "/mypage/applications",
-    icon: "applications",
-    key: "applications",
-    label: "신청 내역",
-    statusText: "바로가기",
-  },
-  {
-    href: "/mypage/cash",
-    icon: "history",
-    key: "history",
-    label: "캐시 내역",
-    statusText: "바로가기",
-  },
-  {
-    icon: "coupon",
-    key: "coupon",
-    label: "쿠폰",
-    statusText: "미구현",
-  },
-  {
-    icon: "wishlist",
-    key: "wishlist",
-    label: "관심 매치",
-    statusText: "미구현",
-  },
-  {
-    icon: "profile",
-    key: "profile",
-    label: "프로필 수정",
-    statusText: "미구현",
-  },
-  {
-    icon: "settings",
-    key: "settings",
-    label: "설정",
-    statusText: "미구현",
-  },
-];
 
 const SUPPORT_MENU_ITEMS: MenuItem[] = [
   {
@@ -87,6 +46,45 @@ const SUPPORT_MENU_ITEMS: MenuItem[] = [
 
 export function MyPage({ data }: MyPageProps) {
   const initials = data.profile.displayName.slice(0, 1).toUpperCase() || "A";
+  const myMenuItems: MenuItem[] = [
+    {
+      href: "/mypage/applications",
+      icon: "applications",
+      key: "applications",
+      label: "신청 내역",
+    },
+    {
+      href: "/mypage/cash",
+      icon: "history",
+      key: "history",
+      label: "캐시 내역",
+    },
+    {
+      href: "/mypage/coupons",
+      icon: "coupon",
+      key: "coupon",
+      label: "쿠폰",
+      statusText: String(data.couponCount),
+    },
+    {
+      icon: "wishlist",
+      key: "wishlist",
+      label: "관심 매치",
+      statusText: "미구현",
+    },
+    {
+      icon: "profile",
+      key: "profile",
+      label: "프로필 수정",
+      statusText: "미구현",
+    },
+    {
+      icon: "settings",
+      key: "settings",
+      label: "설정",
+      statusText: "미구현",
+    },
+  ];
 
   return (
     <div className={styles.page}>
@@ -204,14 +202,18 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.menuSection}>
             <p className={styles.menuSectionTitle}>나의 앵클</p>
             <div className={styles.menuList}>
-              {MY_MENU_ITEMS.map((item) => {
+              {myMenuItems.map((item) => {
                 const content = (
                   <>
                     <span className={styles.menuIconWrap}>
                       {renderMenuIcon(item.icon)}
                     </span>
                     <span className={styles.menuLabel}>{item.label}</span>
-                    <span className={styles.menuMeta}>{item.statusText}</span>
+                    {item.statusText ? (
+                      <span className={styles.menuMeta}>{item.statusText}</span>
+                    ) : (
+                      <span aria-hidden="true" className={styles.menuMetaPlaceholder} />
+                    )}
                     <ArrowRightIcon className={styles.menuArrow} />
                   </>
                 );

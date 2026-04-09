@@ -1,0 +1,93 @@
+.page {
+  min-height: 100vh;
+  background: var(--user-page-background);
+}
+
+.main {
+  padding: 24px 0 40px;
+  display: grid;
+  gap: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.backIcon,
+.heroBadgeIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.heroCard {
+  padding: 24px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroEyebrow {
+  margin: 18px 0 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.heroTitle {
+  margin: 8px 0 0;
+  font-size: clamp(34px, 5vw, 46px);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+}
+
+.heroDescription {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.detailSection {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 16px 0 36px;
+    gap: 12px;
+  }
+
+  .heroCard {
+    padding: 18px;
+  }
+}
