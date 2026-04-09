@@ -1,4 +1,7 @@
-import { adjustAdminCashBalanceAction } from "@/features/admin/actions";
+import {
+  adjustAdminCashBalanceAction,
+  retryPendingCashChargeOrderAction,
+} from "@/features/admin/actions";
 import { AdminOverviewCards } from "@/features/admin/components/admin-overview-cards";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import { AdminStatusBadge } from "@/features/admin/components/admin-status-badge";
@@ -130,7 +133,7 @@ export default async function AdminCashPage() {
                       </td>
                     </tr>
                   ) : (
-                    chargeOrderRows.map((row) => (
+                    chargeOrderRows.map((row, index) => (
                       <tr key={row.id} className={ui.tableRow}>
                         <td className={ui.tableCell}>
                           <span className={styles.code}>{row.orderId}</span>
@@ -147,6 +150,20 @@ export default async function AdminCashPage() {
                             <span>{row.metaLabel}</span>
                             <span>paymentKey {row.paymentKeyLabel}</span>
                             <span>{row.detailLabel}</span>
+                            {data.chargeOrders[index]?.status === "pending" ? (
+                              <form
+                                action={retryPendingCashChargeOrderAction}
+                                className={styles.retryForm}
+                              >
+                                <input name="orderId" type="hidden" value={row.orderId} />
+                                <button
+                                  className={`${ui.button} ${ui.buttonSmall} ${styles.retryButton}`}
+                                  type="submit"
+                                >
+                                  정식 승인 재시도
+                                </button>
+                              </form>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
