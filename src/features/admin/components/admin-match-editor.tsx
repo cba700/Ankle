@@ -93,6 +93,7 @@ export function AdminMatchEditor({
       <form action={formAction} className={styles.form} id={formId} name={formId}>
         <input name="venueEntryMode" type="hidden" value={formValues.venueEntryMode} />
         <input name="selectedVenueId" type="hidden" value={formValues.selectedVenueId} />
+        <input name="imageUrlsText" type="hidden" value={formValues.imageUrlsText} />
         {mode === "create" ? (
           <>
             <input name="district" type="hidden" value={formValues.district} />
@@ -100,7 +101,6 @@ export function AdminMatchEditor({
             <input name="parking" type="hidden" value={formValues.parking} />
             <input name="smoking" type="hidden" value={formValues.smoking} />
             <input name="showerLocker" type="hidden" value={formValues.showerLocker} />
-            <input name="imageUrlsText" type="hidden" value={formValues.imageUrlsText} />
             <input name="rulesText" type="hidden" value={formValues.rulesText} />
             <input name="safetyNotesText" type="hidden" value={formValues.safetyNotesText} />
           </>
@@ -457,15 +457,9 @@ export function AdminMatchEditor({
                   />
                 </label>
 
-                <label className={`${styles.field} ${styles.fieldSpan}`}>
-                  <span className={styles.fieldLabel}>이미지 URL</span>
-                  <textarea
-                    name="imageUrlsText"
-                    onChange={handleFieldChange}
-                    rows={4}
-                    value={formValues.imageUrlsText}
-                  />
-                </label>
+                <p className={styles.helperText}>
+                  매치 상세 이미지는 경기장에 등록된 사진을 그대로 사용합니다.
+                </p>
 
                 <label className={`${styles.field} ${styles.fieldSpan}`}>
                   <span className={styles.fieldLabel}>운영 규칙</span>
