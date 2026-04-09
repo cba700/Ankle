@@ -8,8 +8,7 @@ export const SITE_DESCRIPTION = "혼자 와도 바로 참여할 수 있는 서�
 export const SITE_LOCALE = "ko_KR";
 
 const DEFAULT_SITE_URL = "https://ankle-phi.vercel.app";
-const MAIN_OG_IMAGE_FILENAME = "og-main.jpg";
-const MAIN_OG_IMAGE_PATH = `/${MAIN_OG_IMAGE_FILENAME}`;
+const MAIN_OG_IMAGE_FILENAMES = ["og-main.jpg", "og-main.png"];
 const MAIN_OG_IMAGE_FALLBACK_PATH = "/court-a.svg";
 
 export function getSiteMetadataBase() {
@@ -26,7 +25,9 @@ export function resolveSiteUrl(pathOrUrl: string) {
 }
 
 export function getMainOgImagePath() {
-  return hasMainOgImage() ? MAIN_OG_IMAGE_PATH : MAIN_OG_IMAGE_FALLBACK_PATH;
+  const mainOgImageFilename = getMainOgImageFilename();
+
+  return mainOgImageFilename ? `/${mainOgImageFilename}` : MAIN_OG_IMAGE_FALLBACK_PATH;
 }
 
 export function getMainOgImageUrl() {
@@ -48,8 +49,10 @@ function getSiteUrl() {
   }
 }
 
-function hasMainOgImage() {
-  return existsSync(join(process.cwd(), "public", MAIN_OG_IMAGE_FILENAME));
+function getMainOgImageFilename() {
+  return MAIN_OG_IMAGE_FILENAMES.find((filename) =>
+    existsSync(join(process.cwd(), "public", filename)),
+  );
 }
 
 function isAbsoluteUrl(value: string) {
