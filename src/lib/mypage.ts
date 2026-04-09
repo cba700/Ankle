@@ -80,6 +80,7 @@ export type MyPageData = {
   applications: MyPageApplication[];
   cashBalanceLabel: string;
   cashTransactions: MyPageCashTransaction[];
+  couponCount: number;
   profile: MyPageProfile;
 };
 
@@ -143,6 +144,7 @@ export async function getMyPageData({
     applications: ((applications ?? []) as ApplicationRow[]).map(mapApplication),
     cashBalanceLabel: `${formatMoney(cashAccount?.balance ?? 0)}원`,
     cashTransactions: cashTransactions.map(mapCashTransaction),
+    couponCount: 0,
     profile: {
       avatarUrl: typedProfile?.avatar_url ?? null,
       displayName: getDisplayName(user, typedProfile),
