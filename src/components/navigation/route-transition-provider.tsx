@@ -165,7 +165,7 @@ function getTransitionView(href: string): RouteTransitionView | null {
       return "home";
     }
 
-    if (normalizedPath === "/mypage") {
+    if (normalizedPath === "/mypage" || normalizedPath.startsWith("/mypage/")) {
       return "mypage";
     }
 
