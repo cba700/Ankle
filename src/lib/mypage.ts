@@ -25,6 +25,7 @@ type ProfileRow = {
 };
 
 type MatchRow = {
+  public_id: string | null;
   slug: string | null;
   start_at: string | null;
   title: string | null;
@@ -60,6 +61,7 @@ export type MyPageApplication = {
   href: string | null;
   id: string;
   metaLabel: string;
+  publicId: string | null;
   statusLabel: string;
   statusTone: "accent" | "danger" | "muted";
   title: string;
@@ -91,6 +93,7 @@ const APPLICATION_SELECT = `
   price_snapshot,
   refunded_amount,
   match:matches!match_applications_match_id_fkey (
+    public_id,
     slug,
     start_at,
     title,
@@ -162,9 +165,10 @@ function mapApplication(application: ApplicationRow): MyPageApplication {
     appliedAt: application.applied_at,
     appliedDateKey: toDateKey(new Date(application.applied_at)),
     cashLabel: getCashLabel(application),
-    href: match?.slug ? `/match/${match.slug}` : null,
+    href: match?.public_id ? `/match/${match.public_id}` : null,
     id: application.id,
     metaLabel: getMetaLabel(match, application.applied_at),
+    publicId: match?.public_id ?? null,
     statusLabel: getStatusLabel(application.status),
     statusTone: getStatusTone(application.status),
     title: match?.title?.trim() || "매치 정보 확인 불가",

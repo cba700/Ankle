@@ -30,7 +30,7 @@ export type HomeMatchStatusTone = "neutral" | "accent" | "danger" | "open";
 
 export type HomeMatchRow = {
   id: string;
-  slug: string;
+  publicId: string;
   dateKey: string;
   time: string;
   statusLabel: string;

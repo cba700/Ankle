@@ -32,7 +32,7 @@ export function HomeMatchList({
           <article className={styles.row} key={row.id}>
             <AppLink
               className={styles.rowLink}
-              href={`/match/${row.slug}`}
+              href={`/match/${row.publicId}`}
               prefetch={false}
             >
               <div className={styles.timeColumn}>

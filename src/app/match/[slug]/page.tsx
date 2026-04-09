@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { MatchDetail } from "@/components/match/match-detail";
 import { formatMoney } from "@/lib/date";
-import { getPublicMatchBySlug } from "@/lib/matches-data";
+import { getPublicMatchByPublicId } from "@/lib/matches-data";
 
 export const revalidate = 60;
 
-const getMatch = cache((slug: string) => getPublicMatchBySlug(slug));
+const getMatch = cache((publicId: string) => getPublicMatchByPublicId(publicId));
 
 export function generateStaticParams() {
   return [];
@@ -18,8 +18,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const match = await getMatch(slug);
+  const { slug: publicId } = await params;
+  const match = await getMatch(publicId);
 
   if (!match) {
     return {
@@ -35,13 +35,14 @@ export async function generateMetadata({
     match.genderCondition,
     `참가비 ${formatMoney(match.price)}원`,
   ].join(" · ");
+  const title = `${match.title} | ${match.dateLabel} ${match.time}`;
   const imageUrl = match.imageUrls.find(isAbsoluteUrl);
 
   return {
-    title: match.title,
+    title,
     description,
     openGraph: {
-      title: match.title,
+      title,
       description,
       type: "website",
       ...(imageUrl ? { images: [{ url: imageUrl }] } : {}),
@@ -54,8 +55,8 @@ export default async function MatchDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  const match = await getMatch(slug);
+  const { slug: publicId } = await params;
+  const match = await getMatch(publicId);
 
   if (!match) {
     notFound();

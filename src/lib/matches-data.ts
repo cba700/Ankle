@@ -2,13 +2,13 @@ import "server-only";
 
 import { formatDateLabel, formatSeoulTime, toDateKey } from "@/lib/date";
 import {
-  getMatchBySlug as getMockMatchBySlug,
+  getMatchByPublicId as getMockMatchByPublicId,
   getMatches as getMockMatches,
   type DistributionEntry,
   type MatchRecord,
   type MatchStatus,
 } from "@/lib/matches";
-import { getPublicMatchEntityBySlug, listPublicMatchEntities, type MatchEntity } from "@/lib/match-store";
+import { getPublicMatchEntityByPublicId, listPublicMatchEntities, type MatchEntity } from "@/lib/match-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 const DEFAULT_IMAGE_URLS = ["/court-a.svg", "/court-b.svg", "/court-c.svg", "/court-d.svg"];
@@ -26,30 +26,30 @@ export async function getPublicMatches() {
   }
 }
 
-export async function getPublicMatchBySlug(slug: string) {
-  const normalizedSlug = normalizeMatchSlug(slug);
+export async function getPublicMatchByPublicId(publicId: string) {
+  const normalizedPublicId = normalizePublicId(publicId);
 
   if (!isSupabaseConfigured()) {
-    return getMockMatchBySlug(normalizedSlug) ?? null;
+    return getMockMatchByPublicId(normalizedPublicId) ?? null;
   }
 
   try {
-    const entity = await getPublicMatchEntityBySlug(normalizedSlug);
+    const entity = await getPublicMatchEntityByPublicId(normalizedPublicId);
     return entity ? mapEntityToMatchRecord(entity) : null;
   } catch {
-    return getMockMatchBySlug(normalizedSlug) ?? null;
+    return getMockMatchByPublicId(normalizedPublicId) ?? null;
   }
 }
 
-function normalizeMatchSlug(slug: string) {
-  if (!slug.includes("%")) {
-    return slug;
+function normalizePublicId(publicId: string) {
+  if (!publicId.includes("%")) {
+    return publicId;
   }
 
   try {
-    return decodeURIComponent(slug);
+    return decodeURIComponent(publicId);
   } catch {
-    return slug;
+    return publicId;
   }
 }
 
@@ -65,6 +65,7 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
 
   return {
     id: entity.id,
+    publicId: entity.publicId,
     slug: entity.slug,
     dateKey,
     dateLabel: formatDateLabel(date),

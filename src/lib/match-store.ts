@@ -26,6 +26,7 @@ export type MatchVenueEntity = {
 
 export type MatchEntity = {
   id: string;
+  publicId: string;
   slug: string;
   title: string;
   summary: string;
@@ -67,6 +68,7 @@ type MatchVenueRow = {
 
 type MatchRow = {
   id: string;
+  public_id: string;
   slug: string;
   title: string;
   summary: string;
@@ -107,6 +109,7 @@ type MatchStoreClient = SupabaseClient;
 
 const MATCH_SELECT = `
   id,
+  public_id,
   slug,
   title,
   summary,
@@ -163,7 +166,7 @@ export async function listPublicMatchEntities() {
   });
 }
 
-export async function getPublicMatchEntityBySlug(slug: string) {
+export async function getPublicMatchEntityByPublicId(publicId: string) {
   const supabase = getSupabasePublicServerClient();
 
   if (!supabase) {
@@ -172,7 +175,7 @@ export async function getPublicMatchEntityBySlug(slug: string) {
 
   const matches = await listMatchEntities({
     publicOnly: true,
-    slug,
+    publicId,
     supabase,
   });
 
@@ -215,6 +218,7 @@ export async function getAdminMatchEntityById(id: string) {
 async function listMatchEntities({
   publicOnly,
   id,
+  publicId,
   slug,
   runManagementChecks = false,
   syncStartedStatuses = false,
@@ -222,6 +226,7 @@ async function listMatchEntities({
 }: {
   publicOnly: boolean;
   id?: string;
+  publicId?: string;
   slug?: string;
   runManagementChecks?: boolean;
   syncStartedStatuses?: boolean;
@@ -248,6 +253,10 @@ async function listMatchEntities({
 
   if (id) {
     query = query.eq("id", id);
+  }
+
+  if (publicId) {
+    query = query.eq("public_id", publicId);
   }
 
   if (slug) {
@@ -286,6 +295,7 @@ async function listMatchEntities({
 
       return {
         id: row.id,
+        publicId: row.public_id,
         slug: row.slug,
         title: row.title,
         summary: row.summary,
