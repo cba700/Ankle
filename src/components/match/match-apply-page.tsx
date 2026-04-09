@@ -2,6 +2,7 @@
 
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
@@ -239,6 +240,8 @@ export function MatchApplyPage({
           )}
         </div>
       </div>
+
+      <LegalFooter />
     </div>
   );
 }

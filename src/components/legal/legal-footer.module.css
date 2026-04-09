@@ -1,0 +1,37 @@
+.footer {
+  width: 100%;
+  margin-top: 28px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
+}
+
+.inner {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(201, 193, 183, 0.78);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+}
+
+.link {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.copy {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}

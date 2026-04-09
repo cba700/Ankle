@@ -1,4 +1,5 @@
 import type { CalendarDate } from "@/lib/date";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { HomeHeader } from "./home-header";
 import { HomeHero } from "./home-hero";
 import { HomeMatchBrowser } from "./home-match-browser";
@@ -20,6 +21,8 @@ export function HomePage({ isAdmin, dates, rows }: HomePageProps) {
         <HomeHero />
         <HomeMatchBrowser dates={dates} rows={rows} />
       </main>
+
+      <LegalFooter />
     </div>
   );
 }

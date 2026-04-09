@@ -1,0 +1,160 @@
+.page {
+  min-height: 100vh;
+  background: var(--user-page-background);
+}
+
+.main {
+  padding: 28px 0 0;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.document {
+  margin-top: 16px;
+  padding: 24px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.header {
+  display: grid;
+  gap: 18px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 4.6vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
+.lead {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.metaList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.metaItem {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #faf8f4;
+}
+
+.metaItem dt,
+.metaItem dd {
+  margin: 0;
+  font-size: 13px;
+}
+
+.metaItem dt {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.metaItem dd {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.noticeBox {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid rgba(243, 109, 33, 0.18);
+  border-radius: 18px;
+  background: #fff7f0;
+}
+
+.noticeBox strong {
+  font-size: 16px;
+}
+
+.noticeBox p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.sectionList {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.section {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
+
+.sectionBody {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.paragraph {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding-top: 32px;
+  }
+
+  .document {
+    padding: 32px;
+  }
+
+  .header {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    align-items: start;
+  }
+}

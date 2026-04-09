@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowLeftIcon, ClockIcon, WalletIcon } from "@/components/icons";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import {
   buildCashChargePackageLabel,
@@ -329,6 +330,8 @@ export function CashChargePage({
           </button>
         </div>
       </div>
+
+      <LegalFooter />
     </div>
   );
 }

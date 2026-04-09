@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
@@ -168,16 +169,14 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
         )}
 
         <p className={styles.terms}>
-          로그인 시 <span className={styles.termsLink}>이용약관</span> 및{" "}
-          <span className={styles.termsLink}>개인정보 처리방침</span>에 동의하게 됩니다.
+          로그인 시 <AppLink className={styles.termsLink} href="/terms">이용약관</AppLink> 및{" "}
+          <AppLink className={styles.termsLink} href="/privacy">
+            개인정보 처리방침
+          </AppLink>
+          에 동의하게 됩니다.
         </p>
       </div>
-
-      <footer className={styles.footer}>
-        <span className={styles.footerLink}>이용약관</span>
-        <span className={styles.footerDivider}>|</span>
-        <span className={styles.footerLink}>개인정보 처리방침</span>
-      </footer>
+      <LegalFooter />
     </div>
   );
 }

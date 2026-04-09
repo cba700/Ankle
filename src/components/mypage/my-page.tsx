@@ -12,6 +12,7 @@ import {
   QuestionIcon,
   SearchIcon,
 } from "@/components/icons";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
 import styles from "./my-page.module.css";
@@ -364,6 +365,8 @@ export function MyPage({ data }: MyPageProps) {
           </form>
         </section>
       </main>
+
+      <LegalFooter />
     </div>
   );
 }

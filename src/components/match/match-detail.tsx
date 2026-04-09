@@ -1,4 +1,5 @@
 import type { MatchRecord } from "@/lib/matches";
+import { LegalFooter } from "@/components/legal/legal-footer";
 import { MatchCourtSection } from "./match-court-section";
 import { MatchDetailHeader } from "./match-detail-header";
 import { MatchDetailFeedbackProvider } from "./match-detail-feedback";
@@ -56,6 +57,8 @@ export function MatchDetail({ match }: { match: MatchRecord }) {
           canApply={canApply}
           priceLabel={view.priceLabel}
         />
+
+        <LegalFooter />
       </div>
     </MatchDetailFeedbackProvider>
   );
