@@ -4,26 +4,60 @@
 - Prefer the simplest working change.
 - Reuse existing code, patterns, and components before adding new code.
 - Match existing naming, structure, and style.
-- Add code only when required for the task.
+- Add code only when required.
+
 - **File modification rules**
 - Only touch files relevant to the task.
 - Do not rewrite entire files unless necessary.
 - Modify the smallest possible surface area.
 - Do not move, rename, or delete files unless required.
 - Do not change unrelated behavior.
+
 - **Workflow rules**
 - Read the relevant code before editing.
 - Make the change directly; avoid speculative refactors.
 - Keep public behavior stable unless the task requires a change.
 - Verify dependencies and existing helpers before creating new ones.
 - Stop and reassess if the change starts spreading beyond the task scope.
+
+- Always follow this order:
+  1. Read relevant code
+  2. Identify minimal change
+  3. Apply change
+  4. Run tests or validation
+  5. Verify no unrelated impact
+
 - **Testing rules**
 - Run the relevant tests before finishing.
 - If no targeted tests exist, run the smallest meaningful validation available.
 - Do not finish with failing tests.
 - Report any unrun or blocked tests explicitly.
+
 - 기능구현이나 리팩토링시 항상 새로운 브랜치를 생성하고 커밋도 남긴다.
--Ensure all interactive elements in Next.js client components remain clickable on mobile by avoiding overlay blocking, improper z-index stacking, and scroll/touch conflicts, while using semantic elements and responsive layouts.
+
+- **Hard constraints (MUST NOT)**
+- NEVER rewrite large parts of files
+- NEVER introduce new abstractions without clear necessity
+- NEVER change project structure
+- NEVER modify types/interfaces unless required
+- NEVER add new dependencies without necessity
+
+- **Debug rules**
+- Reproduce the issue first
+- Identify the root cause
+- Fix the cause, not the symptom
+- Do not apply blind fixes
+
+- **UI rules (Next.js)**
+- Ensure all interactive elements in Next.js client components remain clickable on mobile by avoiding overlay blocking, improper z-index stacking, and scroll/touch conflicts, while using semantic elements and responsive layouts.
+- Do not break existing layout
+- Preserve clickability on mobile
+- Avoid overlay blocking (z-index, pointer-events)
+- Prevent scroll/touch conflicts
+- Use semantic elements
+- Keep responsive behavior intact
+- Do not modify layout/spacing unless required
+
 
 # Repository Service Analysis
 
@@ -51,6 +85,7 @@ This is not just a landing page or a mock marketplace. It is already structured 
 - cash debit/refund ledger
 - payment order creation + server-side payment confirmation
 - admin CRUD + manual cash adjustment tools
+
 
 ## 2. Tech Stack And Runtime Assumptions
 
