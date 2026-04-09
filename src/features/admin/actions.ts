@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
+import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
   assertCashFoundationSchemaReady,
@@ -245,6 +246,31 @@ export async function adjustAdminCashBalanceAction(formData: FormData) {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
+}
+
+export async function retryPendingCashChargeOrderAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashChargeOperationsSchemaReady(supabase);
+
+  const admin = getSupabaseServiceRoleClient() as any;
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  const orderId = String(formData.get("orderId") ?? "").trim();
+
+  if (!orderId) {
+    throw new Error("Order ID is required");
+  }
+
+  const result = await retryPendingTossChargeOrder(admin, orderId);
+
+  if (!result.ok) {
+    throw new Error(result.message);
   }
 
   redirect("/admin/cash");
