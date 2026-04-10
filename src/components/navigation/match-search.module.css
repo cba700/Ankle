@@ -25,14 +25,21 @@
 
 .sheetSearchField {
   flex: 1;
+  width: 100%;
 }
 
 .searchIcon,
-.mobileTriggerIcon,
-.backIcon {
+.mobileTriggerIcon {
   width: 18px;
   height: 18px;
   color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.backIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-primary);
   flex: 0 0 auto;
 }
 
@@ -171,13 +178,6 @@
   z-index: 110;
 }
 
-.sheetBackdrop {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  background: rgba(17, 17, 17, 0.34);
-}
-
 .sheet {
   position: absolute;
   inset: 0;
@@ -187,56 +187,47 @@
 }
 
 .sheetHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: var(--page-width);
-  margin: 0 auto;
-  padding: 14px 0 12px;
-  background: rgba(255, 255, 255, 0.96);
+  padding: 14px 16px 12px;
+  background: var(--user-page-background);
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
-.backButton {
+.sheetCloseButton {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 0 10px;
-  border: 1px solid rgba(201, 193, 183, 0.74);
-  border-radius: 12px;
-  background: #fff;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 700;
   flex-shrink: 0;
 }
 
 .sheetBody {
-  width: var(--page-width);
-  margin: 0 auto;
-  padding: 18px 0 28px;
+  padding: 4px 16px calc(28px + env(safe-area-inset-bottom));
   overflow-y: auto;
 }
 
-.sheetCopy {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 14px;
+.sheetBody .messageBox {
+  padding-inline: 0;
+  background: transparent;
 }
 
-.sheetCopy strong {
-  font-size: 16px;
-  letter-spacing: -0.03em;
+.sheetBody .resultItemMobile {
+  margin-bottom: 0;
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(222, 217, 209, 0.78);
+  border-radius: 0;
+  background: transparent;
 }
 
-.sheetCopy p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
+.sheetBody .resultItemMobile:last-child {
+  border-bottom: 0;
 }
 
 @media (min-width: 768px) {

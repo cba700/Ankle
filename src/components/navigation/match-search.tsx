@@ -114,6 +114,22 @@ export function MatchSearch({
   }, []);
 
   useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setIsDesktopOpen(false);
+      setIsMobileOpen(false);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isMobileOpen) {
       return;
     }
@@ -202,12 +218,7 @@ export function MatchSearch({
     },
   ) {
     if (!normalizedQuery) {
-      return (
-        <div className={styles.messageBox}>
-          <p className={styles.messageTitle}>지역, 코트, 매치 이름을 입력해 주세요.</p>
-          <p className={styles.messageText}>입력하는 순간 관련 매치를 바로 아래에 보여줍니다.</p>
-        </div>
-      );
+      return null;
     }
 
     if (isLoading) {
@@ -298,7 +309,10 @@ export function MatchSearch({
       <button
         aria-label="검색 열기"
         className={styles.mobileTrigger}
-        onClick={() => setIsMobileOpen(true)}
+        onClick={() => {
+          setIsDesktopOpen(false);
+          setIsMobileOpen(true);
+        }}
         type="button"
       >
         <SearchIcon className={styles.mobileTriggerIcon} />
@@ -306,12 +320,6 @@ export function MatchSearch({
 
       {isMobileOpen ? (
         <div className={styles.sheetRoot}>
-          <button
-            aria-label="검색 닫기"
-            className={styles.sheetBackdrop}
-            onClick={closeMobileSheet}
-            type="button"
-          />
           <section
             aria-label="매치 검색"
             aria-modal="true"
@@ -319,19 +327,17 @@ export function MatchSearch({
             role="dialog"
           >
             <div className={styles.sheetHeader}>
-              <button
-                className={styles.backButton}
-                onClick={closeMobileSheet}
-                type="button"
-              >
-                <ArrowLeftIcon className={styles.backIcon} />
-                <span>뒤로</span>
-              </button>
-
-              <label className={styles.sheetSearchField}>
-                <SearchIcon className={styles.searchIcon} />
-                <span className="visuallyHidden">매치 검색</span>
+              <div className={styles.sheetSearchField}>
+                <button
+                  aria-label="검색 닫기"
+                  className={styles.sheetCloseButton}
+                  onClick={closeMobileSheet}
+                  type="button"
+                >
+                  <ArrowLeftIcon className={styles.backIcon} />
+                </button>
                 <input
+                  aria-label="매치 검색"
                   className={styles.searchInput}
                   onChange={(event) => handleQueryChange(event.target.value)}
                   placeholder={placeholder}
@@ -339,16 +345,10 @@ export function MatchSearch({
                   type="text"
                   value={query}
                 />
-              </label>
+              </div>
             </div>
 
-            <div className={styles.sheetBody}>
-              <div className={styles.sheetCopy}>
-                <strong>실시간 검색 결과</strong>
-                <p>한 글자씩 입력할 때마다 현재 열려 있는 매치를 바로 보여줍니다.</p>
-              </div>
-              {renderResultList(mobileResults, { isMobile: true })}
-            </div>
+            <div className={styles.sheetBody}>{renderResultList(mobileResults, { isMobile: true })}</div>
           </section>
         </div>
       ) : null}

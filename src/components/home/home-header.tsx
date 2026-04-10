@@ -18,7 +18,11 @@ export function HomeHeader({ isAdmin }: HomeHeaderProps) {
 
         <div className={styles.headerActions}>
           <MatchSearch />
-          <UserHeaderMenu currentSection="match" initialIsAdmin={isAdmin} />
+          <UserHeaderMenu
+            currentSection="match"
+            initialIsAdmin={isAdmin}
+            layout="icon-only"
+          />
         </div>
       </div>
     </header>
