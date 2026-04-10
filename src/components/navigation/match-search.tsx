@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { createPortal } from "react-dom";
 import type { PublicMatchSearchItem } from "@/lib/match-search";
 import {
   filterPublicMatchSearchItems,
@@ -318,40 +319,45 @@ export function MatchSearch({
         <SearchIcon className={styles.mobileTriggerIcon} />
       </button>
 
-      {isMobileOpen ? (
-        <div className={styles.sheetRoot}>
-          <section
-            aria-label="매치 검색"
-            aria-modal="true"
-            className={styles.sheet}
-            role="dialog"
-          >
-            <div className={styles.sheetHeader}>
-              <div className={styles.sheetSearchField}>
-                <button
-                  aria-label="검색 닫기"
-                  className={styles.sheetCloseButton}
-                  onClick={closeMobileSheet}
-                  type="button"
-                >
-                  <ArrowLeftIcon className={styles.backIcon} />
-                </button>
-                <input
-                  aria-label="매치 검색"
-                  className={styles.searchInput}
-                  onChange={(event) => handleQueryChange(event.target.value)}
-                  placeholder={placeholder}
-                  ref={mobileInputRef}
-                  type="text"
-                  value={query}
-                />
-              </div>
-            </div>
+      {isMobileOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div className={styles.sheetRoot}>
+              <section
+                aria-label="매치 검색"
+                aria-modal="true"
+                className={styles.sheet}
+                role="dialog"
+              >
+                <div className={styles.sheetHeader}>
+                  <div className={styles.sheetSearchField}>
+                    <button
+                      aria-label="검색 닫기"
+                      className={styles.sheetCloseButton}
+                      onClick={closeMobileSheet}
+                      type="button"
+                    >
+                      <ArrowLeftIcon className={styles.backIcon} />
+                    </button>
+                    <input
+                      aria-label="매치 검색"
+                      className={styles.searchInput}
+                      onChange={(event) => handleQueryChange(event.target.value)}
+                      placeholder={placeholder}
+                      ref={mobileInputRef}
+                      type="text"
+                      value={query}
+                    />
+                  </div>
+                </div>
 
-            <div className={styles.sheetBody}>{renderResultList(mobileResults, { isMobile: true })}</div>
-          </section>
-        </div>
-      ) : null}
+                <div className={styles.sheetBody}>
+                  {renderResultList(mobileResults, { isMobile: true })}
+                </div>
+              </section>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

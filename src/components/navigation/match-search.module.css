@@ -175,7 +175,7 @@
 .sheetRoot {
   position: fixed;
   inset: 0;
-  z-index: 110;
+  z-index: 130;
 }
 
 .sheet {
@@ -183,12 +183,15 @@
   inset: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  background: var(--user-page-background);
+  background-color: #f4f4f4;
+  background-image: var(--user-page-background);
+  overflow: hidden;
 }
 
 .sheetHeader {
   padding: 14px 16px 12px;
-  background: var(--user-page-background);
+  background-color: #f4f4f4;
+  background-image: var(--user-page-background);
   position: sticky;
   top: 0;
   z-index: 1;
