@@ -42,29 +42,29 @@ export function HomeMatchList({
             >
               <div className={styles.topRow}>
                 <div className={styles.topMeta}>
-                  <span
-                    className={`${styles.statusBadge} ${
-                      row.statusTone === "danger"
-                        ? styles.statusDanger
-                        : row.statusTone === "accent"
-                          ? styles.statusAccent
-                          : row.statusTone === "open"
-                            ? styles.statusOpen
-                            : styles.statusNeutral
-                    }`}
-                  >
-                    {row.statusLabel}
-                  </span>
                   <div className={`${styles.timeWrap} ${row.isUrgent ? styles.timeUrgent : ""}`}>
                     {row.isUrgent ? <span className={styles.urgentDot} /> : null}
                     <span className={styles.time}>{row.time}</span>
                   </div>
+                  {row.statusTone === "open" ? null : (
+                    <span
+                      className={`${styles.statusBadge} ${
+                        row.statusTone === "danger"
+                          ? styles.statusDanger
+                          : row.statusTone === "accent"
+                            ? styles.statusAccent
+                            : styles.statusNeutral
+                      }`}
+                    >
+                      {row.statusLabel}
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className={styles.infoColumn}>
                 <div className={styles.titleRow}>
-                  <strong className={styles.matchTitle}>{row.title}</strong>
+                  <strong className={styles.matchTitle}>{row.venueName}</strong>
                   {row.isNew ? <span className={styles.newTag}>N</span> : null}
                 </div>
                 <p className={styles.metaRow}>{row.meta}</p>

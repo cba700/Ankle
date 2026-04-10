@@ -29,7 +29,7 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
       isClosed: !match.canApply,
       venueName: match.venueName,
       title: match.title,
-      meta: [match.venueName, match.genderCondition, match.format].join(" · "),
+      meta: [match.genderCondition, match.format].join(" · "),
       isNew: match.canApply && match.status.kind === "open" && match.currentParticipants <= 3,
     };
   });
