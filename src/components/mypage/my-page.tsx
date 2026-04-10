@@ -67,10 +67,11 @@ export function MyPage({ data }: MyPageProps) {
       statusText: String(data.couponCount),
     },
     {
+      href: "/mypage/wishlist",
       icon: "wishlist",
       key: "wishlist",
       label: "관심 매치",
-      statusText: "미구현",
+      statusText: `${data.wishlistCount}건`,
     },
     {
       icon: "profile",

@@ -7,7 +7,8 @@ type HomeMatchListProps = {
   detailStateSearch: string;
   rows: HomeMatchRow[];
   likedMatches: Record<string, boolean>;
-  onToggleLike: (matchId: string) => void;
+  onToggleLike: (matchId: string) => Promise<boolean | undefined>;
+  pendingMatchIds: Record<string, boolean>;
 };
 
 export function HomeMatchList({
@@ -15,6 +16,7 @@ export function HomeMatchList({
   rows,
   likedMatches,
   onToggleLike,
+  pendingMatchIds,
 }: HomeMatchListProps) {
   if (rows.length === 0) {
     return (
@@ -29,6 +31,7 @@ export function HomeMatchList({
     <section className={styles.list}>
       {rows.map((row) => {
         const liked = likedMatches[row.id] ?? false;
+        const isPending = pendingMatchIds[row.id] ?? false;
 
         return (
           <article className={styles.row} key={row.id}>
@@ -71,7 +74,10 @@ export function HomeMatchList({
             <button
               aria-label={liked ? "관심 매치 해제" : "관심 매치 저장"}
               className={`${styles.likeButton} ${liked ? styles.likeButtonActive : ""}`}
-              onClick={() => onToggleLike(row.id)}
+              disabled={isPending}
+              onClick={() => {
+                void onToggleLike(row.id);
+              }}
               type="button"
             >
               <HeartIcon filled={liked} />

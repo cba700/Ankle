@@ -17,6 +17,7 @@ import {
 import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/auth";
+import { listWishlistMatchesByUserId } from "@/lib/wishlist";
 
 type ProfileRow = {
   avatar_url: string | null;
@@ -84,6 +85,7 @@ export type MyPageData = {
   cashTransactions: MyPageCashTransaction[];
   couponCount: number;
   profile: MyPageProfile;
+  wishlistCount: number;
 };
 
 const APPLICATION_SELECT = `
@@ -121,6 +123,7 @@ export async function getMyPageData({
     { data: applications, error: applicationError },
     cashAccount,
     cashTransactions,
+    wishlistMatches,
   ] =
     await Promise.all([
       supabase
@@ -135,6 +138,7 @@ export async function getMyPageData({
         .order("applied_at", { ascending: false }),
       getCashAccountByUserId(supabase, user.id),
       listCashTransactionsByUserId(supabase, user.id),
+      listWishlistMatchesByUserId(user.id, supabase),
     ]);
 
   const typedProfile = profile as ProfileRow | null;
@@ -155,6 +159,7 @@ export async function getMyPageData({
       providerLabel: getProviderLabel(user),
       role: typedProfile?.role ?? role,
     },
+    wishlistCount: wishlistMatches.length,
   };
 }
 

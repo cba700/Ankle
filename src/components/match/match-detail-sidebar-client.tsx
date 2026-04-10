@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import type { MatchDetailViewModel } from "./match-detail-types";
 import { useMatchDetailFeedback } from "./match-detail-feedback";
 import { MatchSidebar } from "./match-sidebar";
+import { useMatchWishlist } from "@/components/wishlist/use-match-wishlist";
 
 type MatchDetailSidebarClientProps = {
   applyHref: string;
@@ -17,7 +17,9 @@ export function MatchDetailSidebarClient({
   view,
 }: MatchDetailSidebarClientProps) {
   const showToast = useMatchDetailFeedback();
-  const [saved, setSaved] = useState(false);
+  const { pendingMatchIds, savedMatchIds, toggleMatchWishlist } = useMatchWishlist();
+  const saved = savedMatchIds[view.id] ?? false;
+  const isSaving = pendingMatchIds[view.id] ?? false;
 
   async function handleCopyAddress() {
     try {
@@ -28,15 +30,21 @@ export function MatchDetailSidebarClient({
     }
   }
 
-  function handleSave() {
-    setSaved((current) => {
-      const next = !current;
+  async function handleSave() {
+    try {
+      const next = await toggleMatchWishlist(view.id);
+
+      if (typeof next !== "boolean") {
+        return;
+      }
+
       showToast(
         next ? "관심 매치에 추가했어요." : "관심 매치에서 제거했어요.",
         "success",
       );
-      return next;
-    });
+    } catch {
+      showToast("관심 매치 저장에 실패했습니다. 다시 시도해 주세요.", "accent");
+    }
   }
 
   return (
@@ -51,6 +59,7 @@ export function MatchDetailSidebarClient({
       onSave={handleSave}
       priceLabel={view.priceLabel}
       saved={saved}
+      saveDisabled={isSaving}
       time={view.time}
     />
   );

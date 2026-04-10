@@ -6,6 +6,7 @@ import { getHomeStateSearch } from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
 import { HomeFilterBar } from "./home-filter-bar";
 import { HomeMatchList } from "./home-match-list";
+import { useMatchWishlist } from "@/components/wishlist/use-match-wishlist";
 import type { HomeMatchRow } from "./home-types";
 import { HOME_FILTERS } from "./home-view-model";
 import styles from "./home-page.module.css";
@@ -25,8 +26,8 @@ export function HomeMatchBrowser({
 }: HomeMatchBrowserProps) {
   const defaultDateKey = dates[0]?.key ?? "";
   const [selectedDateKey, setSelectedDateKey] = useState(initialSelectedDateKey || defaultDateKey);
-  const [likedMatches, setLikedMatches] = useState<Record<string, boolean>>({});
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>(initialActiveFilterIds);
+  const { pendingMatchIds, savedMatchIds, toggleMatchWishlist } = useMatchWishlist();
 
   const activeDateKey = dates.some((date) => date.key === selectedDateKey)
     ? selectedDateKey
@@ -48,13 +49,6 @@ export function HomeMatchBrowser({
 
     return true;
   });
-
-  function toggleLike(matchId: string) {
-    setLikedMatches((current) => ({
-      ...current,
-      [matchId]: !current[matchId],
-    }));
-  }
 
   function handleSelectDate(dateKey: string) {
     syncUrl(dateKey, activeFilterIds);
@@ -106,8 +100,9 @@ export function HomeMatchBrowser({
       ) : null}
       <HomeMatchList
         detailStateSearch={detailStateSearch}
-        likedMatches={likedMatches}
-        onToggleLike={toggleLike}
+        likedMatches={savedMatchIds}
+        onToggleLike={toggleMatchWishlist}
+        pendingMatchIds={pendingMatchIds}
         rows={visibleRows}
       />
     </section>
