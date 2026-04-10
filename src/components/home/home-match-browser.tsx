@@ -54,6 +54,16 @@ export function HomeMatchBrowser({
     }
 
     return true;
+  }).sort((left, right) => {
+    if (left.time !== right.time) {
+      return left.time.localeCompare(right.time);
+    }
+
+    if (left.venueName !== right.venueName) {
+      return left.venueName.localeCompare(right.venueName, "ko");
+    }
+
+    return left.publicId.localeCompare(right.publicId);
   });
 
   function handleSelectDate(dateKey: string) {
