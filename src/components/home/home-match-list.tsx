@@ -32,6 +32,14 @@ export function HomeMatchList({
       {rows.map((row) => {
         const liked = likedMatches[row.id] ?? false;
         const isPending = pendingMatchIds[row.id] ?? false;
+        const toneClass =
+          row.statusTone === "danger"
+            ? styles.toneDanger
+            : row.statusTone === "accent"
+              ? styles.toneAccent
+              : row.statusTone === "neutral"
+                ? styles.toneNeutral
+                : styles.toneOpen;
 
         return (
           <article className={styles.row} key={row.id}>
@@ -41,18 +49,12 @@ export function HomeMatchList({
               prefetch={false}
             >
               <div className={styles.timeColumn}>
-                <span className={styles.time}>{row.time}</span>
+                <div className={styles.timeMain}>
+                  <span className={`${styles.time} ${toneClass}`}>{row.time}</span>
+                </div>
                 <span
                   aria-hidden={row.statusTone === "open"}
-                  className={`${styles.statusText} ${
-                    row.statusTone === "danger"
-                      ? styles.statusDanger
-                      : row.statusTone === "accent"
-                        ? styles.statusAccent
-                        : row.statusTone === "neutral"
-                          ? styles.statusNeutral
-                          : styles.statusOpen
-                  }`}
+                  className={`${styles.statusText} ${toneClass}`}
                 >
                   {row.statusLabel}
                 </span>
@@ -61,7 +63,6 @@ export function HomeMatchList({
               <div className={styles.infoColumn}>
                 <div className={styles.titleRow}>
                   <strong className={styles.matchTitle}>{row.venueName}</strong>
-                  {row.isNew ? <span className={styles.newTag}>N</span> : null}
                 </div>
                 <p className={styles.metaRow}>{row.meta}</p>
               </div>
