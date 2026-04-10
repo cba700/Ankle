@@ -350,6 +350,9 @@
 }
 
 .chargeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 42px;
   padding: 0 18px;
   border: 0;
@@ -358,6 +361,7 @@
   color: var(--accent);
   font-size: 14px;
   font-weight: 800;
+  text-align: center;
   flex-shrink: 0;
 }
 
