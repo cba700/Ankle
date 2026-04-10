@@ -1,7 +1,9 @@
 "use client";
 
 import { startTransition, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useMatchDetailFeedback } from "@/components/match/match-detail-feedback";
+import { normalizeSearchQuery } from "@/lib/match-search";
 import type { CalendarDate } from "@/lib/date";
 import { getHomeStateSearch } from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
@@ -26,6 +28,7 @@ export function HomeMatchBrowser({
   rows,
 }: HomeMatchBrowserProps) {
   const showToast = useMatchDetailFeedback();
+  const searchParams = useSearchParams();
   const defaultDateKey = dates[0]?.key ?? "";
   const [selectedDateKey, setSelectedDateKey] = useState(initialSelectedDateKey || defaultDateKey);
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>(initialActiveFilterIds);
@@ -39,6 +42,7 @@ export function HomeMatchBrowser({
   const detailStateSearch = getHomeStateSearch({
     dateKey: activeDateKey,
     filterIds: activeFilterIds,
+    query: normalizeSearchQuery(searchParams.get("q") ?? undefined),
   });
   const visibleRows = rows.filter((row) => {
     if (row.dateKey !== activeDateKey) {
