@@ -40,26 +40,22 @@ export function HomeMatchList({
               href={`/match/${row.publicId}${detailStateSearch}`}
               prefetch={false}
             >
-              <div className={styles.topRow}>
-                <div className={styles.topMeta}>
-                  <div className={`${styles.timeWrap} ${row.isUrgent ? styles.timeUrgent : ""}`}>
-                    {row.isUrgent ? <span className={styles.urgentDot} /> : null}
-                    <span className={styles.time}>{row.time}</span>
-                  </div>
-                  {row.statusTone === "open" ? null : (
-                    <span
-                      className={`${styles.statusBadge} ${
-                        row.statusTone === "danger"
-                          ? styles.statusDanger
-                          : row.statusTone === "accent"
-                            ? styles.statusAccent
-                            : styles.statusNeutral
-                      }`}
-                    >
-                      {row.statusLabel}
-                    </span>
-                  )}
-                </div>
+              <div className={styles.timeColumn}>
+                <span className={styles.time}>{row.time}</span>
+                <span
+                  aria-hidden={row.statusTone === "open"}
+                  className={`${styles.statusText} ${
+                    row.statusTone === "danger"
+                      ? styles.statusDanger
+                      : row.statusTone === "accent"
+                        ? styles.statusAccent
+                        : row.statusTone === "neutral"
+                          ? styles.statusNeutral
+                          : styles.statusOpen
+                  }`}
+                >
+                  {row.statusLabel}
+                </span>
               </div>
 
               <div className={styles.infoColumn}>
