@@ -1,9 +1,10 @@
 "use client";
 
 import type { MyPageProfile } from "@/lib/mypage";
-import { ArrowLeftIcon, CogIcon, SearchIcon } from "@/components/icons";
+import { ArrowLeftIcon, CogIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { MatchSearch } from "@/components/navigation/match-search";
 import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
 import baseStyles from "./my-page.module.css";
 import styles from "./my-page-settings.module.css";
@@ -35,21 +36,12 @@ export function MyPageSettings({
           </AppLink>
 
           <div className={baseStyles.headerActions}>
+            <MatchSearch />
             <UserHeaderMenu
               currentSection="mypage"
               initialIsAdmin={initialIsAdmin}
               initialSignedIn
             />
-            <label className={baseStyles.search}>
-              <SearchIcon className={baseStyles.searchIcon} />
-              <span className="visuallyHidden">검색</span>
-              <input
-                className={baseStyles.searchInput}
-                placeholder="지역, 코트, 팀 이름으로 찾기"
-                readOnly
-                type="text"
-              />
-            </label>
           </div>
         </div>
       </header>

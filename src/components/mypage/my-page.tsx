@@ -10,10 +10,10 @@ import {
   HeartIcon,
   PencilIcon,
   QuestionIcon,
-  SearchIcon,
 } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { MatchSearch } from "@/components/navigation/match-search";
 import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
 import styles from "./my-page.module.css";
 
@@ -97,21 +97,12 @@ export function MyPage({ data }: MyPageProps) {
           </AppLink>
 
           <div className={styles.headerActions}>
+            <MatchSearch />
             <UserHeaderMenu
               currentSection="mypage"
               initialIsAdmin={data.profile.role === "admin"}
               initialSignedIn
             />
-            <label className={styles.search}>
-              <SearchIcon className={styles.searchIcon} />
-              <span className="visuallyHidden">검색</span>
-              <input
-                className={styles.searchInput}
-                placeholder="지역, 코트, 팀 이름으로 찾기"
-                readOnly
-                type="text"
-              />
-            </label>
           </div>
         </div>
       </header>

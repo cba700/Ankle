@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { UserIcon } from "@/components/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { AppLink } from "./app-link";
 import styles from "./user-header-menu.module.css";
@@ -115,13 +116,17 @@ export function UserHeaderMenu({
         </AppLink>
       ) : null}
       <AppLink
+        aria-label={menuState.isSignedIn ? "마이페이지" : "로그인"}
         aria-current={currentSection === "mypage" ? "page" : undefined}
-        className={`${styles.link} ${
+        className={`${styles.iconLink} ${
           currentSection === "mypage" ? styles.linkActive : ""
         }`}
         href={menuState.isSignedIn ? "/mypage" : "/login"}
       >
-        {menuState.isSignedIn ? "마이페이지" : "로그인"}
+        <UserIcon className={styles.userIcon} />
+        <span className="visuallyHidden">
+          {menuState.isSignedIn ? "마이페이지" : "로그인"}
+        </span>
       </AppLink>
     </nav>
   );

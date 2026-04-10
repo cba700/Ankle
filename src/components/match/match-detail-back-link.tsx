@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { normalizeSearchQuery } from "@/lib/match-search";
 import {
   getHomeStateHref,
   parseHomeFilterIds,
@@ -19,6 +20,7 @@ export function MatchDetailBackLink({ className }: MatchDetailBackLinkProps) {
       searchParams.get("filters") ?? undefined,
       ["hideClosed", "region", "gender", "level", "shade"],
     ),
+    query: normalizeSearchQuery(searchParams.get("q") ?? undefined),
   });
 
   return (
