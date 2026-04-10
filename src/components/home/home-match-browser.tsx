@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useState } from "react";
+import { useMatchDetailFeedback } from "@/components/match/match-detail-feedback";
 import type { CalendarDate } from "@/lib/date";
 import { getHomeStateSearch } from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
@@ -24,6 +25,7 @@ export function HomeMatchBrowser({
   initialActiveFilterIds,
   rows,
 }: HomeMatchBrowserProps) {
+  const showToast = useMatchDetailFeedback();
   const defaultDateKey = dates[0]?.key ?? "";
   const [selectedDateKey, setSelectedDateKey] = useState(initialSelectedDateKey || defaultDateKey);
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>(initialActiveFilterIds);
@@ -81,6 +83,26 @@ export function HomeMatchBrowser({
     }
   }
 
+  async function handleToggleLike(matchId: string) {
+    try {
+      const nextSaved = await toggleMatchWishlist(matchId);
+
+      if (typeof nextSaved !== "boolean") {
+        return undefined;
+      }
+
+      showToast(
+        nextSaved ? "관심 매치에 담았어요." : "관심 매치에서 뺐어요.",
+        "success",
+      );
+
+      return nextSaved;
+    } catch {
+      showToast("관심 매치 저장에 실패했습니다. 다시 시도해 주세요.", "accent");
+      return undefined;
+    }
+  }
+
   return (
     <section className={styles.browserPanel}>
       <HomeDatePicker
@@ -101,7 +123,7 @@ export function HomeMatchBrowser({
       <HomeMatchList
         detailStateSearch={detailStateSearch}
         likedMatches={savedMatchIds}
-        onToggleLike={toggleMatchWishlist}
+        onToggleLike={handleToggleLike}
         pendingMatchIds={pendingMatchIds}
         rows={visibleRows}
       />
