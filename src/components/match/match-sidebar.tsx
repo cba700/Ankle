@@ -13,7 +13,8 @@ type MatchSidebarProps = {
   applyHref: string;
   canApply: boolean;
   onCopyAddress: () => void;
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
+  saveDisabled?: boolean;
 };
 
 export function MatchSidebar({
@@ -28,6 +29,7 @@ export function MatchSidebar({
   canApply,
   onCopyAddress,
   onSave,
+  saveDisabled = false,
 }: MatchSidebarProps) {
   return (
     <div className={styles.card}>
@@ -66,7 +68,10 @@ export function MatchSidebar({
         <button
           aria-label={saved ? "관심 매치 해제" : "관심 매치 저장"}
           className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
-          onClick={onSave}
+          disabled={saveDisabled}
+          onClick={() => {
+            void onSave();
+          }}
           type="button"
         >
           <HeartIcon filled={saved} />

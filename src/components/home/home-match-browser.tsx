@@ -1,11 +1,15 @@
 "use client";
 
 import { startTransition, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useMatchDetailFeedback } from "@/components/match/match-detail-feedback";
+import { normalizeSearchQuery } from "@/lib/match-search";
 import type { CalendarDate } from "@/lib/date";
 import { getHomeStateSearch } from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
 import { HomeFilterBar } from "./home-filter-bar";
 import { HomeMatchList } from "./home-match-list";
+import { useMatchWishlist } from "@/components/wishlist/use-match-wishlist";
 import type { HomeMatchRow } from "./home-types";
 import { HOME_FILTERS } from "./home-view-model";
 import styles from "./home-page.module.css";
@@ -23,10 +27,12 @@ export function HomeMatchBrowser({
   initialActiveFilterIds,
   rows,
 }: HomeMatchBrowserProps) {
+  const showToast = useMatchDetailFeedback();
+  const searchParams = useSearchParams();
   const defaultDateKey = dates[0]?.key ?? "";
   const [selectedDateKey, setSelectedDateKey] = useState(initialSelectedDateKey || defaultDateKey);
-  const [likedMatches, setLikedMatches] = useState<Record<string, boolean>>({});
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>(initialActiveFilterIds);
+  const { pendingMatchIds, savedMatchIds, toggleMatchWishlist } = useMatchWishlist();
 
   const activeDateKey = dates.some((date) => date.key === selectedDateKey)
     ? selectedDateKey
@@ -36,6 +42,7 @@ export function HomeMatchBrowser({
   const detailStateSearch = getHomeStateSearch({
     dateKey: activeDateKey,
     filterIds: activeFilterIds,
+    query: normalizeSearchQuery(searchParams.get("q") ?? undefined),
   });
   const visibleRows = rows.filter((row) => {
     if (row.dateKey !== activeDateKey) {
@@ -47,14 +54,17 @@ export function HomeMatchBrowser({
     }
 
     return true;
-  });
+  }).sort((left, right) => {
+    if (left.time !== right.time) {
+      return left.time.localeCompare(right.time);
+    }
 
-  function toggleLike(matchId: string) {
-    setLikedMatches((current) => ({
-      ...current,
-      [matchId]: !current[matchId],
-    }));
-  }
+    if (left.venueName !== right.venueName) {
+      return left.venueName.localeCompare(right.venueName, "ko");
+    }
+
+    return left.publicId.localeCompare(right.publicId);
+  });
 
   function handleSelectDate(dateKey: string) {
     syncUrl(dateKey, activeFilterIds);
@@ -87,6 +97,26 @@ export function HomeMatchBrowser({
     }
   }
 
+  async function handleToggleLike(matchId: string) {
+    try {
+      const nextSaved = await toggleMatchWishlist(matchId);
+
+      if (typeof nextSaved !== "boolean") {
+        return undefined;
+      }
+
+      showToast(
+        nextSaved ? "관심 매치에 담았어요." : "관심 매치에서 뺐어요.",
+        "success",
+      );
+
+      return nextSaved;
+    } catch {
+      showToast("관심 매치 저장에 실패했습니다. 다시 시도해 주세요.", "accent");
+      return undefined;
+    }
+  }
+
   return (
     <section className={styles.browserPanel}>
       <HomeDatePicker
@@ -106,8 +136,9 @@ export function HomeMatchBrowser({
       ) : null}
       <HomeMatchList
         detailStateSearch={detailStateSearch}
-        likedMatches={likedMatches}
-        onToggleLike={toggleLike}
+        likedMatches={savedMatchIds}
+        onToggleLike={handleToggleLike}
+        pendingMatchIds={pendingMatchIds}
         rows={visibleRows}
       />
     </section>

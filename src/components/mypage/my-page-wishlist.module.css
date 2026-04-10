@@ -1,0 +1,162 @@
+.page {
+  min-height: 100vh;
+  background: var(--user-page-background);
+}
+
+.main {
+  padding: 24px 0 40px;
+  display: grid;
+  gap: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.backIcon,
+.heroBadgeIcon,
+.removeIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.heroCard {
+  padding: 24px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroEyebrow {
+  margin: 18px 0 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.heroTitle {
+  margin: 8px 0 0;
+  font-size: clamp(34px, 5vw, 46px);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+}
+
+.heroDescription,
+.feedbackMessage,
+.dateTime {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.heroDescription {
+  color: var(--text-secondary);
+}
+
+.feedbackMessage {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.detailSection {
+  min-width: 0;
+}
+
+.wishlistCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.wishlistContent {
+  min-width: 0;
+}
+
+.wishlistLink {
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.wishlistLink:hover {
+  transform: translateY(-1px);
+  border-color: rgba(243, 109, 33, 0.24);
+  box-shadow: 0 14px 28px rgba(29, 24, 19, 0.08);
+}
+
+.dateTime {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 112px;
+  padding: 0 16px;
+  border: 1px solid rgba(222, 217, 209, 0.92);
+  border-radius: 16px;
+  background: #fff;
+  color: #d74949;
+  font-size: 13px;
+  font-weight: 800;
+  touch-action: manipulation;
+}
+
+.removeButton:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 16px 0 36px;
+    gap: 12px;
+  }
+
+  .heroCard {
+    padding: 18px;
+  }
+
+  .wishlistCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .removeButton {
+    min-height: 44px;
+  }
+}

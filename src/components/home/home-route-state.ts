@@ -1,6 +1,9 @@
+import { normalizeSearchQuery } from "@/lib/match-search";
+
 type HomeStateInput = {
   dateKey?: string;
   filterIds?: string[];
+  query?: string;
 };
 
 export function getFirstSearchParam(
@@ -32,8 +35,14 @@ export function parseHomeFilterIds(
 export function getHomeStateSearch({
   dateKey,
   filterIds = [],
+  query,
 }: HomeStateInput) {
   const searchParams = new URLSearchParams();
+  const normalizedQuery = normalizeSearchQuery(query);
+
+  if (normalizedQuery) {
+    searchParams.set("q", normalizedQuery);
+  }
 
   if (dateKey) {
     searchParams.set("date", dateKey);

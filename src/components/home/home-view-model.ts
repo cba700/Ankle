@@ -29,24 +29,29 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
       isClosed: !match.canApply,
       venueName: match.venueName,
       title: match.title,
-      meta: [match.venueName, match.genderCondition, match.format].join(" · "),
+      meta: [match.genderCondition, match.format].join(" · "),
       isNew: match.canApply && match.status.kind === "open" && match.currentParticipants <= 3,
     };
   });
 }
 
 function getHomeStatus(match: MatchRecord) {
-  if (!match.canApply) {
+  const thresholds =
+    match.format === "3vs3"
+      ? { confirmedSoon: 3, closingSoon: 6, closed: 9 }
+      : { confirmedSoon: 7, closingSoon: 12, closed: 15 };
+
+  if (!match.canApply || match.currentParticipants >= thresholds.closed) {
     return { label: "마감", tone: "neutral" as const, isUrgent: false };
   }
 
-  if (match.status.kind === "closingSoon") {
+  if (match.currentParticipants >= thresholds.closingSoon) {
     return { label: "마감 임박", tone: "danger" as const, isUrgent: true };
   }
 
-  if (match.status.kind === "confirmedSoon") {
+  if (match.currentParticipants >= thresholds.confirmedSoon) {
     return { label: "확정 임박", tone: "accent" as const, isUrgent: false };
   }
 
-  return { label: "모집 중", tone: "open" as const, isUrgent: false };
+  return { label: "", tone: "open" as const, isUrgent: false };
 }

@@ -7,7 +7,8 @@ type HomeMatchListProps = {
   detailStateSearch: string;
   rows: HomeMatchRow[];
   likedMatches: Record<string, boolean>;
-  onToggleLike: (matchId: string) => void;
+  onToggleLike: (matchId: string) => Promise<boolean | undefined>;
+  pendingMatchIds: Record<string, boolean>;
 };
 
 export function HomeMatchList({
@@ -15,6 +16,7 @@ export function HomeMatchList({
   rows,
   likedMatches,
   onToggleLike,
+  pendingMatchIds,
 }: HomeMatchListProps) {
   if (rows.length === 0) {
     return (
@@ -29,6 +31,15 @@ export function HomeMatchList({
     <section className={styles.list}>
       {rows.map((row) => {
         const liked = likedMatches[row.id] ?? false;
+        const isPending = pendingMatchIds[row.id] ?? false;
+        const toneClass =
+          row.statusTone === "danger"
+            ? styles.toneDanger
+            : row.statusTone === "accent"
+              ? styles.toneAccent
+              : row.statusTone === "neutral"
+                ? styles.toneNeutral
+                : styles.toneOpen;
 
         return (
           <article className={styles.row} key={row.id}>
@@ -37,32 +48,21 @@ export function HomeMatchList({
               href={`/match/${row.publicId}${detailStateSearch}`}
               prefetch={false}
             >
-              <div className={styles.topRow}>
-                <div className={styles.topMeta}>
-                  <span
-                    className={`${styles.statusBadge} ${
-                      row.statusTone === "danger"
-                        ? styles.statusDanger
-                        : row.statusTone === "accent"
-                          ? styles.statusAccent
-                          : row.statusTone === "open"
-                            ? styles.statusOpen
-                            : styles.statusNeutral
-                    }`}
-                  >
-                    {row.statusLabel}
-                  </span>
-                  <div className={`${styles.timeWrap} ${row.isUrgent ? styles.timeUrgent : ""}`}>
-                    {row.isUrgent ? <span className={styles.urgentDot} /> : null}
-                    <span className={styles.time}>{row.time}</span>
-                  </div>
+              <div className={styles.timeColumn}>
+                <div className={styles.timeMain}>
+                  <span className={`${styles.time} ${toneClass}`}>{row.time}</span>
                 </div>
+                <span
+                  aria-hidden={row.statusTone === "open"}
+                  className={`${styles.statusText} ${toneClass}`}
+                >
+                  {row.statusLabel}
+                </span>
               </div>
 
               <div className={styles.infoColumn}>
                 <div className={styles.titleRow}>
-                  <strong className={styles.matchTitle}>{row.title}</strong>
-                  {row.isNew ? <span className={styles.newTag}>N</span> : null}
+                  <strong className={styles.matchTitle}>{row.venueName}</strong>
                 </div>
                 <p className={styles.metaRow}>{row.meta}</p>
               </div>
@@ -71,7 +71,10 @@ export function HomeMatchList({
             <button
               aria-label={liked ? "관심 매치 해제" : "관심 매치 저장"}
               className={`${styles.likeButton} ${liked ? styles.likeButtonActive : ""}`}
-              onClick={() => onToggleLike(row.id)}
+              disabled={isPending}
+              onClick={() => {
+                void onToggleLike(row.id);
+              }}
               type="button"
             >
               <HeartIcon filled={liked} />

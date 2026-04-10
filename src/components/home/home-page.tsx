@@ -1,5 +1,6 @@
 import type { CalendarDate } from "@/lib/date";
 import { LegalFooter } from "@/components/legal/legal-footer";
+import { MatchDetailFeedbackProvider } from "@/components/match/match-detail-feedback";
 import { HomeHeader } from "./home-header";
 import { HomeHero } from "./home-hero";
 import { HomeMatchBrowser } from "./home-match-browser";
@@ -22,20 +23,22 @@ export function HomePage({
   rows,
 }: HomePageProps) {
   return (
-    <div className={styles.page}>
-      <HomeHeader isAdmin={isAdmin} />
+    <MatchDetailFeedbackProvider>
+      <div className={styles.page}>
+        <HomeHeader isAdmin={isAdmin} />
 
-      <main className={`pageShell ${styles.main}`}>
-        <HomeHero />
-        <HomeMatchBrowser
-          dates={dates}
-          initialActiveFilterIds={initialActiveFilterIds}
-          initialSelectedDateKey={initialSelectedDateKey}
-          rows={rows}
-        />
-      </main>
+        <main className={`pageShell ${styles.main}`}>
+          <HomeHero />
+          <HomeMatchBrowser
+            dates={dates}
+            initialActiveFilterIds={initialActiveFilterIds}
+            initialSelectedDateKey={initialSelectedDateKey}
+            rows={rows}
+          />
+        </main>
 
-      <LegalFooter />
-    </div>
+        <LegalFooter />
+      </div>
+    </MatchDetailFeedbackProvider>
   );
 }

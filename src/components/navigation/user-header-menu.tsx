@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { UserIcon } from "@/components/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { AppLink } from "./app-link";
 import styles from "./user-header-menu.module.css";
@@ -9,6 +10,7 @@ type UserHeaderMenuProps = {
   currentSection: "match" | "mypage";
   initialIsAdmin?: boolean;
   initialSignedIn?: boolean;
+  layout?: "full" | "icon-only";
 };
 
 type MenuState = {
@@ -20,6 +22,7 @@ export function UserHeaderMenu({
   currentSection,
   initialIsAdmin = false,
   initialSignedIn = false,
+  layout = "full",
 }: UserHeaderMenuProps) {
   const [menuState, setMenuState] = useState<MenuState>({
     isAdmin: initialIsAdmin,
@@ -100,28 +103,36 @@ export function UserHeaderMenu({
 
   return (
     <nav className={styles.menu}>
-      <AppLink
-        aria-current={currentSection === "match" ? "page" : undefined}
-        className={`${styles.link} ${
-          currentSection === "match" ? styles.linkActive : ""
-        }`}
-        href="/"
-      >
-        매치
-      </AppLink>
-      {menuState.isAdmin ? (
-        <AppLink className={styles.link} href="/admin">
-          관리자
-        </AppLink>
+      {layout === "full" ? (
+        <>
+          <AppLink
+            aria-current={currentSection === "match" ? "page" : undefined}
+            className={`${styles.link} ${
+              currentSection === "match" ? styles.linkActive : ""
+            }`}
+            href="/"
+          >
+            매치
+          </AppLink>
+          {menuState.isAdmin ? (
+            <AppLink className={styles.link} href="/admin">
+              관리자
+            </AppLink>
+          ) : null}
+        </>
       ) : null}
       <AppLink
+        aria-label={menuState.isSignedIn ? "마이페이지" : "로그인"}
         aria-current={currentSection === "mypage" ? "page" : undefined}
-        className={`${styles.link} ${
+        className={`${styles.iconLink} ${
           currentSection === "mypage" ? styles.linkActive : ""
         }`}
         href={menuState.isSignedIn ? "/mypage" : "/login"}
       >
-        {menuState.isSignedIn ? "마이페이지" : "로그인"}
+        <UserIcon className={styles.userIcon} />
+        <span className="visuallyHidden">
+          {menuState.isSignedIn ? "마이페이지" : "로그인"}
+        </span>
       </AppLink>
     </nav>
   );

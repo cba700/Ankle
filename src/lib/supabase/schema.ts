@@ -14,16 +14,20 @@ const REQUIRED_CASH_MIGRATION =
   "20260407120000_add_cash_foundation.sql";
 const REQUIRED_CHARGE_OPERATIONS_MIGRATION =
   "20260407223000_add_toss_charge_operations.sql";
+const REQUIRED_WISHLIST_MIGRATION =
+  "20260410153000_add_match_wishlist_items.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
 const REQUIRED_CASH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CASH_MIGRATION} before running cash-backed application features.`;
 const REQUIRED_CHARGE_OPERATIONS_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CHARGE_OPERATIONS_MIGRATION} before running Toss charge features.`;
+const REQUIRED_WISHLIST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_WISHLIST_MIGRATION} before running match wishlist features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
 let cashSchemaCheckPromise: Promise<void> | null = null;
 let chargeOperationsCheckPromise: Promise<void> | null = null;
+let wishlistSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -101,6 +105,25 @@ export async function assertCashChargeOperationsSchemaReady(
   }
 
   return chargeOperationsCheckPromise;
+}
+
+export async function assertMatchWishlistSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!wishlistSchemaCheckPromise) {
+    wishlistSchemaCheckPromise = runWishlistSchemaCheck(client).catch((error) => {
+      wishlistSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return wishlistSchemaCheckPromise;
 }
 
 async function runSchemaCheck(supabase: SupabaseServerClient) {
@@ -184,6 +207,17 @@ async function runChargeOperationsSchemaCheck(supabase: SupabaseServerClient) {
   handleChargeOperationsSchemaError(chargeOrderEventCheck.error);
 }
 
+async function runWishlistSchemaCheck(supabase: SupabaseServerClient) {
+  await runPublicIdSchemaCheck(supabase);
+
+  const wishlistCheck = await supabase
+    .from("match_wishlist_items")
+    .select("match_id")
+    .limit(1);
+
+  handleWishlistSchemaError(wishlistCheck.error);
+}
+
 function handleSchemaCheckError(
   error: { code?: string; message?: string } | null,
 ) {
@@ -264,4 +298,25 @@ function handleChargeOperationsSchemaError(
   }
 
   throw new Error(`Failed to verify Toss charge schema: ${error.message}`);
+}
+
+function handleWishlistSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_WISHLIST_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify match wishlist schema: ${error.message}`);
 }

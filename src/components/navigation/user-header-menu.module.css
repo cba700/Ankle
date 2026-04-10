@@ -23,7 +23,24 @@
     color 160ms ease;
 }
 
+.iconLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: #6b7280;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
 .link:hover {
+  background: #f3f4f6;
+}
+
+.iconLink:hover {
   background: #f3f4f6;
 }
 
@@ -31,6 +48,11 @@
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-weight: 700;
+}
+
+.userIcon {
+  width: 18px;
+  height: 18px;
 }
 
 @media (max-width: 767px) {
@@ -42,5 +64,10 @@
     font-size: 13px;
     min-height: 34px;
     padding: 0 12px;
+  }
+
+  .iconLink {
+    width: 34px;
+    height: 34px;
   }
 }
