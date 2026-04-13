@@ -80,12 +80,6 @@ export function MyPage({ data }: MyPageProps) {
       label: "문의하기",
       statusText: kakaoChannelUrl ? "카카오톡 상담" : "준비 중",
     },
-    {
-      iconSrc: "/emoji/mypage/notice.svg",
-      key: "notice",
-      label: "공지사항",
-      statusText: "미구현",
-    },
   ];
 
   return (
