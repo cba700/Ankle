@@ -58,8 +58,10 @@ type TossTransferPaymentParams = TossRequestPaymentBaseParams & {
 
 type TossCardPaymentParams = TossRequestPaymentBaseParams & {
   method: "CARD";
-  flowMode?: "DEFAULT" | "DIRECT";
-  easyPay?: "KAKAOPAY" | "NAVERPAY" | "TOSSPAY";
+  card?: {
+    flowMode?: "DEFAULT" | "DIRECT";
+    easyPay?: "KAKAOPAY" | "NAVERPAY" | "TOSSPAY";
+  };
 };
 
 type TossRequestPaymentParams = TossTransferPaymentParams | TossCardPaymentParams;
@@ -324,8 +326,10 @@ function buildRequestPaymentParams(
 
   return {
     ...baseParams,
-    easyPay: paymentMethod,
-    flowMode: "DIRECT",
+    card: {
+      easyPay: paymentMethod,
+      flowMode: "DIRECT",
+    },
     method: "CARD",
   };
 }
