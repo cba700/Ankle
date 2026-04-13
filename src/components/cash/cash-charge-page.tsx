@@ -253,7 +253,6 @@ export function CashChargePage({
                     type="button"
                   >
                     <strong className={styles.paymentMethodLabel}>{method.label}</strong>
-                    <span className={styles.paymentMethodDescription}>{method.description}</span>
                   </button>
                 );
               })}

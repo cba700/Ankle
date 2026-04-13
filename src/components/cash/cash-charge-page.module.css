@@ -145,21 +145,29 @@
 }
 
 .packageGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  display: flex;
+  gap: 8px;
   margin-top: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.packageGrid::-webkit-scrollbar {
+  display: none;
 }
 
 .packageButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 88px;
-  padding: 18px 14px;
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 0 14px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 12px;
   background: #fff;
   text-align: center;
   transition:
@@ -171,13 +179,14 @@
 .packageButtonActive {
   border-color: rgba(243, 109, 33, 0.4);
   background: #fff7f0;
-  box-shadow: 0 12px 26px rgba(243, 109, 33, 0.12);
+  box-shadow: 0 6px 14px rgba(243, 109, 33, 0.1);
 }
 
 .packageAmount {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .infoBox,
@@ -255,20 +264,31 @@
 }
 
 .paymentMethodGrid {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  gap: 8px;
   margin-top: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.paymentMethodGrid::-webkit-scrollbar {
+  display: none;
 }
 
 .paymentMethodButton {
-  display: grid;
-  gap: 6px;
-  width: 100%;
-  padding: 16px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 12px;
   background: #fff;
-  text-align: left;
+  text-align: center;
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -278,20 +298,15 @@
 .paymentMethodButtonActive {
   border-color: rgba(243, 109, 33, 0.4);
   background: #fff7f0;
-  box-shadow: 0 12px 26px rgba(243, 109, 33, 0.12);
+  box-shadow: 0 6px 14px rgba(243, 109, 33, 0.1);
 }
 
 .paymentMethodLabel {
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.02em;
-}
-
-.paymentMethodDescription {
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
+  white-space: nowrap;
 }
 
 .resultBadge {
@@ -431,9 +446,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .paymentMethodGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 768px) {
