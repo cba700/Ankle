@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -40,67 +40,65 @@ type TossPaymentAmount = {
   value: number;
 };
 
-type ChargePaymentMethod = "CARD" | "TRANSFER" | "KAKAOPAY" | "NAVERPAY" | "TOSSPAY";
-
-type TossRequestPaymentBaseParams = {
+type TossWidgetsRequestPaymentParams = {
   amount: TossPaymentAmount;
   customerEmail?: string;
   customerName?: string;
   failUrl: string;
+  metadata?: Record<string, string>;
   orderId: string;
   orderName: string;
   successUrl: string;
+  windowTarget?: "self" | "iframe";
 };
 
-type TossTransferPaymentParams = TossRequestPaymentBaseParams & {
-  method: "TRANSFER";
+type TossWidgetRenderParams = {
+  selector: string;
+  variantKey?: string;
 };
 
-type TossCardPaymentParams = TossRequestPaymentBaseParams & {
-  method: "CARD";
-  flowMode?: "DEFAULT" | "DIRECT";
-  easyPay?: "KAKAOPAY" | "NAVERPAY" | "TOSSPAY";
+type TossWidgetAmount = {
+  currency: "KRW";
+  value: number;
 };
 
-type TossRequestPaymentParams = TossTransferPaymentParams | TossCardPaymentParams;
+type TossPaymentMethodWidget = {
+  destroy: () => Promise<void> | void;
+};
+
+type TossAgreementWidget = {
+  destroy: () => Promise<void> | void;
+};
+
+type TossWidgetsInstance = {
+  renderAgreement: (params: TossWidgetRenderParams) => Promise<TossAgreementWidget>;
+  renderPaymentMethods: (params: TossWidgetRenderParams) => Promise<TossPaymentMethodWidget>;
+  requestPayment: (params: TossWidgetsRequestPaymentParams) => Promise<void> | void;
+  setAmount: (amount: TossWidgetAmount) => Promise<void> | void;
+};
 
 type TossPaymentsFactory = (clientKey: string) => {
-  payment: (params: { customerKey: string }) => {
-    requestPayment: (params: TossRequestPaymentParams) => Promise<void> | void;
-  };
+  widgets: (params: { customerKey: string }) => TossWidgetsInstance;
 };
 
-const PAYMENT_METHODS: Array<{
-  description: string;
-  key: ChargePaymentMethod;
-  label: string;
-}> = [
-  {
-    description: "은행 계좌로 바로 결제",
-    key: "TRANSFER",
-    label: "계좌이체",
-  },
-  {
-    description: "카카오페이로 결제",
-    key: "KAKAOPAY",
-    label: "카카오페이",
-  },
-  {
-    description: "네이버페이로 결제",
-    key: "NAVERPAY",
-    label: "네이버페이",
-  },
-  {
-    description: "토스페이로 결제",
-    key: "TOSSPAY",
-    label: "토스페이",
-  },
-  {
-    description: "일반 카드 결제",
-    key: "CARD",
-    label: "카드",
-  },
-];
+const PAYMENT_METHOD_SELECTOR = "#cash-charge-payment-methods";
+const AGREEMENT_SELECTOR = "#cash-charge-agreement";
+
+type WidgetLoadState = "idle" | "ready" | "loading";
+
+type WidgetRefs = {
+  agreement: TossAgreementWidget | null;
+  instance: TossWidgetsInstance | null;
+  paymentMethods: TossPaymentMethodWidget | null;
+};
+
+function createEmptyWidgetRefs(): WidgetRefs {
+  return {
+    agreement: null,
+    instance: null,
+    paymentMethods: null,
+  };
+}
 
 declare global {
   interface Window {
@@ -119,19 +117,110 @@ export function CashChargePage({
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<CashChargePackage>(10000);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<ChargePaymentMethod>("CARD");
+  const [widgetLoadState, setWidgetLoadState] = useState<WidgetLoadState>("idle");
+  const widgetRefs = useRef<WidgetRefs>(createEmptyWidgetRefs());
 
-  const canSubmit = !isSubmitting;
+  const canSubmit = !isSubmitting && widgetLoadState === "ready";
+
+  useEffect(() => {
+    const tossClientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+
+    if (!tossClientKey) {
+      setFeedbackMessage("토스 결제 키가 설정되지 않아 결제 위젯을 불러올 수 없습니다.");
+      return;
+    }
+
+    const widgetClientKey = tossClientKey;
+
+    let cancelled = false;
+
+    async function initializeWidgets() {
+      setWidgetLoadState("loading");
+      setFeedbackMessage(null);
+
+      try {
+        const TossPayments = await loadTossPayments();
+
+        if (cancelled) {
+          return;
+        }
+
+        const widgets = TossPayments(widgetClientKey).widgets({
+          customerKey,
+        });
+
+        widgetRefs.current.instance = widgets;
+
+        await widgets.setAmount({
+          currency: "KRW",
+          value: selectedAmount,
+        });
+
+        const [paymentMethods, agreement] = await Promise.all([
+          widgets.renderPaymentMethods({
+            selector: PAYMENT_METHOD_SELECTOR,
+          }),
+          widgets.renderAgreement({
+            selector: AGREEMENT_SELECTOR,
+          }),
+        ]);
+
+        if (cancelled) {
+          await Promise.allSettled([
+            Promise.resolve(paymentMethods.destroy()),
+            Promise.resolve(agreement.destroy()),
+          ]);
+          return;
+        }
+
+        widgetRefs.current.paymentMethods = paymentMethods;
+        widgetRefs.current.agreement = agreement;
+        setWidgetLoadState("ready");
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        setWidgetLoadState("idle");
+        setFeedbackMessage(getSdkErrorMessage(error));
+      }
+    }
+
+    void initializeWidgets();
+
+    return () => {
+      cancelled = true;
+      const { agreement, paymentMethods } = widgetRefs.current;
+      widgetRefs.current = createEmptyWidgetRefs();
+      void Promise.allSettled([
+        Promise.resolve(paymentMethods?.destroy()),
+        Promise.resolve(agreement?.destroy()),
+      ]);
+    };
+  }, [customerKey]);
+
+  useEffect(() => {
+    const widgets = widgetRefs.current.instance;
+
+    if (!widgets) {
+      return;
+    }
+
+    void widgets.setAmount({
+      currency: "KRW",
+      value: selectedAmount,
+    });
+  }, [selectedAmount]);
 
   async function handleCharge() {
     if (!canSubmit) {
       return;
     }
 
-    const tossClientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+    const widgets = widgetRefs.current.instance;
 
-    if (!tossClientKey) {
-      setFeedbackMessage("토스 결제 키가 설정되지 않아 충전을 시작할 수 없습니다.");
+    if (!widgets) {
+      setFeedbackMessage("결제 위젯을 아직 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
@@ -166,10 +255,6 @@ export function CashChargePage({
         return;
       }
 
-      const TossPayments = await loadTossPayments();
-      const payment = TossPayments(tossClientKey).payment({
-        customerKey,
-      });
       const origin = window.location.origin;
       const successUrl = new URL("/cash/charge/success", origin);
       const failUrl = new URL("/cash/charge/fail", origin);
@@ -179,7 +264,7 @@ export function CashChargePage({
         failUrl.searchParams.set("next", nextPath);
       }
 
-      const requestPaymentParams = buildRequestPaymentParams({
+      await widgets.requestPayment({
         amount: {
           currency: "KRW",
           value: chargeAmount,
@@ -187,12 +272,13 @@ export function CashChargePage({
         customerEmail: accountLabel.includes("@") ? accountLabel : undefined,
         customerName: displayName,
         failUrl: failUrl.toString(),
+        metadata: {
+          chargeAmount: String(chargeAmount),
+        },
         orderId: payload.orderId,
         orderName: payload.orderName,
         successUrl: successUrl.toString(),
-      }, selectedPaymentMethod);
-
-      await payment.requestPayment(requestPaymentParams);
+      });
     } catch (error) {
       setFeedbackMessage(getSdkErrorMessage(error));
     } finally {
@@ -236,26 +322,12 @@ export function CashChargePage({
 
           <section className={styles.card}>
             <h2 className={styles.sectionTitle}>결제 방법</h2>
+            <div className={styles.widgetBox} id="cash-charge-payment-methods" />
+          </section>
 
-            <div className={styles.paymentMethodGrid}>
-              {PAYMENT_METHODS.map((method) => {
-                const isActive = selectedPaymentMethod === method.key;
-
-                return (
-                  <button
-                    className={`${styles.paymentMethodButton} ${
-                      isActive ? styles.paymentMethodButtonActive : ""
-                    }`}
-                    key={method.key}
-                    onClick={() => setSelectedPaymentMethod(method.key)}
-                    type="button"
-                  >
-                    <strong className={styles.paymentMethodLabel}>{method.label}</strong>
-                    <span className={styles.paymentMethodDescription}>{method.description}</span>
-                  </button>
-                );
-              })}
-            </div>
+          <section className={styles.card}>
+            <h2 className={styles.sectionTitle}>약관 동의</h2>
+            <div className={styles.widgetBox} id="cash-charge-agreement" />
           </section>
         </main>
       </div>
@@ -273,7 +345,11 @@ export function CashChargePage({
             onClick={handleCharge}
             type="button"
           >
-            {isSubmitting ? "결제창 준비 중..." : "충전하기"}
+            {widgetLoadState === "loading"
+              ? "결제 수단 불러오는 중..."
+              : isSubmitting
+                ? "결제창 준비 중..."
+                : "충전하기"}
           </button>
         </div>
       </div>
@@ -302,32 +378,6 @@ function getSdkErrorMessage(error: unknown) {
   }
 
   return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
-}
-
-function buildRequestPaymentParams(
-  baseParams: TossRequestPaymentBaseParams,
-  paymentMethod: ChargePaymentMethod,
-): TossRequestPaymentParams {
-  if (paymentMethod === "TRANSFER") {
-    return {
-      ...baseParams,
-      method: "TRANSFER",
-    };
-  }
-
-  if (paymentMethod === "CARD") {
-    return {
-      ...baseParams,
-      method: "CARD",
-    };
-  }
-
-  return {
-    ...baseParams,
-    easyPay: paymentMethod,
-    flowMode: "DIRECT",
-    method: "CARD",
-  };
 }
 
 function loadTossPayments() {
