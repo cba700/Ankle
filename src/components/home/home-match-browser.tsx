@@ -119,11 +119,13 @@ export function HomeMatchBrowser({
 
   return (
     <section className={styles.browserPanel}>
-      <HomeDatePicker
-        dates={dates}
-        onSelect={handleSelectDate}
-        selectedDateKey={activeDateKey}
-      />
+      <div className={styles.datePickerSticky}>
+        <HomeDatePicker
+          dates={dates}
+          onSelect={handleSelectDate}
+          selectedDateKey={activeDateKey}
+        />
+      </div>
       <HomeFilterBar
         activeFilterIds={activeFilterIds}
         items={HOME_FILTERS}

@@ -1,4 +1,6 @@
 .page {
+  --home-header-height: 69px;
+  --home-date-picker-top: calc(var(--home-header-height) + 12px);
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--user-page-background);
@@ -15,6 +17,26 @@
   gap: 18px;
 }
 
+.datePickerSticky {
+  position: sticky;
+  top: var(--home-date-picker-top);
+  z-index: 30;
+  margin: -6px 0;
+  padding: 6px 0 8px;
+  background: var(--user-page-background);
+}
+
+.datePickerSticky::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: rgba(201, 193, 183, 0.38);
+  pointer-events: none;
+}
+
 .dateHeading {
   margin: 0;
   color: var(--text-primary);
@@ -25,6 +47,11 @@
 }
 
 @media (min-width: 768px) {
+  .page {
+    --home-header-height: 76px;
+    --home-date-picker-top: calc(var(--home-header-height) + 16px);
+  }
+
   .main {
     gap: 28px;
     padding: 28px 0 56px;
