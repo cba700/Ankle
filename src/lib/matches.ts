@@ -8,10 +8,13 @@ export type MatchStatus = {
   label: string;
 };
 
+export type DistributionTone = "basic" | "middle" | "high" | "star";
+export type DistributionLabel = "Basic" | "Middle" | "High" | "Star";
+
 export type DistributionEntry = {
-  label: string;
+  label: DistributionLabel;
   value: number;
-  tone: "basic" | "middle" | "high";
+  tone: DistributionTone;
 };
 
 export type MatchRecord = {
@@ -85,6 +88,20 @@ export const REFUND_POLICY = [
   { point: "천재지변 또는 운영 취소", detail: "전액 환불" },
 ];
 
+const LEVEL_WEIGHT_BY_TONE: Record<DistributionTone, number> = {
+  basic: 1,
+  middle: 2,
+  high: 3,
+  star: 4,
+};
+
+const LEVEL_LABEL_BY_WEIGHT: DistributionLabel[] = ["Basic", "Middle", "High", "Star"];
+
+type AverageLevelSource = {
+  value: number;
+  tone: DistributionTone;
+};
+
 const MATCH_TEMPLATES: MatchTemplate[] = [
   {
     id: "match-01",
@@ -122,11 +139,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "우천 시 운영 판단에 따라 시간 조정 또는 취소될 수 있습니다.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 30, tone: "basic" },
-      { label: "Middle", value: 50, tone: "middle" },
+      { label: "Basic", value: 26, tone: "basic" },
+      { label: "Middle", value: 44, tone: "middle" },
       { label: "High", value: 20, tone: "high" },
+      { label: "Star", value: 10, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Middle 2 정도입니다.",
+    averageLevel: "예상 평균 레벨은 Middle 입니다.",
   },
   {
     id: "match-02",
@@ -164,11 +182,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "컨디션 이상이 있을 경우 운영자에게 먼저 알리고 강도 조절을 요청해 주세요.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 10, tone: "basic" },
-      { label: "Middle", value: 45, tone: "middle" },
-      { label: "High", value: 45, tone: "high" },
+      { label: "Basic", value: 6, tone: "basic" },
+      { label: "Middle", value: 34, tone: "middle" },
+      { label: "High", value: 38, tone: "high" },
+      { label: "Star", value: 22, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 High 1 정도입니다.",
+    averageLevel: "예상 평균 레벨은 High 입니다.",
   },
   {
     id: "match-03",
@@ -206,11 +225,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "무릎 통증이 있는 경우 인텐스한 수비는 피하고 운영자에게 알려 주세요.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 45, tone: "basic" },
-      { label: "Middle", value: 40, tone: "middle" },
-      { label: "High", value: 15, tone: "high" },
+      { label: "Basic", value: 40, tone: "basic" },
+      { label: "Middle", value: 34, tone: "middle" },
+      { label: "High", value: 16, tone: "high" },
+      { label: "Star", value: 10, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Basic 4 ~ Middle 1 사이입니다.",
+    averageLevel: "예상 평균 레벨은 Middle 입니다.",
   },
   {
     id: "match-04",
@@ -248,11 +268,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "통증이 있는 경우 바로 플레이를 멈추고 운영자에게 알려 주세요.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 55, tone: "basic" },
-      { label: "Middle", value: 35, tone: "middle" },
-      { label: "High", value: 10, tone: "high" },
+      { label: "Basic", value: 68, tone: "basic" },
+      { label: "Middle", value: 20, tone: "middle" },
+      { label: "High", value: 8, tone: "high" },
+      { label: "Star", value: 4, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Basic 3 정도입니다.",
+    averageLevel: "예상 평균 레벨은 Basic 입니다.",
   },
   {
     id: "match-05",
@@ -290,11 +311,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "비가 예보될 경우 시작 2시간 전 운영 공지를 확인해 주세요.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 15, tone: "basic" },
-      { label: "Middle", value: 50, tone: "middle" },
-      { label: "High", value: 35, tone: "high" },
+      { label: "Basic", value: 8, tone: "basic" },
+      { label: "Middle", value: 36, tone: "middle" },
+      { label: "High", value: 36, tone: "high" },
+      { label: "Star", value: 20, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Middle 3 정도입니다.",
+    averageLevel: "예상 평균 레벨은 High 입니다.",
   },
   {
     id: "match-06",
@@ -332,11 +354,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "과격한 파울은 즉시 경고 후 교체될 수 있습니다.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 40, tone: "basic" },
-      { label: "Middle", value: 45, tone: "middle" },
-      { label: "High", value: 15, tone: "high" },
+      { label: "Basic", value: 34, tone: "basic" },
+      { label: "Middle", value: 40, tone: "middle" },
+      { label: "High", value: 18, tone: "high" },
+      { label: "Star", value: 8, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Middle 1 정도입니다.",
+    averageLevel: "예상 평균 레벨은 Middle 입니다.",
   },
   {
     id: "match-07",
@@ -374,11 +397,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "체력 분배를 위해 개인 음료를 꼭 준비해 주세요.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 12, tone: "basic" },
-      { label: "Middle", value: 53, tone: "middle" },
-      { label: "High", value: 35, tone: "high" },
+      { label: "Basic", value: 6, tone: "basic" },
+      { label: "Middle", value: 38, tone: "middle" },
+      { label: "High", value: 36, tone: "high" },
+      { label: "Star", value: 20, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Middle 4 정도입니다.",
+    averageLevel: "예상 평균 레벨은 High 입니다.",
   },
   {
     id: "match-08",
@@ -416,11 +440,12 @@ const MATCH_TEMPLATES: MatchTemplate[] = [
       "손가락 부상 예방을 위해 불필요한 해킹 동작을 자제해 주세요.",
     ],
     levelDistribution: [
-      { label: "Basic", value: 48, tone: "basic" },
-      { label: "Middle", value: 37, tone: "middle" },
-      { label: "High", value: 15, tone: "high" },
+      { label: "Basic", value: 69, tone: "basic" },
+      { label: "Middle", value: 17, tone: "middle" },
+      { label: "High", value: 10, tone: "high" },
+      { label: "Star", value: 4, tone: "star" },
     ],
-    averageLevel: "예상 평균 레벨은 Basic 4 정도입니다.",
+    averageLevel: "예상 평균 레벨은 Basic 입니다.",
   },
 ];
 
@@ -454,6 +479,7 @@ export function getMatches() {
       isSoldOut,
       canApply: !isSoldOut && !isStarted,
       status: getMatchStatus(template.format, currentParticipants, template.capacity, isStarted),
+      averageLevel: getAverageLevelText(template.levelDistribution),
     };
   }).sort((a, b) => {
     const left = `${a.dateKey} ${a.time}`;
@@ -505,6 +531,34 @@ function getMatchStatus(
 
 export function getPriceLabel(amount: number) {
   return `${formatMoney(amount)}원`;
+}
+
+export function getAverageLevelName(distribution: AverageLevelSource[]) {
+  const total = distribution.reduce(
+    (sum, item) => sum + Math.max(item.value, 0),
+    0,
+  );
+
+  if (total <= 0) {
+    return LEVEL_LABEL_BY_WEIGHT[0];
+  }
+
+  const weightedAverage =
+    distribution.reduce(
+      (sum, item) => sum + Math.max(item.value, 0) * LEVEL_WEIGHT_BY_TONE[item.tone],
+      0,
+    ) / total;
+
+  const normalizedWeight = Math.min(
+    LEVEL_LABEL_BY_WEIGHT.length,
+    Math.max(1, Math.round(weightedAverage)),
+  );
+
+  return LEVEL_LABEL_BY_WEIGHT[normalizedWeight - 1] ?? LEVEL_LABEL_BY_WEIGHT[0];
+}
+
+export function getAverageLevelText(distribution: AverageLevelSource[]) {
+  return `예상 평균 레벨은 ${getAverageLevelName(distribution)} 입니다.`;
 }
 
 function getMockPublicId(matchId: string) {

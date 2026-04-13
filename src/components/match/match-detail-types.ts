@@ -17,7 +17,7 @@ export type MatchDetailInfoItem = {
 export type MatchDetailDistributionItem = {
   label: string;
   value: number;
-  tone: "basic" | "middle" | "high";
+  tone: "basic" | "middle" | "high" | "star";
 };
 
 export type MatchDetailFacilityKey =
