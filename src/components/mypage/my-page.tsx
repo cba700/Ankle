@@ -1,12 +1,6 @@
 import type { MyPageData } from "@/lib/mypage";
-import {
-  formatPreferredTimeSlots,
-  formatPreferredWeekdays,
-  formatTemporaryLevel,
-} from "@/lib/player-preferences";
-import {
-  ArrowRightIcon,
-} from "@/components/icons";
+import { formatTemporaryLevel } from "@/lib/player-preferences";
+import { ArrowRightIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { MatchSearch } from "@/components/navigation/match-search";
@@ -30,12 +24,6 @@ export function MyPage({ data }: MyPageProps) {
   const initials = data.profile.displayName.slice(0, 1).toUpperCase() || "A";
   const kakaoChannelUrl = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_URL?.trim();
   const temporaryLevelLabel = formatTemporaryLevel(data.profile.temporaryLevel);
-  const preferredWeekdaysLabel = formatPreferredWeekdays(
-    data.profile.preferredWeekdays,
-  );
-  const preferredTimeSlotsLabel = formatPreferredTimeSlots(
-    data.profile.preferredTimeSlots,
-  );
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
@@ -139,21 +127,6 @@ export function MyPage({ data }: MyPageProps) {
                 <strong className={styles.statValue}>
                   <span className={styles.levelMarker} />
                   {temporaryLevelLabel}
-                </strong>
-              </div>
-            </div>
-
-            <div className={styles.preferencePanel}>
-              <div className={styles.preferenceRow}>
-                <span className={styles.preferenceLabel}>선호 요일</span>
-                <strong className={styles.preferenceValue}>
-                  {preferredWeekdaysLabel}
-                </strong>
-              </div>
-              <div className={styles.preferenceRow}>
-                <span className={styles.preferenceLabel}>선호 시간대</span>
-                <strong className={styles.preferenceValue}>
-                  {preferredTimeSlotsLabel}
                 </strong>
               </div>
             </div>

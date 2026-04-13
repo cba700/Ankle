@@ -9,7 +9,7 @@ import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   updateMyPageDisplayNameAction,
-  updateMyPagePreferencesAction,
+  updateMyPageTemporaryLevelAction,
 } from "./actions";
 
 export const metadata: Metadata = {
@@ -62,7 +62,7 @@ export default async function MyPageSettingsRoute() {
       displayNameValue={profileRow?.display_name ?? ""}
       displayNameFormAction={updateMyPageDisplayNameAction}
       initialIsAdmin={data.profile.role === "admin"}
-      preferencesFormAction={updateMyPagePreferencesAction}
+      temporaryLevelFormAction={updateMyPageTemporaryLevelAction}
       profile={data.profile}
     />
   );

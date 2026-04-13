@@ -4,9 +4,9 @@
 }
 
 .main {
-  padding: 24px 0 40px;
   display: grid;
-  gap: 16px;
+  gap: 14px;
+  padding: 24px 0 40px;
 }
 
 .backLink {
@@ -18,46 +18,35 @@
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   font-size: 13px;
   font-weight: 700;
 }
 
 .backIcon,
-.badgeIcon {
+.editButtonIcon {
   width: 18px;
   height: 18px;
 }
 
-.editCard,
-.summaryCard,
-.preferenceCard,
-.infoCard,
-.actionCard {
+.profileCard,
+.sectionCard,
+.dialog {
   border: 1px solid rgba(201, 193, 183, 0.78);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
 }
 
-.editCard,
-.summaryCard {
-  padding: 24px;
+.profileCard,
+.sectionCard {
+  border-radius: 24px;
 }
 
-.editCard {
-  display: grid;
-  gap: 16px;
-}
-
-.preferenceCard {
-  padding: 24px;
-}
-
-.summaryTop {
+.profileCard {
   display: flex;
   align-items: center;
   gap: 16px;
+  padding: 20px 22px;
 }
 
 .avatar {
@@ -81,42 +70,46 @@
   object-fit: cover;
 }
 
-.summaryCopy {
+.profileCopy {
   min-width: 0;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: rgba(255, 107, 0, 0.1);
+.profileEyebrow {
+  margin: 0 0 6px;
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
-.title {
-  margin: 12px 0 0;
-  font-size: clamp(28px, 5vw, 38px);
-  line-height: 1.08;
+.pageTitle {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
   letter-spacing: -0.04em;
 }
 
-.infoCard,
-.actionCard {
+.profileDescription {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.sectionCard {
   padding: 20px 22px;
 }
 
 .sectionHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.sectionCopy {
+  display: grid;
+  gap: 6px;
 }
 
 .sectionTitle {
@@ -126,106 +119,88 @@
   letter-spacing: -0.03em;
 }
 
-.infoList,
-.actionList {
-  margin-top: 16px;
-  display: grid;
-  gap: 10px;
-}
-
-.editForm {
-  display: grid;
-  gap: 12px;
-  max-width: 480px;
-}
-
-.field {
-  display: grid;
-  gap: 8px;
-}
-
-.fieldLabel {
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.textInput {
-  width: 100%;
-  min-height: 54px;
-  padding: 0 16px;
-  border: 1px solid rgba(201, 193, 183, 0.84);
-  border-radius: 16px;
-  background: rgba(247, 245, 241, 0.94);
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.textInput::placeholder {
-  color: rgba(122, 112, 102, 0.78);
-}
-
-.fieldHint {
+.sectionDescription {
   margin: 0;
   color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.5;
 }
 
-.saveButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 54px;
-  padding: 0 18px;
-  border-radius: 18px;
-  background: var(--accent-strong);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
+.settingList,
+.actionList {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
 }
 
-.infoRow,
+.settingRow,
 .withdrawRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 58px;
-  padding: 0 16px;
+  min-height: 68px;
+  padding: 16px;
   border: 1px solid rgba(201, 193, 183, 0.72);
   border-radius: 18px;
   background: rgba(247, 245, 241, 0.76);
 }
 
-.infoLabel,
-.withdrawMeta {
+.settingRowStatic {
+  min-height: 58px;
+}
+
+.settingCopy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.settingLabel,
+.withdrawMeta,
+.fieldLabel {
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 700;
 }
 
-.infoValue {
+.settingValue {
   min-width: 0;
-  text-align: right;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   word-break: break-word;
 }
 
+.editButton,
+.closeButton,
+.secondaryButton,
+.primaryButton,
 .signOutButton,
 .withdrawButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.editButton {
+  flex-shrink: 0;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.signOutButton,
+.withdrawButton {
   width: 100%;
   min-height: 54px;
   padding: 0 18px;
-  border-radius: 18px;
-  font-size: 14px;
-  font-weight: 800;
 }
 
 .signOutButton {
@@ -245,43 +220,248 @@
   opacity: 1;
 }
 
-@media (max-width: 767px) {
-  .main {
-    padding: 16px 0 36px;
-    gap: 12px;
+.dialogRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.dialogBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.42);
+}
+
+.dialog {
+  position: relative;
+  width: min(100%, 480px);
+  max-height: min(84vh, 640px);
+  padding: 22px;
+  border-radius: 24px;
+  overflow-y: auto;
+}
+
+.dialogHeader,
+.dialogCopy,
+.modalForm,
+.field,
+.levelOptionCopy {
+  display: grid;
+}
+
+.dialogHeader {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px;
+}
+
+.dialogCopy {
+  gap: 6px;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.dialogDescription {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.closeButton {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.modalForm {
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.field {
+  gap: 8px;
+}
+
+.textInput {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  border-radius: 16px;
+  background: rgba(247, 245, 241, 0.94);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.textInput::placeholder {
+  color: rgba(122, 112, 102, 0.78);
+}
+
+.levelList {
+  display: grid;
+  gap: 10px;
+}
+
+.levelOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.levelOptionActive {
+  border-color: rgba(243, 109, 33, 0.42);
+  background: var(--accent-soft);
+  box-shadow: 0 12px 24px rgba(243, 109, 33, 0.12);
+}
+
+.levelMarker {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 2px solid rgba(201, 193, 183, 0.92);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.levelMarkerActive {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.levelOptionCopy {
+  gap: 4px;
+  min-width: 0;
+}
+
+.levelOptionTitle {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.levelOptionDescription {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.modalActionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.secondaryButton,
+.primaryButton {
+  min-height: 48px;
+  padding: 0 18px;
+}
+
+.secondaryButton {
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.primaryButton {
+  border: 0;
+  background: var(--accent-strong);
+  color: #fff;
+}
+
+.primaryButton:disabled {
+  cursor: default;
+  opacity: 0.46;
+}
+
+@media (hover: hover) {
+  .editButton:hover,
+  .closeButton:hover,
+  .secondaryButton:hover,
+  .signOutButton:hover {
+    background: rgba(247, 245, 241, 0.92);
   }
 
-  .editCard,
-  .summaryCard,
-  .preferenceCard,
-  .infoCard,
-  .actionCard {
+  .primaryButton:hover:not(:disabled) {
+    filter: brightness(0.98);
+  }
+
+  .levelOption:hover {
+    border-color: rgba(243, 109, 33, 0.28);
+  }
+}
+
+@media (max-width: 767px) {
+  .main {
+    gap: 12px;
+    padding: 16px 0 36px;
+  }
+
+  .profileCard,
+  .sectionCard,
+  .dialog {
+    border-radius: 22px;
+  }
+
+  .profileCard,
+  .sectionCard {
     padding: 18px;
   }
 
-  .summaryTop,
-  .infoRow,
+  .settingRow,
   .withdrawRow {
     align-items: flex-start;
-  }
-
-  .infoRow,
-  .withdrawRow {
     flex-direction: column;
     min-height: 0;
-    padding: 14px 16px;
   }
 
-  .infoValue {
-    width: 100%;
-    text-align: left;
-  }
-
+  .editButton,
   .withdrawButton {
     width: 100%;
   }
 
-  .withdrawRow {
-    gap: 10px;
+  .dialogRoot {
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .dialog {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .dialogHeader {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .closeButton {
+    justify-self: end;
+  }
+
+  .modalActionRow {
+    flex-direction: column-reverse;
+  }
+
+  .secondaryButton,
+  .primaryButton {
+    width: 100%;
   }
 }
