@@ -1,12 +1,15 @@
 .list {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .row {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 16px;
+  min-width: 0;
   padding: 18px 20px;
   border: 1px solid rgba(222, 217, 209, 0.92);
   border-radius: 24px;
@@ -61,6 +64,7 @@
 .infoColumn {
   display: grid;
   gap: 4px;
+  width: 100%;
   min-width: 0;
 }
 
@@ -115,6 +119,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: start;
   width: 34px;
   height: 34px;
   padding: 0;
@@ -123,7 +128,7 @@
   background: #fff;
   color: #bbb;
   flex: 0 0 auto;
-  margin-top: 6;
+  margin-top: 6px;
 }
 
 .likeButton:disabled {
