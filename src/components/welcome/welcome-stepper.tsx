@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   PREFERRED_TIME_SLOT_OPTIONS,
   PREFERRED_WEEKDAY_OPTIONS,
@@ -49,6 +49,7 @@ export function WelcomeStepper({
   initialTemporaryLevel,
   nextPath,
 }: WelcomeStepperProps) {
+  const submitRequestedRef = useRef(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [selectedLevelChoice, setSelectedLevelChoice] =
     useState<TemporaryLevelChoice | null>(
@@ -97,8 +98,17 @@ export function WelcomeStepper({
     setStepIndex((current) => current - 1);
   }
 
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (!submitRequestedRef.current) {
+      event.preventDefault();
+      return;
+    }
+
+    submitRequestedRef.current = false;
+  }
+
   return (
-    <form action={action} className={styles.card}>
+    <form action={action} className={styles.card} onSubmit={handleSubmit}>
       <input name="nextPath" type="hidden" value={nextPath} />
       {selectedLevelChoice ? (
         <input
@@ -222,6 +232,9 @@ export function WelcomeStepper({
           <button
             className={styles.primaryButton}
             disabled={!selectedLevelChoice}
+            onClick={() => {
+              submitRequestedRef.current = true;
+            }}
             type="submit"
           >
             완료
