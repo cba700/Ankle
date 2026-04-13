@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPage } from "@/components/mypage/my-page";
-import { buildLoginHref } from "@/lib/auth/redirect";
+import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
 import { getMyPageData } from "@/lib/mypage";
+import { getProfileOnboardingState } from "@/lib/profile-onboarding";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "마이페이지",
@@ -22,6 +25,20 @@ export default async function MyPageRoute() {
         configured ? undefined : "supabase_not_configured",
       ),
     );
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(buildLoginHref("/mypage", "supabase_not_configured"));
+  }
+
+  await assertProfileOnboardingSchemaReady(supabase);
+
+  const onboardingState = await getProfileOnboardingState(supabase, user.id);
+
+  if (onboardingState.onboardingRequired) {
+    redirect(buildWelcomeHref("/mypage"));
   }
 
   const data = await getMyPageData({

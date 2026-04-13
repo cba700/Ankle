@@ -4,7 +4,7 @@ import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
-import { buildLoginHref } from "@/lib/auth/redirect";
+import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
@@ -85,6 +85,11 @@ export function MatchApplyPage({
 
       if (payload?.code === "INSUFFICIENT_CASH") {
         window.location.href = `/cash/charge?next=${encodeURIComponent(applyPath)}`;
+        return;
+      }
+
+      if (payload?.code === "ONBOARDING_REQUIRED") {
+        window.location.href = buildWelcomeHref(applyPath);
         return;
       }
 
@@ -257,6 +262,10 @@ function getErrorMessage(code?: string) {
 
   if (code === "MATCH_STARTED") {
     return "이미 시작된 매치라 신청할 수 없습니다.";
+  }
+
+  if (code === "ONBOARDING_REQUIRED") {
+    return "신청 전 임시 레벨과 선호 시간을 먼저 설정해 주세요.";
   }
 
   if (code === "MATCH_NOT_OPEN") {
