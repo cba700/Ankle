@@ -362,7 +362,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: 0 16px 30px rgba(255, 107, 0, 0.26);
 }
 
 .cashLabel {
