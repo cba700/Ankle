@@ -64,7 +64,12 @@ export function WelcomeStepper({
   const currentStep = STEPS[stepIndex];
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === STEPS.length - 1;
-  const canMoveNext = currentStep.id !== "level" || Boolean(selectedLevelChoice);
+  const canProceed = getCanProceed({
+    selectedLevelChoice,
+    selectedTimeSlots,
+    selectedWeekdays,
+    stepId: currentStep.id,
+  });
 
   function toggleWeekday(value: PreferredWeekday) {
     setSelectedWeekdays((current) =>
@@ -83,7 +88,7 @@ export function WelcomeStepper({
   }
 
   function moveNext() {
-    if (!canMoveNext || isLastStep) {
+    if (!canProceed || isLastStep) {
       return;
     }
 
@@ -231,7 +236,7 @@ export function WelcomeStepper({
         {isLastStep ? (
           <button
             className={styles.primaryButton}
-            disabled={!selectedLevelChoice}
+            disabled={!canProceed}
             onClick={() => {
               submitRequestedRef.current = true;
             }}
@@ -242,7 +247,7 @@ export function WelcomeStepper({
         ) : (
           <button
             className={styles.primaryButton}
-            disabled={!canMoveNext}
+            disabled={!canProceed}
             onClick={moveNext}
             type="button"
           >
@@ -252,4 +257,26 @@ export function WelcomeStepper({
       </footer>
     </form>
   );
+}
+
+function getCanProceed({
+  selectedLevelChoice,
+  selectedTimeSlots,
+  selectedWeekdays,
+  stepId,
+}: {
+  selectedLevelChoice: TemporaryLevelChoice | null;
+  selectedTimeSlots: PreferredTimeSlot[];
+  selectedWeekdays: PreferredWeekday[];
+  stepId: (typeof STEPS)[number]["id"];
+}) {
+  if (stepId === "level") {
+    return Boolean(selectedLevelChoice);
+  }
+
+  if (stepId === "weekday") {
+    return selectedWeekdays.length > 0;
+  }
+
+  return selectedTimeSlots.length > 0;
 }
