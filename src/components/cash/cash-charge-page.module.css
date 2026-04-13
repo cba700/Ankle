@@ -139,26 +139,29 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.18;
   letter-spacing: -0.04em;
 }
 
 .packageGrid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 18px;
 }
 
 .packageButton {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 18px;
+  min-height: 88px;
+  padding: 18px 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: #fff;
-  text-align: left;
+  text-align: center;
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -172,28 +175,9 @@
 }
 
 .packageAmount {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.03em;
-}
-
-.packageSummary {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.packageBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-self: start;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(255, 107, 0, 0.12);
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
 }
 
 .infoBox,
@@ -267,6 +251,47 @@
 .feedbackText {
   color: var(--red-text);
   font-weight: 700;
+  margin-top: 0;
+}
+
+.paymentMethodGrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.paymentMethodButton {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  text-align: left;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.paymentMethodButtonActive {
+  border-color: rgba(243, 109, 33, 0.4);
+  background: #fff7f0;
+  box-shadow: 0 12px 26px rgba(243, 109, 33, 0.12);
+}
+
+.paymentMethodLabel {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.paymentMethodDescription {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .resultBadge {
@@ -402,8 +427,11 @@
 }
 
 @media (min-width: 900px) {
-  .packageGrid,
   .contentGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .paymentMethodGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
