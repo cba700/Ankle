@@ -25,7 +25,7 @@ export function LegalFooter() {
           <h2 className={styles.businessTitle} id="business-info-title">
           </h2>
           <p className={styles.businessLine}>
-            앵클베스킷 | 서울특별시 도봉구 해등로 50 | 010-2354-0467
+            앵클베스킷 | 서울특별시 도봉구 해등로 50 311-1301 | 010-2354-0467
           </p>
           <p className={styles.businessLine}>대표: 남강현</p>
           <p className={styles.businessLine}>메일: anklebasket@naver.com</p>
