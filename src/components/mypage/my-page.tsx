@@ -15,7 +15,7 @@ type MyPageProps = {
 
 type MenuItem = {
   href?: string;
-  emoji: string;
+  iconSrc: string;
   key: string;
   label: string;
   external?: boolean;
@@ -28,32 +28,32 @@ export function MyPage({ data }: MyPageProps) {
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
-      emoji: "🏀",
+      iconSrc: "/emoji/mypage/applications.svg",
       key: "applications",
       label: "신청 내역",
     },
     {
       href: "/mypage/cash",
-      emoji: "💵",
+      iconSrc: "/emoji/mypage/cash.svg",
       key: "history",
       label: "캐시 내역",
     },
     {
       href: "/mypage/coupons",
-      emoji: "🎟️",
+      iconSrc: "/emoji/mypage/coupon.svg",
       key: "coupon",
       label: "쿠폰",
       statusText: String(data.couponCount),
     },
     {
       href: "/mypage/wishlist",
-      emoji: "💗",
+      iconSrc: "/emoji/mypage/wishlist.svg",
       key: "wishlist",
       label: "관심 매치",
       statusText: `${data.wishlistCount}건`,
     },
     {
-      emoji: "🧰",
+      iconSrc: "/emoji/mypage/settings.svg",
       key: "settings",
       label: "설정",
       href: "/mypage/settings",
@@ -63,13 +63,13 @@ export function MyPage({ data }: MyPageProps) {
     {
       external: true,
       href: kakaoChannelUrl,
-      emoji: "💬",
+      iconSrc: "/emoji/mypage/contact.svg",
       key: "contact",
       label: "문의하기",
       statusText: kakaoChannelUrl ? "카카오톡 상담" : "준비 중",
     },
     {
-      emoji: "📣",
+      iconSrc: "/emoji/mypage/notice.svg",
       key: "notice",
       label: "공지사항",
       statusText: "미구현",
@@ -187,7 +187,14 @@ export function MyPage({ data }: MyPageProps) {
                 const content = (
                   <>
                     <span aria-hidden="true" className={styles.menuIconWrap}>
-                      <span className={styles.menuEmoji}>{item.emoji}</span>
+                      <img
+                        alt=""
+                        className={styles.menuIconImage}
+                        decoding="async"
+                        height="28"
+                        src={item.iconSrc}
+                        width="28"
+                      />
                     </span>
                     <span className={styles.menuLabel}>{item.label}</span>
                     {item.statusText ? (
@@ -231,7 +238,14 @@ export function MyPage({ data }: MyPageProps) {
                 const content = (
                   <>
                     <span aria-hidden="true" className={styles.menuIconWrap}>
-                      <span className={styles.menuEmoji}>{item.emoji}</span>
+                      <img
+                        alt=""
+                        className={styles.menuIconImage}
+                        decoding="async"
+                        height="28"
+                        src={item.iconSrc}
+                        width="28"
+                      />
                     </span>
                     <span className={styles.menuLabel}>{item.label}</span>
                     <span className={styles.menuMeta}>{item.statusText}</span>
