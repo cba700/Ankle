@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getMatchApplicationError } from "@/lib/match-application-errors";
-import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
+import { getProfileOnboardingState } from "@/lib/profile-onboarding";
+import {
+  assertCashFoundationSchemaReady,
+  assertProfileOnboardingSchemaReady,
+} from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(
@@ -29,6 +33,16 @@ export async function POST(
   }
 
   await assertCashFoundationSchemaReady(supabase);
+  await assertProfileOnboardingSchemaReady(supabase);
+
+  const onboardingState = await getProfileOnboardingState(supabase, user.id);
+
+  if (onboardingState.onboardingRequired) {
+    return NextResponse.json(
+      { code: "ONBOARDING_REQUIRED" },
+      { status: 409 },
+    );
+  }
 
   const { data, error } = await supabase.rpc("apply_to_match", {
     p_match_id: matchId,

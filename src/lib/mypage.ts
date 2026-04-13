@@ -14,7 +14,15 @@ import {
   type CashTransactionEntity,
   type CashTransactionType,
 } from "@/lib/cash";
-import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
+import type {
+  PreferredTimeSlot,
+  PreferredWeekday,
+  TemporaryLevel,
+} from "@/lib/player-preferences";
+import {
+  assertCashFoundationSchemaReady,
+  assertProfileOnboardingSchemaReady,
+} from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/auth";
 import { listWishlistMatchesByUserId } from "@/lib/wishlist";
@@ -22,7 +30,10 @@ import { listWishlistMatchesByUserId } from "@/lib/wishlist";
 type ProfileRow = {
   avatar_url: string | null;
   display_name: string | null;
+  preferred_time_slots: PreferredTimeSlot[] | null;
+  preferred_weekdays: PreferredWeekday[] | null;
   role: UserRole | null;
+  temporary_level: TemporaryLevel | null;
 };
 
 type MatchRow = {
@@ -51,8 +62,11 @@ export type MyPageProfile = {
   avatarUrl: string | null;
   displayName: string;
   email: string;
+  preferredTimeSlots: PreferredTimeSlot[];
+  preferredWeekdays: PreferredWeekday[];
   providerLabel: string;
   role: UserRole;
+  temporaryLevel: TemporaryLevel | null;
 };
 
 export type MyPageApplication = {
@@ -117,6 +131,7 @@ export async function getMyPageData({
   }
 
   await assertCashFoundationSchemaReady(supabase);
+  await assertProfileOnboardingSchemaReady(supabase);
 
   const [
     { data: profile },
@@ -128,7 +143,9 @@ export async function getMyPageData({
     await Promise.all([
       supabase
         .from("profiles")
-        .select("display_name, avatar_url, role")
+        .select(
+          "display_name, avatar_url, role, temporary_level, preferred_weekdays, preferred_time_slots",
+        )
         .eq("id", user.id)
         .maybeSingle(),
       supabase
@@ -156,8 +173,11 @@ export async function getMyPageData({
       avatarUrl: typedProfile?.avatar_url ?? null,
       displayName: getDisplayName(user, typedProfile),
       email: user.email ?? "이메일 정보 없음",
+      preferredTimeSlots: typedProfile?.preferred_time_slots ?? [],
+      preferredWeekdays: typedProfile?.preferred_weekdays ?? [],
       providerLabel: getProviderLabel(user),
       role: typedProfile?.role ?? role,
+      temporaryLevel: typedProfile?.temporary_level ?? null,
     },
     wishlistCount: wishlistMatches.length,
   };

@@ -31,6 +31,7 @@
 
 .editCard,
 .summaryCard,
+.preferenceCard,
 .infoCard,
 .actionCard {
   border: 1px solid rgba(201, 193, 183, 0.78);
@@ -47,6 +48,10 @@
 .editCard {
   display: grid;
   gap: 16px;
+}
+
+.preferenceCard {
+  padding: 24px;
 }
 
 .summaryTop {
@@ -248,6 +253,7 @@
 
   .editCard,
   .summaryCard,
+  .preferenceCard,
   .infoCard,
   .actionCard {
     padding: 18px;

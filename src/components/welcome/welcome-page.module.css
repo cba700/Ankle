@@ -1,0 +1,133 @@
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(255, 210, 176, 0.34), transparent 36%),
+    linear-gradient(180deg, #fffaf4 0%, #fff 42%, #fff 100%);
+}
+
+.main {
+  padding: 28px 0 56px;
+  display: grid;
+  gap: 18px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.brandWord {
+  color: #111;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+}
+
+.brandDot {
+  color: var(--accent);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.heroCard,
+.formCard {
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 56px rgba(29, 24, 19, 0.08);
+}
+
+.heroCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+  gap: 18px;
+  padding: 28px;
+}
+
+.heroCopy {
+  display: grid;
+  gap: 12px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.12);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+}
+
+.description,
+.heroAsideText {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.heroAside {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 240, 227, 0.82) 0%, rgba(255, 248, 240, 0.86) 100%);
+}
+
+.heroAsideTitle {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.formCard {
+  padding: 24px;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 18px 0 36px;
+    gap: 14px;
+  }
+
+  .brandWord {
+    font-size: 24px;
+  }
+
+  .brandDot {
+    font-size: 28px;
+  }
+
+  .heroCard,
+  .formCard {
+    border-radius: 22px;
+  }
+
+  .heroCard {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .formCard {
+    padding: 18px;
+  }
+}

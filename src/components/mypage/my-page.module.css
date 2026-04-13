@@ -324,6 +324,36 @@
   flex-shrink: 0;
 }
 
+.preferencePanel {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.preferenceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(201, 193, 183, 0.68);
+  border-radius: 14px;
+  background: rgba(247, 245, 241, 0.76);
+}
+
+.preferenceLabel {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.preferenceValue {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
 .cashCard {
   padding: 18px 20px;
   border-radius: 18px;
@@ -780,6 +810,15 @@
 
   .profileActions {
     justify-content: flex-start;
+  }
+
+  .preferenceRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .preferenceValue {
+    text-align: left;
   }
 
   .cashCard {

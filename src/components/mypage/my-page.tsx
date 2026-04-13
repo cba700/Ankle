@@ -1,5 +1,10 @@
 import type { MyPageData } from "@/lib/mypage";
 import {
+  formatPreferredTimeSlots,
+  formatPreferredWeekdays,
+  formatTemporaryLevel,
+} from "@/lib/player-preferences";
+import {
   ArrowRightIcon,
   CopyIcon,
 } from "@/components/icons";
@@ -25,6 +30,13 @@ type MenuItem = {
 export function MyPage({ data }: MyPageProps) {
   const initials = data.profile.displayName.slice(0, 1).toUpperCase() || "A";
   const kakaoChannelUrl = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_URL?.trim();
+  const temporaryLevelLabel = formatTemporaryLevel(data.profile.temporaryLevel);
+  const preferredWeekdaysLabel = formatPreferredWeekdays(
+    data.profile.preferredWeekdays,
+  );
+  const preferredTimeSlotsLabel = formatPreferredTimeSlots(
+    data.profile.preferredTimeSlots,
+  );
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
@@ -153,7 +165,22 @@ export function MyPage({ data }: MyPageProps) {
                 <span className={styles.statLabel}>레벨</span>
                 <strong className={styles.statValue}>
                   <span className={styles.levelMarker} />
-                  미구현
+                  {temporaryLevelLabel}
+                </strong>
+              </div>
+            </div>
+
+            <div className={styles.preferencePanel}>
+              <div className={styles.preferenceRow}>
+                <span className={styles.preferenceLabel}>선호 요일</span>
+                <strong className={styles.preferenceValue}>
+                  {preferredWeekdaysLabel}
+                </strong>
+              </div>
+              <div className={styles.preferenceRow}>
+                <span className={styles.preferenceLabel}>선호 시간대</span>
+                <strong className={styles.preferenceValue}>
+                  {preferredTimeSlotsLabel}
                 </strong>
               </div>
             </div>
@@ -172,8 +199,10 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.guideCard}>
             <div>
               <p className={styles.guideEyebrow}>앵클 가이드</p>
-              <strong className={styles.guideTitle}>레벨 시스템을 소개합니다</strong>
-              <p className={styles.guideMeta}>콘텐츠 연결 전까지 미구현 상태로 노출됩니다.</p>
+              <strong className={styles.guideTitle}>플레이 설정은 언제든 다시 바꿀 수 있어요</strong>
+              <p className={styles.guideMeta}>
+                임시 레벨과 선호 요일 및 시간대는 설정 페이지에서 바로 수정할 수 있습니다.
+              </p>
             </div>
             <span className={styles.guideBadge}>i</span>
           </article>
