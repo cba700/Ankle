@@ -3,6 +3,7 @@
   display: block;
   min-width: 0;
   overflow: hidden;
+  background: var(--user-page-background);
 }
 
 .arrowButton {
@@ -29,6 +30,7 @@
   scrollbar-width: none;
   scroll-snap-type: x proximity;
   touch-action: pan-x;
+  background: var(--user-page-background);
 }
 
 .list::-webkit-scrollbar {
