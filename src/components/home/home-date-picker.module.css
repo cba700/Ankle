@@ -52,7 +52,7 @@
 
 .chipActive {
   border-color: var(--accent);
-  background: rgba(255, 240, 227, 0.72);
+  background: var(--accent-soft);
   box-shadow: 0 10px 24px rgba(243, 109, 33, 0.12);
 }
 
@@ -116,7 +116,7 @@
     padding: 0;
     border: 0;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.9);
+    background: #fff;
     color: var(--text-secondary);
   }
 
