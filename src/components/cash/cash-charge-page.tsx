@@ -114,6 +114,7 @@ let tossPaymentsPromise: Promise<TossPaymentsFactory> | null = null;
 
 export function CashChargePage({
   accountLabel,
+  cashBalanceLabel,
   customerKey,
   displayName,
   nextPath,
@@ -234,6 +235,8 @@ export function CashChargePage({
                 );
               })}
             </div>
+
+            <p className={styles.balanceHint}>현재 보유 캐시 : {cashBalanceLabel}</p>
           </section>
 
           <section className={styles.card}>
