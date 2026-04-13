@@ -338,7 +338,7 @@
   padding: 12px 14px;
   border: 1px solid rgba(201, 193, 183, 0.68);
   border-radius: 14px;
-  background: rgba(247, 245, 241, 0.76);
+  background: #fff;
 }
 
 .preferenceLabel {
@@ -394,49 +394,6 @@
   flex-shrink: 0;
 }
 
-.guideCard {
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.guideEyebrow {
-  margin: 0 0 6px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.guideTitle {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.guideMeta {
-  margin: 6px 0 0;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.guideBadge {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ff7b1b 0%, #ff6b00 100%);
-  box-shadow: 0 10px 22px rgba(255, 107, 0, 0.28);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
 
 .menuSection {
   overflow: hidden;

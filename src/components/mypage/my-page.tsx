@@ -195,17 +195,6 @@ export function MyPage({ data }: MyPageProps) {
               캐시 충전
             </AppLink>
           </article>
-
-          <article className={styles.guideCard}>
-            <div>
-              <p className={styles.guideEyebrow}>앵클 가이드</p>
-              <strong className={styles.guideTitle}>플레이 설정은 언제든 다시 바꿀 수 있어요</strong>
-              <p className={styles.guideMeta}>
-                임시 레벨과 선호 요일 및 시간대는 설정 페이지에서 바로 수정할 수 있습니다.
-              </p>
-            </div>
-            <span className={styles.guideBadge}>i</span>
-          </article>
         </section>
 
         <section className={styles.rightColumn}>
