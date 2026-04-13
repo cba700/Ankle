@@ -1,6 +1,6 @@
 import { formatMoney } from "@/lib/date";
 
-export const CASH_CHARGE_PACKAGES = [5000, 10000, 30000] as const;
+export const CASH_CHARGE_PACKAGES = [5000, 10000, 15000, 20000, 30000, 50000] as const;
 
 export type CashChargePackage = (typeof CASH_CHARGE_PACKAGES)[number];
 
