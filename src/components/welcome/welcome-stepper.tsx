@@ -180,14 +180,14 @@ export function WelcomeStepper({
         ) : null}
 
         {currentStep.id === "time" ? (
-          <div className={styles.optionList}>
+          <div className={styles.timeGrid}>
             {PREFERRED_TIME_SLOT_OPTIONS.map((option) => {
               const isSelected = selectedTimeSlots.includes(option.value);
 
               return (
                 <button
                   aria-pressed={isSelected}
-                  className={`${styles.optionButton} ${isSelected ? styles.optionButtonActive : ""}`}
+                  className={`${styles.timeButton} ${isSelected ? styles.optionButtonActive : ""}`}
                   key={option.value}
                   onClick={() => toggleTimeSlot(option.value)}
                   type="button"
