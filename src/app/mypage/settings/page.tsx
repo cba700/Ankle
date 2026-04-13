@@ -4,6 +4,8 @@ import { MyPageSettings } from "@/components/mypage/my-page-settings";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { updateMyPageDisplayNameAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "설정",
@@ -28,9 +30,19 @@ export default async function MyPageSettingsRoute() {
     role,
     user,
   });
+  const supabase = await getSupabaseServerClient();
+  const { data: profileRow } = supabase
+    ? await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
 
   return (
     <MyPageSettings
+      displayNameValue={profileRow?.display_name ?? ""}
+      formAction={updateMyPageDisplayNameAction}
       initialIsAdmin={data.profile.role === "admin"}
       profile={data.profile}
     />

@@ -8,7 +8,6 @@ import {
   CogIcon,
   CopyIcon,
   HeartIcon,
-  PencilIcon,
   QuestionIcon,
 } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
@@ -23,7 +22,7 @@ type MyPageProps = {
 
 type MenuItem = {
   href?: string;
-  icon: "applications" | "history" | "coupon" | "wishlist" | "profile" | "settings" | "faq" | "notice";
+  icon: "applications" | "history" | "coupon" | "wishlist" | "settings" | "faq" | "notice";
   key: string;
   label: string;
   external?: boolean;
@@ -59,12 +58,6 @@ export function MyPage({ data }: MyPageProps) {
       key: "wishlist",
       label: "관심 매치",
       statusText: `${data.wishlistCount}건`,
-    },
-    {
-      icon: "profile",
-      key: "profile",
-      label: "프로필 수정",
-      statusText: "미구현",
     },
     {
       icon: "settings",
@@ -305,8 +298,6 @@ function renderMenuIcon(icon: MenuItem["icon"]) {
       return <BadgeIcon className={styles.menuIcon} />;
     case "wishlist":
       return <HeartIcon className={styles.menuIcon} />;
-    case "profile":
-      return <PencilIcon className={styles.menuIcon} />;
     case "settings":
       return <CogIcon className={styles.menuIcon} />;
     case "faq":

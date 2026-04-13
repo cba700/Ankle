@@ -10,11 +10,15 @@ import baseStyles from "./my-page.module.css";
 import styles from "./my-page-settings.module.css";
 
 type MyPageSettingsProps = {
+  displayNameValue: string;
+  formAction: (formData: FormData) => void | Promise<void>;
   initialIsAdmin: boolean;
   profile: MyPageProfile;
 };
 
 export function MyPageSettings({
+  displayNameValue,
+  formAction,
   initialIsAdmin,
   profile,
 }: MyPageSettingsProps) {
@@ -51,6 +55,33 @@ export function MyPageSettings({
           <ArrowLeftIcon className={styles.backIcon} />
           마이페이지로 돌아가기
         </AppLink>
+
+        <section className={styles.editCard}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>프로필 수정</h2>
+          </div>
+
+          <form action={formAction} className={styles.editForm}>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>표시 이름</span>
+              <input
+                className={styles.textInput}
+                defaultValue={displayNameValue}
+                name="displayName"
+                placeholder="이름을 입력하세요"
+                type="text"
+              />
+            </label>
+
+            <p className={styles.fieldHint}>
+              비워두면 로그인 정보로 표시됩니다.
+            </p>
+
+            <button className={styles.saveButton} type="submit">
+              저장
+            </button>
+          </form>
+        </section>
 
         <section className={styles.summaryCard}>
           <div className={styles.summaryTop}>
