@@ -1,6 +1,6 @@
 .page {
-  --home-header-height: 69px;
-  --home-date-picker-top: calc(var(--home-header-height) + 12px);
+  --home-header-height: 114px;
+  --home-date-picker-top: calc(var(--home-header-height) + 8px);
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--user-page-background);
