@@ -46,6 +46,13 @@
   letter-spacing: -0.05em;
 }
 
+@media (max-width: 767px) {
+  .datePickerSticky {
+    margin: 0;
+    padding: 0 0 8px;
+  }
+}
+
 @media (min-width: 768px) {
   .page {
     --home-header-height: 76px;

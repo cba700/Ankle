@@ -25,7 +25,7 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  padding-right: 12px;
+  padding-inline: 1px;
   scroll-padding-inline: 0;
   scrollbar-width: none;
   scroll-snap-type: x proximity;

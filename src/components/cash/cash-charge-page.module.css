@@ -149,7 +149,7 @@
   gap: 8px;
   margin-top: 18px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 0 1px 4px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
@@ -276,7 +276,7 @@
   gap: 8px;
   margin-top: 18px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 0 1px 4px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
@@ -367,12 +367,12 @@
   bottom: 0;
   left: 0;
   z-index: 50;
-  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom));
   background: linear-gradient(180deg, rgba(247, 245, 241, 0) 0%, rgba(247, 245, 241, 0.92) 30%, rgba(247, 245, 241, 0.98) 100%);
 }
 
 .actionBar {
-  width: min(calc(100% - 32px), var(--content-max));
+  width: var(--page-width);
   margin: 0 auto;
   display: flex;
   align-items: center;
