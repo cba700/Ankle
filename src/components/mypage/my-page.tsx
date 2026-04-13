@@ -6,7 +6,6 @@ import {
 } from "@/lib/player-preferences";
 import {
   ArrowRightIcon,
-  CopyIcon,
 } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -132,29 +131,9 @@ export function MyPage({ data }: MyPageProps) {
                   </p>
                 </div>
               </div>
-
-              <div className={styles.profileActions}>
-                <button className={styles.secondaryButton} disabled type="button">
-                  프로필 보기
-                  <span className={styles.inlineBadge}>미구현</span>
-                </button>
-                <button
-                  aria-label="QR 준비 중"
-                  className={styles.iconAction}
-                  disabled
-                  type="button"
-                >
-                  <CopyIcon className={styles.actionIcon} />
-                </button>
-              </div>
             </div>
 
             <div className={styles.statRow}>
-              <div className={styles.statBox}>
-                <span className={styles.statLabel}>매너</span>
-                <strong className={styles.statValue}>미구현</strong>
-              </div>
-              <div className={styles.statDivider} />
               <div className={styles.statBox}>
                 <span className={styles.statLabel}>레벨</span>
                 <strong className={styles.statValue}>
