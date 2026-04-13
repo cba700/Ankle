@@ -47,7 +47,7 @@ export function MatchDetail({
         <main className={styles.body}>
           <div className={styles.contentColumn}>
             <MatchInfoSection infoItems={view.infoItems} />
-            <MatchLevelSection distribution={view.levelDistribution} hint={view.levelHint} />
+            <MatchLevelSection distribution={view.levelDistribution} />
             <MatchCourtSection facilities={view.facilities} notes={view.courtNotes} />
             <MatchRulesSection howTo={view.howTo} rules={view.rules} />
             <MatchSafetySection items={view.safetyNotes} />
