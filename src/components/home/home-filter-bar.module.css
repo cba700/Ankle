@@ -1,13 +1,17 @@
 .section {
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 
 .row {
   display: flex;
   gap: 8px;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  padding-inline: 1px;
   padding-bottom: 2px;
   scrollbar-width: none;
   scroll-padding-inline: 0;
