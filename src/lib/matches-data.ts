@@ -2,6 +2,7 @@ import "server-only";
 
 import { formatDateLabel, formatSeoulTime, toDateKey } from "@/lib/date";
 import {
+  getAverageLevelText,
   getMatchByPublicId as getMockMatchByPublicId,
   getMatches as getMockMatches,
   type DistributionEntry,
@@ -101,7 +102,7 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
     rules: entity.rules,
     safetyNotes: entity.safetyNotes,
     levelDistribution,
-    averageLevel: getAverageLevelLabel(entity, levelDistribution),
+    averageLevel: getAverageLevelText(levelDistribution),
   };
 }
 
@@ -163,45 +164,26 @@ function getPublicStatus(
 function getLevelDistribution(entity: MatchEntity): DistributionEntry[] {
   if (entity.levelCondition.includes("중급") || entity.levelRange.includes("상급")) {
     return [
-      { label: "Basic", value: 12, tone: "basic" },
-      { label: "Middle", value: 48, tone: "middle" },
-      { label: "High", value: 40, tone: "high" },
+      { label: "Basic", value: 8, tone: "basic" },
+      { label: "Middle", value: 34, tone: "middle" },
+      { label: "High", value: 38, tone: "high" },
+      { label: "Star", value: 20, tone: "star" },
     ];
   }
 
   if (entity.levelCondition.includes("초급") || entity.levelRange.includes("초급")) {
     return [
-      { label: "Basic", value: 48, tone: "basic" },
-      { label: "Middle", value: 37, tone: "middle" },
-      { label: "High", value: 15, tone: "high" },
+      { label: "Basic", value: 69, tone: "basic" },
+      { label: "Middle", value: 17, tone: "middle" },
+      { label: "High", value: 10, tone: "high" },
+      { label: "Star", value: 4, tone: "star" },
     ];
   }
 
   return [
-    { label: "Basic", value: 30, tone: "basic" },
-    { label: "Middle", value: 50, tone: "middle" },
+    { label: "Basic", value: 26, tone: "basic" },
+    { label: "Middle", value: 44, tone: "middle" },
     { label: "High", value: 20, tone: "high" },
+    { label: "Star", value: 10, tone: "star" },
   ];
-}
-
-function getAverageLevelLabel(
-  entity: MatchEntity,
-  distribution: DistributionEntry[],
-) {
-  const highRatio = distribution.find((entry) => entry.tone === "high")?.value ?? 0;
-  const basicRatio = distribution.find((entry) => entry.tone === "basic")?.value ?? 0;
-
-  if (highRatio >= 35) {
-    return "예상 평균 레벨은 Middle 4 정도입니다.";
-  }
-
-  if (basicRatio >= 45) {
-    return "예상 평균 레벨은 Basic 4 정도입니다.";
-  }
-
-  if (entity.format === "5vs5") {
-    return "예상 평균 레벨은 Middle 3 정도입니다.";
-  }
-
-  return "예상 평균 레벨은 Middle 1 정도입니다.";
 }

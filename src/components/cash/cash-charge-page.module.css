@@ -139,26 +139,37 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.18;
   letter-spacing: -0.04em;
 }
 
 .packageGrid {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  gap: 8px;
   margin-top: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.packageGrid::-webkit-scrollbar {
+  display: none;
 }
 
 .packageButton {
-  display: grid;
-  gap: 8px;
-  width: 100%;
-  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 0 14px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 12px;
   background: #fff;
-  text-align: left;
+  text-align: center;
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -168,32 +179,22 @@
 .packageButtonActive {
   border-color: rgba(243, 109, 33, 0.4);
   background: #fff7f0;
-  box-shadow: 0 12px 26px rgba(243, 109, 33, 0.12);
+  box-shadow: 0 6px 14px rgba(243, 109, 33, 0.1);
 }
 
 .packageAmount {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
-.packageSummary {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.packageBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-self: start;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(255, 107, 0, 0.12);
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
+.balanceHint {
+  margin: 10px 2px 0 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: right;
 }
 
 .infoBox,
@@ -267,6 +268,53 @@
 .feedbackText {
   color: var(--red-text);
   font-weight: 700;
+  margin-top: 0;
+}
+
+.paymentMethodGrid {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.paymentMethodGrid::-webkit-scrollbar {
+  display: none;
+}
+
+.paymentMethodButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.paymentMethodButtonActive {
+  border-color: rgba(243, 109, 33, 0.4);
+  background: #fff7f0;
+  box-shadow: 0 6px 14px rgba(243, 109, 33, 0.1);
+}
+
+.paymentMethodLabel {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .resultBadge {
@@ -402,10 +450,10 @@
 }
 
 @media (min-width: 900px) {
-  .packageGrid,
   .contentGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (max-width: 768px) {

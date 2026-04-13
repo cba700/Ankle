@@ -1,15 +1,12 @@
 import type { MyPageData } from "@/lib/mypage";
 import {
+  formatPreferredTimeSlots,
+  formatPreferredWeekdays,
+  formatTemporaryLevel,
+} from "@/lib/player-preferences";
+import {
   ArrowRightIcon,
-  BadgeIcon,
-  BellIcon,
-  BasketIcon,
-  ClockIcon,
-  CogIcon,
   CopyIcon,
-  HeartIcon,
-  PencilIcon,
-  QuestionIcon,
 } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -23,67 +20,65 @@ type MyPageProps = {
 
 type MenuItem = {
   href?: string;
-  icon: "applications" | "history" | "coupon" | "wishlist" | "profile" | "settings" | "faq" | "notice";
+  iconSrc: string;
   key: string;
   label: string;
+  external?: boolean;
   statusText?: string;
 };
 
-const SUPPORT_MENU_ITEMS: MenuItem[] = [
-  {
-    icon: "faq",
-    key: "faq",
-    label: "자주 묻는 질문",
-    statusText: "미구현",
-  },
-  {
-    icon: "notice",
-    key: "notice",
-    label: "공지사항",
-    statusText: "미구현",
-  },
-];
-
 export function MyPage({ data }: MyPageProps) {
   const initials = data.profile.displayName.slice(0, 1).toUpperCase() || "A";
+  const kakaoChannelUrl = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_URL?.trim();
+  const temporaryLevelLabel = formatTemporaryLevel(data.profile.temporaryLevel);
+  const preferredWeekdaysLabel = formatPreferredWeekdays(
+    data.profile.preferredWeekdays,
+  );
+  const preferredTimeSlotsLabel = formatPreferredTimeSlots(
+    data.profile.preferredTimeSlots,
+  );
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
-      icon: "applications",
+      iconSrc: "/emoji/mypage/applications.svg",
       key: "applications",
       label: "신청 내역",
     },
     {
       href: "/mypage/cash",
-      icon: "history",
+      iconSrc: "/emoji/mypage/cash.svg",
       key: "history",
       label: "캐시 내역",
     },
     {
       href: "/mypage/coupons",
-      icon: "coupon",
+      iconSrc: "/emoji/mypage/coupon.svg",
       key: "coupon",
       label: "쿠폰",
       statusText: String(data.couponCount),
     },
     {
       href: "/mypage/wishlist",
-      icon: "wishlist",
+      iconSrc: "/emoji/mypage/wishlist.svg",
       key: "wishlist",
       label: "관심 매치",
       statusText: `${data.wishlistCount}건`,
     },
     {
-      icon: "profile",
-      key: "profile",
-      label: "프로필 수정",
-      statusText: "미구현",
-    },
-    {
-      icon: "settings",
+      iconSrc: "/emoji/mypage/settings.svg",
       key: "settings",
       label: "설정",
       href: "/mypage/settings",
+    },
+  ];
+  const supportMenuItems: MenuItem[] = [
+    {
+      external: true,
+      href: kakaoChannelUrl,
+      iconSrc: "/emoji/mypage/contact.svg",
+      key: "contact",
+      label: "문의하기",
+      statusText: kakaoChannelUrl ? "카카오톡 상담" : "준비 중",
     },
   ];
 
@@ -164,7 +159,22 @@ export function MyPage({ data }: MyPageProps) {
                 <span className={styles.statLabel}>레벨</span>
                 <strong className={styles.statValue}>
                   <span className={styles.levelMarker} />
-                  미구현
+                  {temporaryLevelLabel}
+                </strong>
+              </div>
+            </div>
+
+            <div className={styles.preferencePanel}>
+              <div className={styles.preferenceRow}>
+                <span className={styles.preferenceLabel}>선호 요일</span>
+                <strong className={styles.preferenceValue}>
+                  {preferredWeekdaysLabel}
+                </strong>
+              </div>
+              <div className={styles.preferenceRow}>
+                <span className={styles.preferenceLabel}>선호 시간대</span>
+                <strong className={styles.preferenceValue}>
+                  {preferredTimeSlotsLabel}
                 </strong>
               </div>
             </div>
@@ -179,15 +189,6 @@ export function MyPage({ data }: MyPageProps) {
               캐시 충전
             </AppLink>
           </article>
-
-          <article className={styles.guideCard}>
-            <div>
-              <p className={styles.guideEyebrow}>앵클 가이드</p>
-              <strong className={styles.guideTitle}>레벨 시스템을 소개합니다</strong>
-              <p className={styles.guideMeta}>콘텐츠 연결 전까지 미구현 상태로 노출됩니다.</p>
-            </div>
-            <span className={styles.guideBadge}>i</span>
-          </article>
         </section>
 
         <section className={styles.rightColumn}>
@@ -197,8 +198,15 @@ export function MyPage({ data }: MyPageProps) {
               {myMenuItems.map((item) => {
                 const content = (
                   <>
-                    <span className={styles.menuIconWrap}>
-                      {renderMenuIcon(item.icon)}
+                    <span aria-hidden="true" className={styles.menuIconWrap}>
+                      <img
+                        alt=""
+                        className={styles.menuIconImage}
+                        decoding="async"
+                        height="28"
+                        src={item.iconSrc}
+                        width="28"
+                      />
                     </span>
                     <span className={styles.menuLabel}>{item.label}</span>
                     {item.statusText ? (
@@ -238,20 +246,57 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.menuSection}>
             <p className={styles.menuSectionTitle}>고객센터</p>
             <div className={styles.menuList}>
-              {SUPPORT_MENU_ITEMS.map((item) => (
-                <div
-                  aria-disabled="true"
-                  className={`${styles.menuRow} ${styles.menuRowDisabled}`}
-                  key={item.key}
-                >
-                  <span className={styles.menuIconWrap}>
-                    {renderMenuIcon(item.icon)}
-                  </span>
-                  <span className={styles.menuLabel}>{item.label}</span>
-                  <span className={styles.menuMeta}>{item.statusText}</span>
-                  <ArrowRightIcon className={styles.menuArrow} />
-                </div>
-              ))}
+              {supportMenuItems.map((item) => {
+                const content = (
+                  <>
+                    <span aria-hidden="true" className={styles.menuIconWrap}>
+                      <img
+                        alt=""
+                        className={styles.menuIconImage}
+                        decoding="async"
+                        height="28"
+                        src={item.iconSrc}
+                        width="28"
+                      />
+                    </span>
+                    <span className={styles.menuLabel}>{item.label}</span>
+                    <span className={styles.menuMeta}>{item.statusText}</span>
+                    <ArrowRightIcon className={styles.menuArrow} />
+                  </>
+                );
+
+                if (!item.href) {
+                  return (
+                    <div
+                      aria-disabled="true"
+                      className={`${styles.menuRow} ${styles.menuRowDisabled}`}
+                      key={item.key}
+                    >
+                      {content}
+                    </div>
+                  );
+                }
+
+                if (item.external) {
+                  return (
+                    <a
+                      className={styles.menuRow}
+                      href={item.href}
+                      key={item.key}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {content}
+                    </a>
+                  );
+                }
+
+                return (
+                  <AppLink className={styles.menuRow} href={item.href} key={item.key}>
+                    {content}
+                  </AppLink>
+                );
+              })}
             </div>
           </article>
         </section>
@@ -260,26 +305,4 @@ export function MyPage({ data }: MyPageProps) {
       <LegalFooter />
     </div>
   );
-}
-
-function renderMenuIcon(icon: MenuItem["icon"]) {
-  switch (icon) {
-    case "applications":
-      return <BasketIcon className={styles.menuIcon} />;
-    case "history":
-      return <ClockIcon className={styles.menuIcon} />;
-    case "coupon":
-      return <BadgeIcon className={styles.menuIcon} />;
-    case "wishlist":
-      return <HeartIcon className={styles.menuIcon} />;
-    case "profile":
-      return <PencilIcon className={styles.menuIcon} />;
-    case "settings":
-      return <CogIcon className={styles.menuIcon} />;
-    case "faq":
-      return <QuestionIcon className={styles.menuIcon} />;
-    case "notice":
-    default:
-      return <BellIcon className={styles.menuIcon} />;
-  }
 }

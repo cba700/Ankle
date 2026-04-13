@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MatchHero } from "./match-hero";
 import { useMatchDetailFeedback } from "./match-detail-feedback";
 
@@ -24,7 +24,42 @@ export function MatchDetailHeroClient({
   title,
 }: MatchDetailHeroClientProps) {
   const showToast = useMatchDetailFeedback();
-  const [imageIndex, setImageIndex] = useState(0);
+  const hasMultipleImages = images.length > 1;
+  const [trackIndex, setTrackIndex] = useState(hasMultipleImages ? 1 : 0);
+  const [isTransitionEnabled, setIsTransitionEnabled] = useState(hasMultipleImages);
+
+  useEffect(() => {
+    setTrackIndex(images.length > 1 ? 1 : 0);
+    setIsTransitionEnabled(images.length > 1);
+  }, [images.length]);
+
+  useEffect(() => {
+    if (images.length <= 1) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsTransitionEnabled(true);
+      setTrackIndex((current) => current + 1);
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, [images.length, trackIndex]);
+
+  useEffect(() => {
+    if (isTransitionEnabled || images.length <= 1) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      setIsTransitionEnabled(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [images.length, isTransitionEnabled]);
+
+  const imageIndex =
+    images.length <= 1 ? 0 : (trackIndex - 1 + images.length) % images.length;
 
   async function handleCopyShare() {
     try {
@@ -40,7 +75,8 @@ export function MatchDetailHeroClient({
       return;
     }
 
-    setImageIndex((current) => (current === 0 ? images.length - 1 : current - 1));
+    setIsTransitionEnabled(true);
+    setTrackIndex((current) => current - 1);
   }
 
   function handleNextImage() {
@@ -48,7 +84,25 @@ export function MatchDetailHeroClient({
       return;
     }
 
-    setImageIndex((current) => (current + 1) % images.length);
+    setIsTransitionEnabled(true);
+    setTrackIndex((current) => current + 1);
+  }
+
+  function handleTrackTransitionEnd() {
+    if (images.length <= 1) {
+      return;
+    }
+
+    if (trackIndex === 0) {
+      setIsTransitionEnabled(false);
+      setTrackIndex(images.length);
+      return;
+    }
+
+    if (trackIndex === images.length + 1) {
+      setIsTransitionEnabled(false);
+      setTrackIndex(1);
+    }
   }
 
   return (
@@ -57,11 +111,14 @@ export function MatchDetailHeroClient({
       dateText={dateText}
       imageIndex={imageIndex}
       images={images}
+      isTransitionEnabled={isTransitionEnabled}
       onCopyShare={handleCopyShare}
       onNext={handleNextImage}
       onPrev={handlePrevImage}
+      onTrackTransitionEnd={handleTrackTransitionEnd}
       statusLabel={statusLabel}
       statusTone={statusTone}
+      trackIndex={trackIndex}
       time={time}
       title={title}
     />

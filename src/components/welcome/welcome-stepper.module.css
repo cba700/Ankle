@@ -1,0 +1,212 @@
+.card {
+  width: 100%;
+  display: grid;
+  gap: 24px;
+  padding: 28px 24px 22px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 64px rgba(29, 24, 19, 0.08);
+}
+
+.progressRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.progressDot {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(222, 217, 209, 0.9);
+}
+
+.progressDotActive {
+  background: linear-gradient(90deg, #ff7b1b 0%, #ff6b00 100%);
+}
+
+.header {
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.05em;
+}
+
+.description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.content {
+  min-height: 292px;
+  display: grid;
+  align-content: start;
+}
+
+.optionList {
+  display: grid;
+  gap: 10px;
+}
+
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.optionButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 72px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.timeButton {
+  width: 100%;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-height: 116px;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.optionButtonActive {
+  border-color: rgba(243, 109, 33, 0.44);
+  background: var(--accent-soft);
+  box-shadow: 0 10px 22px rgba(243, 109, 33, 0.1);
+}
+
+.optionMain {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.optionTitle {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.optionDescription {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.optionIndicator {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.chipGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.chipButton {
+  min-height: 58px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.chipButtonActive {
+  border-color: rgba(243, 109, 33, 0.44);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.secondaryButton,
+.primaryButton {
+  min-height: 54px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.secondaryButton {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.primaryButton {
+  background: #111;
+  color: #fff;
+}
+
+.secondaryButton:disabled,
+.primaryButton:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+@media (max-width: 767px) {
+  .card {
+    gap: 20px;
+    padding: 24px 18px 18px;
+    border-radius: 24px;
+  }
+
+  .content {
+    min-height: 266px;
+  }
+
+  .timeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chipGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .chipButton {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .footer {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+}

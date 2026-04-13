@@ -1,6 +1,7 @@
 "use client";
 
 import type { MyPageProfile } from "@/lib/mypage";
+import { ProfilePreferencesForm } from "@/components/profile/profile-preferences-form";
 import { ArrowLeftIcon, CogIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -10,12 +11,18 @@ import baseStyles from "./my-page.module.css";
 import styles from "./my-page-settings.module.css";
 
 type MyPageSettingsProps = {
+  displayNameValue: string;
+  displayNameFormAction: (formData: FormData) => void | Promise<void>;
   initialIsAdmin: boolean;
+  preferencesFormAction: (formData: FormData) => void | Promise<void>;
   profile: MyPageProfile;
 };
 
 export function MyPageSettings({
+  displayNameValue,
+  displayNameFormAction,
   initialIsAdmin,
+  preferencesFormAction,
   profile,
 }: MyPageSettingsProps) {
   const initials = profile.displayName.slice(0, 1).toUpperCase() || "A";
@@ -52,6 +59,33 @@ export function MyPageSettings({
           마이페이지로 돌아가기
         </AppLink>
 
+        <section className={styles.editCard}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>프로필 수정</h2>
+          </div>
+
+          <form action={displayNameFormAction} className={styles.editForm}>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>표시 이름</span>
+              <input
+                className={styles.textInput}
+                defaultValue={displayNameValue}
+                name="displayName"
+                placeholder="이름을 입력하세요"
+                type="text"
+              />
+            </label>
+
+            <p className={styles.fieldHint}>
+              비워두면 로그인 정보로 표시됩니다.
+            </p>
+
+            <button className={styles.saveButton} type="submit">
+              저장
+            </button>
+          </form>
+        </section>
+
         <section className={styles.summaryCard}>
           <div className={styles.summaryTop}>
             <span className={styles.avatar}>
@@ -69,6 +103,18 @@ export function MyPageSettings({
               <h1 className={styles.title}>계정 관리</h1>
             </div>
           </div>
+        </section>
+
+        <section className={styles.preferenceCard}>
+          <ProfilePreferencesForm
+            action={preferencesFormAction}
+            initialPreferredTimeSlots={profile.preferredTimeSlots}
+            initialPreferredWeekdays={profile.preferredWeekdays}
+            initialTemporaryLevel={profile.temporaryLevel}
+            submitLabel="플레이 설정 저장"
+            subtitle="설정한 값은 맞춤 매치 추천과 알림 기준으로 활용됩니다."
+            title="플레이 설정"
+          />
         </section>
 
         <section className={styles.infoCard}>

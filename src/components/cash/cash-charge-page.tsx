@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeftIcon, ClockIcon, WalletIcon } from "@/components/icons";
+import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import {
@@ -40,20 +40,69 @@ type TossPaymentAmount = {
   value: number;
 };
 
-type TossPaymentsFactory = (clientKey: string) => {
-  payment: (params: { customerKey: string }) => {
-    requestPayment: (params: {
-      amount: TossPaymentAmount;
-      customerEmail?: string;
-      customerName?: string;
-      failUrl: string;
-      method: "CARD";
-      orderId: string;
-      orderName: string;
-      successUrl: string;
-    }) => Promise<void> | void;
+type ChargePaymentMethod = "CARD" | "TRANSFER" | "KAKAOPAY" | "NAVERPAY" | "TOSSPAY";
+
+type TossRequestPaymentBaseParams = {
+  amount: TossPaymentAmount;
+  customerEmail?: string;
+  customerName?: string;
+  failUrl: string;
+  orderId: string;
+  orderName: string;
+  successUrl: string;
+};
+
+type TossTransferPaymentParams = TossRequestPaymentBaseParams & {
+  method: "TRANSFER";
+};
+
+type TossCardPaymentParams = TossRequestPaymentBaseParams & {
+  method: "CARD";
+  card?: {
+    flowMode?: "DEFAULT" | "DIRECT";
+    easyPay?: "KAKAOPAY" | "NAVERPAY" | "TOSSPAY";
   };
 };
+
+type TossRequestPaymentParams = TossTransferPaymentParams | TossCardPaymentParams;
+
+type TossPaymentsFactory = (clientKey: string) => {
+  payment: (params: { customerKey: string }) => {
+    requestPayment: (params: TossRequestPaymentParams) => Promise<void> | void;
+  };
+};
+
+const PAYMENT_METHODS: Array<{
+  description: string;
+  key: ChargePaymentMethod;
+  label: string;
+}> = [
+  {
+    description: "은행 계좌로 바로 결제",
+    key: "TRANSFER",
+    label: "계좌이체",
+  },
+  {
+    description: "카카오페이로 결제",
+    key: "KAKAOPAY",
+    label: "카카오페이",
+  },
+  {
+    description: "네이버페이로 결제",
+    key: "NAVERPAY",
+    label: "네이버페이",
+  },
+  {
+    description: "토스페이로 결제",
+    key: "TOSSPAY",
+    label: "토스페이",
+  },
+  {
+    description: "일반 카드 결제",
+    key: "CARD",
+    label: "카드",
+  },
+];
 
 declare global {
   interface Window {
@@ -69,11 +118,11 @@ export function CashChargePage({
   customerKey,
   displayName,
   nextPath,
-  recentOrders,
 }: CashChargePageProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<CashChargePackage>(10000);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<ChargePaymentMethod>("CARD");
 
   const canSubmit = !isSubmitting;
 
@@ -133,7 +182,7 @@ export function CashChargePage({
         failUrl.searchParams.set("next", nextPath);
       }
 
-      await payment.requestPayment({
+      const requestPaymentParams = buildRequestPaymentParams({
         amount: {
           currency: "KRW",
           value: chargeAmount,
@@ -141,11 +190,12 @@ export function CashChargePage({
         customerEmail: accountLabel.includes("@") ? accountLabel : undefined,
         customerName: displayName,
         failUrl: failUrl.toString(),
-        method: "CARD",
         orderId: payload.orderId,
         orderName: payload.orderName,
         successUrl: successUrl.toString(),
-      });
+      }, selectedPaymentMethod);
+
+      await payment.requestPayment(requestPaymentParams);
     } catch (error) {
       setFeedbackMessage(getSdkErrorMessage(error));
     } finally {
@@ -162,150 +212,54 @@ export function CashChargePage({
             마이페이지로 돌아가기
           </AppLink>
 
-          <section className={styles.heroCard}>
-            <p className={styles.eyebrow}>Cash Charge</p>
-            <div className={styles.heroTop}>
-              <div>
-                <div className={`${styles.statusPill} ${styles.statusAccent}`}>
-                  토스페이먼츠 충전
-                </div>
-                <h1 className={styles.title}>캐시를 충전하고 바로 신청하세요.</h1>
-                <p className={styles.subTitle}>
-                  충전된 캐시는 매치 신청 시 자동 차감되고, 취소 정책에 따라 캐시로 환급됩니다.
-                </p>
-              </div>
+          <section className={styles.card}>
+            <h2 className={styles.sectionTitle}>충전 금액 선택</h2>
 
-              <div className={styles.balance}>
-                <span className={styles.balanceLabel}>현재 보유 캐시</span>
-                <strong className={styles.balanceValue}>{cashBalanceLabel}</strong>
-              </div>
+            <div className={styles.packageGrid}>
+              {CASH_CHARGE_PACKAGES.map((amount) => {
+                const isActive = selectedAmount === amount;
+
+                return (
+                  <button
+                    className={`${styles.packageButton} ${
+                      isActive ? styles.packageButtonActive : ""
+                    }`}
+                    key={amount}
+                    onClick={() => setSelectedAmount(amount)}
+                    type="button"
+                  >
+                    <strong className={styles.packageAmount}>
+                      {buildCashChargePackageLabel(amount)}
+                    </strong>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className={styles.metaRow}>
-              <span className={styles.metaItem}>
-                <WalletIcon />
-                {accountLabel}
-              </span>
-              <span className={styles.metaItem}>
-                <ClockIcon />
-                충전 후 즉시 잔액 반영
-              </span>
-            </div>
+            <p className={styles.balanceHint}>현재 보유 캐시 : {cashBalanceLabel}</p>
           </section>
 
-          <div className={styles.contentGrid}>
-            <section className={styles.card}>
-              <h2 className={styles.sectionTitle}>충전 금액 선택</h2>
-              <p className={styles.sectionDescription}>
-                초기 운영에서는 고정 패키지로만 충전할 수 있습니다.
-              </p>
-
-              <div className={styles.packageGrid}>
-                {CASH_CHARGE_PACKAGES.map((amount) => {
-                  const isActive = selectedAmount === amount;
-
-                  return (
-                    <button
-                      className={`${styles.packageButton} ${
-                        isActive ? styles.packageButtonActive : ""
-                      }`}
-                      key={amount}
-                      onClick={() => setSelectedAmount(amount)}
-                      type="button"
-                    >
-                      {amount === 10000 ? (
-                        <span className={styles.packageBadge}>추천 패키지</span>
-                      ) : null}
-                      <strong className={styles.packageAmount}>
-                        {buildCashChargePackageLabel(amount)}
-                      </strong>
-                      <span className={styles.packageSummary}>
-                        {amount === 5000
-                          ? "첫 신청 전 가볍게 시작하는 기본 충전"
-                          : amount === 10000
-                            ? "가장 많이 쓰는 기본 운영 패키지"
-                            : "여러 매치를 이어서 신청할 때 적합한 충전"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className={styles.card}>
-              <h2 className={styles.sectionTitle}>충전 전 안내</h2>
-              <p className={styles.sectionDescription}>
-                실제 운영에 맞춰 결제 승인과 캐시 적립은 서버에서 검증합니다.
-              </p>
-
-              <div className={styles.infoBox}>
-                <span className={styles.metaLabel}>현재 충전 계정</span>
-                <strong>{accountLabel}</strong>
-              </div>
-
-              <div className={styles.policyBox}>
-                <strong>운영 정책</strong>
-                <ul className={styles.policyList}>
-                  <li className={styles.policyItem}>
-                    <span>충전 수단</span>
-                    <strong>토스페이먼츠 결제창</strong>
-                  </li>
-                  <li className={styles.policyItem}>
-                    <span>신청 방식</span>
-                    <strong>캐시 차감 후 확정</strong>
-                  </li>
-                  <li className={styles.policyItem}>
-                    <span>충전 환불</span>
-                    <strong>관리자 검토 후 처리</strong>
-                  </li>
-                </ul>
-              </div>
-
-              <div className={styles.infoBox}>
-                <span className={styles.metaLabel}>유의사항</span>
-                <p className={styles.sectionDescription}>
-                  성공 페이지에 도착한 뒤 서버 승인까지 끝나야 캐시가 최종 적립됩니다. 창을 닫았더라도
-                  주문 내역은 운영 화면에서 복구할 수 있게 기록됩니다.
-                </p>
-              </div>
-            </section>
-          </div>
-
           <section className={styles.card}>
-            <h2 className={styles.sectionTitle}>최근 충전 주문</h2>
-            <p className={styles.sectionDescription}>
-              최근 시도한 충전 주문 상태를 여기서 확인할 수 있습니다.
-            </p>
+            <h2 className={styles.sectionTitle}>결제 방법</h2>
 
-            {recentOrders.length === 0 ? (
-              <p className={styles.emptyText}>아직 생성된 충전 주문이 없습니다.</p>
-            ) : (
-              <div className={styles.orderList}>
-                {recentOrders.map((order) => (
-                  <article className={styles.orderItem} key={order.orderId}>
-                    <div>
-                      <div className={styles.orderTitle}>{order.amountLabel}</div>
-                      <p className={styles.orderMeta}>
-                        {order.metaLabel}
-                        <br />
-                        주문번호 {order.orderId}
-                      </p>
-                    </div>
-                    <span
-                      className={`${styles.statusPill} ${
-                        order.statusTone === "danger"
-                          ? styles.statusDanger
-                          : order.statusTone === "accent"
-                            ? styles.statusAccent
-                            : styles.statusNeutral
-                      }`}
-                    >
-                      {order.statusLabel}
-                    </span>
-                  </article>
-                ))}
-              </div>
-            )}
+            <div className={styles.paymentMethodGrid}>
+              {PAYMENT_METHODS.map((method) => {
+                const isActive = selectedPaymentMethod === method.key;
+
+                return (
+                  <button
+                    className={`${styles.paymentMethodButton} ${
+                      isActive ? styles.paymentMethodButtonActive : ""
+                    }`}
+                    key={method.key}
+                    onClick={() => setSelectedPaymentMethod(method.key)}
+                    type="button"
+                  >
+                    <strong className={styles.paymentMethodLabel}>{method.label}</strong>
+                  </button>
+                );
+              })}
+            </div>
           </section>
         </main>
       </div>
@@ -314,9 +268,6 @@ export function CashChargePage({
         <div className={styles.actionBar}>
           <div className={styles.actionCopy}>
             <strong>{buildCashChargePackageLabel(selectedAmount)} 충전</strong>
-            <p>
-              결제 인증 후 서버 승인까지 완료되면 캐시 잔액에 바로 반영됩니다.
-            </p>
             {feedbackMessage ? <p className={styles.feedbackText}>{feedbackMessage}</p> : null}
           </div>
 
@@ -326,7 +277,7 @@ export function CashChargePage({
             onClick={handleCharge}
             type="button"
           >
-            {isSubmitting ? "결제창 준비 중..." : "토스로 충전하기"}
+            {isSubmitting ? "결제창 준비 중..." : "충전하기"}
           </button>
         </div>
       </div>
@@ -355,6 +306,34 @@ function getSdkErrorMessage(error: unknown) {
   }
 
   return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function buildRequestPaymentParams(
+  baseParams: TossRequestPaymentBaseParams,
+  paymentMethod: ChargePaymentMethod,
+): TossRequestPaymentParams {
+  if (paymentMethod === "TRANSFER") {
+    return {
+      ...baseParams,
+      method: "TRANSFER",
+    };
+  }
+
+  if (paymentMethod === "CARD") {
+    return {
+      ...baseParams,
+      method: "CARD",
+    };
+  }
+
+  return {
+    ...baseParams,
+    card: {
+      easyPay: paymentMethod,
+      flowMode: "DIRECT",
+    },
+    method: "CARD",
+  };
 }
 
 function loadTossPayments() {

@@ -11,6 +11,25 @@
   background: #161616;
 }
 
+.imageViewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.imageTrack {
+  display: flex;
+  height: 100%;
+  transition: transform 420ms ease;
+  will-change: transform;
+}
+
+.imageSlide {
+  position: relative;
+  flex: 0 0 100%;
+  min-height: 420px;
+}
+
 .frame::after {
   content: "";
   position: absolute;
@@ -221,6 +240,7 @@
 
 @media (max-width: 720px) {
   .frame,
+  .imageSlide,
   .placeholder {
     min-height: 320px;
     border-radius: 0 0 22px 22px;

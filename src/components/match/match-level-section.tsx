@@ -1,42 +1,61 @@
+import { getAverageLevelName } from "@/lib/matches";
 import type { MatchDetailDistributionItem } from "./match-detail-types";
 import { MatchSection } from "./match-section";
 import styles from "./match-sections.module.css";
 
 type MatchLevelSectionProps = {
   distribution: MatchDetailDistributionItem[];
-  hint: string;
 };
 
-export function MatchLevelSection({
-  distribution,
-  hint,
-}: MatchLevelSectionProps) {
-  const maxValue = Math.max(...distribution.map((item) => item.value), 1);
+export function MatchLevelSection({ distribution }: MatchLevelSectionProps) {
+  const total = distribution.reduce((sum, item) => sum + Math.max(item.value, 0), 0);
+  const averageLevel = getAverageLevelName(distribution);
+
+  const levels = distribution.map((item) => ({
+    ...item,
+    percentage: total > 0 ? Math.round((item.value / total) * 100) : 0,
+  }));
 
   return (
     <MatchSection title="매치 데이터">
-      <div className={styles.barGrid}>
-        {distribution.map((item) => (
-          <div className={styles.barColumn} key={item.label}>
-            <div className={styles.barTrack}>
+      <div className={styles.levelList}>
+        {levels.map((item) => (
+          <div className={styles.levelRow} key={item.label}>
+            <div className={styles.levelLabelRow}>
+              <span className={styles.levelName}>{item.label}</span>
+              <span className={styles.levelPct}>{item.percentage}%</span>
+            </div>
+            <div className={styles.levelTrack}>
               <div
-                className={`${styles.barFill} ${
-                  item.tone === "basic"
-                    ? styles.toneBasic
-                    : item.tone === "middle"
-                      ? styles.toneMiddle
-                      : styles.toneHigh
-                }`}
-                style={{ height: `${Math.max((item.value / maxValue) * 100, 12)}%` }}
+                className={`${styles.levelFill} ${getToneClassName(item.tone)}`}
+                style={{ width: `${item.percentage}%` }}
               />
             </div>
-            <span className={styles.barPct}>{item.value}%</span>
-            <span className={styles.barName}>{item.label}</span>
           </div>
         ))}
       </div>
 
-      <p className={styles.levelSummary}>{hint}</p>
+      <div className={styles.levelInfoBox}>
+        <p className={styles.levelInfoText}>
+          예상 평균 레벨은 <strong>{averageLevel}</strong> 입니다.
+        </p>
+      </div>
     </MatchSection>
   );
+}
+
+function getToneClassName(tone: MatchDetailDistributionItem["tone"]) {
+  if (tone === "basic") {
+    return styles.toneBasic;
+  }
+
+  if (tone === "middle") {
+    return styles.toneMiddle;
+  }
+
+  if (tone === "high") {
+    return styles.toneHigh;
+  }
+
+  return styles.toneStar;
 }

@@ -35,7 +35,7 @@
 
   .priceBlock strong {
     display: block;
-    font-size: 22px;
+    font-size: 19px;
     line-height: 1;
     letter-spacing: -0.04em;
   }
@@ -60,7 +60,6 @@
     color: #fff;
     font-size: 15px;
     font-weight: 800;
-    box-shadow: 0 16px 28px rgba(255, 107, 0, 0.24);
     text-align: center;
   }
 

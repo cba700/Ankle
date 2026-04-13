@@ -80,7 +80,6 @@
 
 .searchIcon,
 .actionIcon,
-.menuIcon,
 .menuArrow,
 .detailArrow {
   width: 18px;
@@ -325,6 +324,36 @@
   flex-shrink: 0;
 }
 
+.preferencePanel {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.preferenceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(201, 193, 183, 0.68);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.preferenceLabel {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.preferenceValue {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
 .cashCard {
   padding: 18px 20px;
   border-radius: 18px;
@@ -333,7 +362,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: 0 16px 30px rgba(255, 107, 0, 0.26);
 }
 
 .cashLabel {
@@ -365,49 +393,6 @@
   flex-shrink: 0;
 }
 
-.guideCard {
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.guideEyebrow {
-  margin: 0 0 6px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.guideTitle {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.guideMeta {
-  margin: 6px 0 0;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.guideBadge {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ff7b1b 0%, #ff6b00 100%);
-  box-shadow: 0 10px 22px rgba(255, 107, 0, 0.28);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
 
 .menuSection {
   overflow: hidden;
@@ -444,13 +429,16 @@
 .menuIconWrap {
   width: 38px;
   height: 38px;
-  border-radius: 12px;
-  background: rgba(255, 107, 0, 0.08);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-strong);
   flex-shrink: 0;
+}
+
+.menuIconImage {
+  width: 28px;
+  height: 28px;
+  display: block;
 }
 
 .menuLabel {
@@ -778,6 +766,15 @@
 
   .profileActions {
     justify-content: flex-start;
+  }
+
+  .preferenceRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .preferenceValue {
+    text-align: left;
   }
 
   .cashCard {

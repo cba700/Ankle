@@ -29,7 +29,9 @@
   height: 18px;
 }
 
+.editCard,
 .summaryCard,
+.preferenceCard,
 .infoCard,
 .actionCard {
   border: 1px solid rgba(201, 193, 183, 0.78);
@@ -38,7 +40,17 @@
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
 }
 
+.editCard,
 .summaryCard {
+  padding: 24px;
+}
+
+.editCard {
+  display: grid;
+  gap: 16px;
+}
+
+.preferenceCard {
   padding: 24px;
 }
 
@@ -121,6 +133,59 @@
   gap: 10px;
 }
 
+.editForm {
+  display: grid;
+  gap: 12px;
+  max-width: 480px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.textInput {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  border-radius: 16px;
+  background: rgba(247, 245, 241, 0.94);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.textInput::placeholder {
+  color: rgba(122, 112, 102, 0.78);
+}
+
+.fieldHint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.saveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background: var(--accent-strong);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 .infoRow,
 .withdrawRow {
   display: flex;
@@ -186,7 +251,9 @@
     gap: 12px;
   }
 
+  .editCard,
   .summaryCard,
+  .preferenceCard,
   .infoCard,
   .actionCard {
     padding: 18px;
