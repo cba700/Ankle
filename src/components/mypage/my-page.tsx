@@ -26,26 +26,13 @@ type MenuItem = {
   icon: "applications" | "history" | "coupon" | "wishlist" | "profile" | "settings" | "faq" | "notice";
   key: string;
   label: string;
+  external?: boolean;
   statusText?: string;
 };
 
-const SUPPORT_MENU_ITEMS: MenuItem[] = [
-  {
-    icon: "faq",
-    key: "faq",
-    label: "자주 묻는 질문",
-    statusText: "미구현",
-  },
-  {
-    icon: "notice",
-    key: "notice",
-    label: "공지사항",
-    statusText: "미구현",
-  },
-];
-
 export function MyPage({ data }: MyPageProps) {
   const initials = data.profile.displayName.slice(0, 1).toUpperCase() || "A";
+  const kakaoChannelUrl = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_URL?.trim();
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
@@ -84,6 +71,22 @@ export function MyPage({ data }: MyPageProps) {
       key: "settings",
       label: "설정",
       href: "/mypage/settings",
+    },
+  ];
+  const supportMenuItems: MenuItem[] = [
+    {
+      external: true,
+      href: kakaoChannelUrl,
+      icon: "faq",
+      key: "contact",
+      label: "문의하기",
+      statusText: kakaoChannelUrl ? "카카오톡 상담" : "준비 중",
+    },
+    {
+      icon: "notice",
+      key: "notice",
+      label: "공지사항",
+      statusText: "미구현",
     },
   ];
 
@@ -238,20 +241,50 @@ export function MyPage({ data }: MyPageProps) {
           <article className={styles.menuSection}>
             <p className={styles.menuSectionTitle}>고객센터</p>
             <div className={styles.menuList}>
-              {SUPPORT_MENU_ITEMS.map((item) => (
-                <div
-                  aria-disabled="true"
-                  className={`${styles.menuRow} ${styles.menuRowDisabled}`}
-                  key={item.key}
-                >
-                  <span className={styles.menuIconWrap}>
-                    {renderMenuIcon(item.icon)}
-                  </span>
-                  <span className={styles.menuLabel}>{item.label}</span>
-                  <span className={styles.menuMeta}>{item.statusText}</span>
-                  <ArrowRightIcon className={styles.menuArrow} />
-                </div>
-              ))}
+              {supportMenuItems.map((item) => {
+                const content = (
+                  <>
+                    <span className={styles.menuIconWrap}>
+                      {renderMenuIcon(item.icon)}
+                    </span>
+                    <span className={styles.menuLabel}>{item.label}</span>
+                    <span className={styles.menuMeta}>{item.statusText}</span>
+                    <ArrowRightIcon className={styles.menuArrow} />
+                  </>
+                );
+
+                if (!item.href) {
+                  return (
+                    <div
+                      aria-disabled="true"
+                      className={`${styles.menuRow} ${styles.menuRowDisabled}`}
+                      key={item.key}
+                    >
+                      {content}
+                    </div>
+                  );
+                }
+
+                if (item.external) {
+                  return (
+                    <a
+                      className={styles.menuRow}
+                      href={item.href}
+                      key={item.key}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {content}
+                    </a>
+                  );
+                }
+
+                return (
+                  <AppLink className={styles.menuRow} href={item.href} key={item.key}>
+                    {content}
+                  </AppLink>
+                );
+              })}
             </div>
           </article>
         </section>
