@@ -26,6 +26,8 @@ const REQUIRED_SIGNUP_PROFILE_MIGRATION =
   "20260414203000_add_signup_profile_and_consents.sql";
 const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION =
   "20260414233000_add_admin_player_level.sql";
+const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
+  "20260414234500_add_admin_match_participants_rpc.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -37,6 +39,7 @@ const REQUIRED_CASH_REFUND_REQUEST_MIGRATION_MESSAGE = `Database schema is outda
 const REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PHONE_AUTH_MIGRATION} before running phone verification and email auth features.`;
 const REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_SIGNUP_PROFILE_MIGRATION} before running signup profile and consent features.`;
 const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION} before running admin player level features.`;
+const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -47,6 +50,7 @@ let profileOnboardingSchemaCheckPromise: Promise<void> | null = null;
 let cashRefundRequestSchemaCheckPromise: Promise<void> | null = null;
 let signupProfileSchemaCheckPromise: Promise<void> | null = null;
 let adminPlayerLevelSchemaCheckPromise: Promise<void> | null = null;
+let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -229,6 +233,27 @@ export async function assertAdminPlayerLevelSchemaReady(
   return adminPlayerLevelSchemaCheckPromise;
 }
 
+export async function assertAdminMatchParticipantsSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!adminMatchParticipantsSchemaCheckPromise) {
+    adminMatchParticipantsSchemaCheckPromise = runAdminMatchParticipantsSchemaCheck(
+      client,
+    ).catch((error) => {
+      adminMatchParticipantsSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return adminMatchParticipantsSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -379,6 +404,21 @@ async function runAdminPlayerLevelSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleAdminPlayerLevelSchemaError(playerLevelCheck.error);
+}
+
+async function runAdminMatchParticipantsSchemaCheck(
+  supabase: SupabaseServerClient,
+) {
+  await runAdminPlayerLevelSchemaCheck(supabase);
+
+  const participantRpcCheck = await ((supabase.rpc(
+    "list_admin_match_participants",
+    {
+      p_match_ids: [],
+    },
+  ) as any) as { error: { code?: string; message?: string } | null });
+
+  handleAdminMatchParticipantsSchemaError(participantRpcCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -544,6 +584,28 @@ function handleAdminPlayerLevelSchemaError(
   }
 
   throw new Error(`Failed to verify admin player level schema: ${error.message}`);
+}
+
+function handleAdminMatchParticipantsSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "42883" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the function") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify admin participant schema: ${error.message}`);
 }
 
 function handleChargeOperationsSchemaError(

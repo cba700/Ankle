@@ -15,14 +15,11 @@ import {
 } from "@/lib/cash";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import {
-  assertAdminPlayerLevelSchemaReady,
+  assertAdminMatchParticipantsSchemaReady,
   assertCashChargeOperationsSchemaReady,
   assertCashRefundRequestSchemaReady,
 } from "@/lib/supabase/schema";
-import {
-  getSupabaseServerClient,
-  getSupabaseServiceRoleClient,
-} from "@/lib/supabase/server";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { buildAdminVenueLabel } from "./match-form";
@@ -44,7 +41,7 @@ export async function getAdminMatches() {
     return getMockAdminMatches();
   }
 
-  await assertAdminPlayerLevelSchemaReady(supabase);
+  await assertAdminMatchParticipantsSchemaReady(supabase);
 
   const entities = await listAdminMatchEntities();
   const participantsByMatchId = await getAdminMatchParticipantsByMatchId(
@@ -68,7 +65,7 @@ export async function getAdminMatchById(id: string) {
     return getMockAdminMatchById(id);
   }
 
-  await assertAdminPlayerLevelSchemaReady(supabase);
+  await assertAdminMatchParticipantsSchemaReady(supabase);
 
   const entity = await getAdminMatchEntityById(id);
 
@@ -150,17 +147,15 @@ export async function getAdminCashDashboardData() {
   };
 }
 
-type MatchParticipantProfileRow = {
+type MatchParticipantRow = {
+  application_id: string;
+  applied_at: string;
   display_name: string | null;
   gender: "female" | "male" | null;
+  match_id: string;
   player_level: string | null;
   temporary_level: string | null;
-};
-
-type MatchParticipantRow = {
-  id: string;
-  match_id: string;
-  user_id: string | null;
+  user_id: string;
 };
 
 function mapEntityToAdminRecord(
@@ -213,47 +208,31 @@ async function getAdminMatchParticipantsByMatchId(
     return participantsByMatchId;
   }
 
-  const { data, error } = await supabase
-    .from("match_applications")
-    .select("id, match_id, user_id")
-    .in("match_id", matchIds)
-    .eq("status", "confirmed")
-    .not("user_id", "is", null)
-    .order("applied_at", { ascending: true });
+  const { data, error } = await ((supabase.rpc("list_admin_match_participants", {
+    p_match_ids: matchIds,
+  }) as any) as {
+    data: MatchParticipantRow[] | null;
+    error: { message: string } | null;
+  });
 
   if (error) {
     throw new Error(`Failed to load admin match participants: ${error.message}`);
   }
 
-  const participantRows = (data ?? []) as MatchParticipantRow[];
-  const userIds = Array.from(
-    new Set(
-      participantRows
-        .map((row) => row.user_id)
-        .filter((userId): userId is string => Boolean(userId)),
-    ),
-  );
-  const profilesById = await getParticipantProfilesByUserId(userIds);
-
-  for (const row of participantRows) {
-    if (!row.user_id) {
-      continue;
-    }
-
-    const profile = profilesById.get(row.user_id) ?? null;
+  for (const row of (data ?? []) as MatchParticipantRow[]) {
     const existingParticipants = participantsByMatchId.get(row.match_id) ?? [];
 
     existingParticipants.push({
-      applicationId: row.id,
-      displayName: profile?.display_name?.trim() || "이름 미등록",
-      gender: profile?.gender ?? null,
+      applicationId: row.application_id,
+      displayName: row.display_name?.trim() || "이름 미등록",
+      gender: row.gender ?? null,
       playerLevel:
-        profile?.player_level ??
-        profile?.temporary_level ??
+        row.player_level ??
+        row.temporary_level ??
         null,
-      playerLevelSource: profile?.player_level
+      playerLevelSource: row.player_level
         ? "player_level"
-        : profile?.temporary_level
+        : row.temporary_level
           ? "temporary_level"
           : "unset",
       userId: row.user_id,
@@ -263,35 +242,6 @@ async function getAdminMatchParticipantsByMatchId(
   }
 
   return participantsByMatchId;
-}
-
-async function getParticipantProfilesByUserId(userIds: string[]) {
-  const profilesById = new Map<string, MatchParticipantProfileRow>();
-
-  if (userIds.length === 0) {
-    return profilesById;
-  }
-
-  const admin = getSupabaseServiceRoleClient();
-
-  if (!admin) {
-    throw new Error("Service role is not configured");
-  }
-
-  const { data, error } = await admin
-    .from("profiles")
-    .select("id, display_name, gender, player_level, temporary_level")
-    .in("id", userIds);
-
-  if (error) {
-    throw new Error(`Failed to load participant profiles: ${error.message}`);
-  }
-
-  for (const row of (data ?? []) as (MatchParticipantProfileRow & { id: string })[]) {
-    profilesById.set(row.id, row);
-  }
-
-  return profilesById;
 }
 
 function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
