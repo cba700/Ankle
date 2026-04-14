@@ -40,6 +40,12 @@
   gap: 4px;
 }
 
+.actionCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .adjustForm {
   display: grid;
   gap: 10px;

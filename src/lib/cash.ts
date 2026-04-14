@@ -7,12 +7,15 @@ export type CashTransactionType =
   | "charge_refund"
   | "match_debit"
   | "match_refund"
-  | "adjustment";
+  | "adjustment"
+  | "refund_hold"
+  | "refund_release";
 
 export type CashSourceType =
   | "charge_order"
   | "match_application"
-  | "admin_adjustment";
+  | "admin_adjustment"
+  | "refund_request";
 
 export type CashChargeOrderStatus =
   | "pending"
@@ -20,6 +23,12 @@ export type CashChargeOrderStatus =
   | "failed"
   | "cancelled"
   | "expired";
+
+export type CashRefundRequestStatus =
+  | "pending"
+  | "processed"
+  | "rejected"
+  | "cancelled";
 
 export type CashAccountEntity = {
   balance: number;
@@ -66,6 +75,23 @@ export type CashChargeOrderEventEntity = {
   providerEventId: string;
 };
 
+export type CashRefundRequestEntity = {
+  accountHolder: string;
+  accountNumber: string;
+  bankName: string;
+  createdAt: string;
+  decisionNote: string | null;
+  holdTransactionId: string | null;
+  id: string;
+  processedAt: string | null;
+  rejectedAt: string | null;
+  releaseTransactionId: string | null;
+  requestedAmount: number;
+  status: CashRefundRequestStatus;
+  updatedAt: string;
+  userId: string;
+};
+
 type CashAccountRow = {
   balance: number;
   updated_at?: string;
@@ -110,6 +136,23 @@ type CashChargeOrderEventRow = {
   order_id: string;
   processed_result: string;
   provider_event_id: string;
+};
+
+type CashRefundRequestRow = {
+  account_holder: string;
+  account_number: string;
+  bank_name: string;
+  created_at: string;
+  decision_note: string | null;
+  hold_transaction_id: string | null;
+  id: string;
+  processed_at: string | null;
+  rejected_at: string | null;
+  release_transaction_id: string | null;
+  requested_amount: number;
+  status: CashRefundRequestStatus;
+  updated_at: string;
+  user_id: string;
 };
 
 type SupabaseServerClient = NonNullable<
@@ -264,6 +307,48 @@ export async function listCashAccounts(
   }));
 }
 
+export async function getPendingCashRefundRequestByUserId(
+  supabase: SupabaseServerClient,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from("cash_refund_requests")
+    .select(
+      "id, user_id, requested_amount, bank_name, account_number, account_holder, status, hold_transaction_id, release_transaction_id, decision_note, processed_at, rejected_at, created_at, updated_at",
+    )
+    .eq("user_id", userId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false })
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load pending cash refund request: ${error.message}`);
+  }
+
+  const row = data as CashRefundRequestRow | null;
+
+  return row ? mapCashRefundRequest(row) : null;
+}
+
+export async function listRecentCashRefundRequests(
+  supabase: SupabaseServerClient,
+  limit = 20,
+) {
+  const { data, error } = await supabase
+    .from("cash_refund_requests")
+    .select(
+      "id, user_id, requested_amount, bank_name, account_number, account_holder, status, hold_transaction_id, release_transaction_id, decision_note, processed_at, rejected_at, created_at, updated_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to load cash refund requests: ${error.message}`);
+  }
+
+  return ((data ?? []) as CashRefundRequestRow[]).map(mapCashRefundRequest);
+}
+
 function mapCashTransaction(row: CashTransactionRow): CashTransactionEntity {
   return {
     balanceAfter: row.balance_after,
@@ -294,6 +379,25 @@ function mapCashChargeOrder(row: CashChargeOrderRow): CashChargeOrderEntity {
     refundedAt: row.refunded_at,
     status: row.status,
     tossPaymentKey: row.toss_payment_key,
+    updatedAt: row.updated_at,
+    userId: row.user_id,
+  };
+}
+
+function mapCashRefundRequest(row: CashRefundRequestRow): CashRefundRequestEntity {
+  return {
+    accountHolder: row.account_holder,
+    accountNumber: row.account_number,
+    bankName: row.bank_name,
+    createdAt: row.created_at,
+    decisionNote: row.decision_note,
+    holdTransactionId: row.hold_transaction_id,
+    id: row.id,
+    processedAt: row.processed_at,
+    rejectedAt: row.rejected_at,
+    releaseTransactionId: row.release_transaction_id,
+    requestedAmount: row.requested_amount,
+    status: row.status,
     updatedAt: row.updated_at,
     userId: row.user_id,
   };

@@ -138,6 +138,18 @@ export type AdminCashChargeOrderEventRow = {
   processedResultLabel: string;
 };
 
+export type AdminCashRefundRequestRow = {
+  accountHolder: string;
+  accountNumber: string;
+  bankName: string;
+  id: string;
+  metaLabel: string;
+  requestedAmountLabel: string;
+  statusLabel: string;
+  statusTone: AdminBadgeTone;
+  userId: string;
+};
+
 export type AdminMatchRow = {
   id: string;
   title: string;

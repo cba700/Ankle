@@ -7,6 +7,7 @@ import { getServerAuthState } from "@/lib/supabase/auth";
 import {
   assertCashFoundationSchemaReady,
   assertCashChargeOperationsSchemaReady,
+  assertCashRefundRequestSchemaReady,
   assertVenueManagementSchemaReady,
 } from "@/lib/supabase/schema";
 import {
@@ -361,6 +362,50 @@ export async function retryPendingCashChargeOrderAction(formData: FormData) {
 
   if (!result.ok) {
     throw new Error(result.message);
+  }
+
+  redirect("/admin/cash");
+}
+
+export async function approveCashRefundRequestAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashRefundRequestSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
+  const requestId = String(formData.get("requestId") ?? "").trim();
+
+  if (!requestId) {
+    throw new Error("Refund request ID is required");
+  }
+
+  const { error } = await admin.rpc("approve_cash_refund_request", {
+    p_note: null,
+    p_request_id: requestId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
+}
+
+export async function rejectCashRefundRequestAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashRefundRequestSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
+  const requestId = String(formData.get("requestId") ?? "").trim();
+
+  if (!requestId) {
+    throw new Error("Refund request ID is required");
+  }
+
+  const { error } = await admin.rpc("reject_cash_refund_request", {
+    p_note: null,
+    p_request_id: requestId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
   }
 
   redirect("/admin/cash");

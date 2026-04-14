@@ -95,6 +95,7 @@ export type MyPageCashTransaction = {
 
 export type MyPageData = {
   applications: MyPageApplication[];
+  cashBalanceAmount: number;
   cashBalanceLabel: string;
   cashTransactions: MyPageCashTransaction[];
   couponCount: number;
@@ -166,6 +167,7 @@ export async function getMyPageData({
 
   return {
     applications: ((applications ?? []) as ApplicationRow[]).map(mapApplication),
+    cashBalanceAmount: cashAccount?.balance ?? 0,
     cashBalanceLabel: `${formatMoney(cashAccount?.balance ?? 0)}원`,
     cashTransactions: cashTransactions.map(mapCashTransaction),
     couponCount: 0,
@@ -316,6 +318,10 @@ function getCashTransactionTitle(type: CashTransactionEntity["type"]) {
       return "충전 환불";
     case "match_refund":
       return "매치 환급";
+    case "refund_hold":
+      return "캐시 환불 신청";
+    case "refund_release":
+      return "환불 신청 반려";
     case "adjustment":
       return "운영 보정";
     case "match_debit":
@@ -328,7 +334,7 @@ function getCashTransactionTone(
   type: CashTransactionEntity["type"],
   deltaAmount: number,
 ) {
-  if (type === "match_debit" || deltaAmount < 0) {
+  if (type === "match_debit" || type === "refund_hold" || deltaAmount < 0) {
     return "danger";
   }
 

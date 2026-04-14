@@ -18,6 +18,8 @@ const REQUIRED_WISHLIST_MIGRATION =
   "20260410153000_add_match_wishlist_items.sql";
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION =
   "20260414103000_add_profile_onboarding_preferences.sql";
+const REQUIRED_CASH_REFUND_REQUEST_MIGRATION =
+  "20260414170000_add_cash_refund_requests.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -25,6 +27,7 @@ const REQUIRED_CASH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migr
 const REQUIRED_CHARGE_OPERATIONS_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CHARGE_OPERATIONS_MIGRATION} before running Toss charge features.`;
 const REQUIRED_WISHLIST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_WISHLIST_MIGRATION} before running match wishlist features.`;
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PROFILE_ONBOARDING_MIGRATION} before running onboarding preference features.`;
+const REQUIRED_CASH_REFUND_REQUEST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CASH_REFUND_REQUEST_MIGRATION} before running cash refund request features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -32,6 +35,7 @@ let cashSchemaCheckPromise: Promise<void> | null = null;
 let chargeOperationsCheckPromise: Promise<void> | null = null;
 let wishlistSchemaCheckPromise: Promise<void> | null = null;
 let profileOnboardingSchemaCheckPromise: Promise<void> | null = null;
+let cashRefundRequestSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -151,6 +155,27 @@ export async function assertProfileOnboardingSchemaReady(
   return profileOnboardingSchemaCheckPromise;
 }
 
+export async function assertCashRefundRequestSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!cashRefundRequestSchemaCheckPromise) {
+    cashRefundRequestSchemaCheckPromise = runCashRefundRequestSchemaCheck(
+      client,
+    ).catch((error) => {
+      cashRefundRequestSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return cashRefundRequestSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -254,6 +279,17 @@ async function runProfileOnboardingSchemaCheck(supabase: SupabaseServerClient) {
   handleProfileOnboardingSchemaError(profileOnboardingCheck.error);
 }
 
+async function runCashRefundRequestSchemaCheck(supabase: SupabaseServerClient) {
+  await runCashSchemaCheck(supabase);
+
+  const cashRefundRequestCheck = await supabase
+    .from("cash_refund_requests")
+    .select("requested_amount, bank_name, hold_transaction_id, status")
+    .limit(1);
+
+  handleCashRefundRequestSchemaError(cashRefundRequestCheck.error);
+}
+
 function handleSchemaCheckError(
   error: { code?: string; message?: string } | null,
 ) {
@@ -333,6 +369,27 @@ function handlePublicIdSchemaError(
   }
 
   throw new Error(`Failed to verify public match routing schema: ${error.message}`);
+}
+
+function handleCashRefundRequestSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_CASH_REFUND_REQUEST_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify cash refund request schema: ${error.message}`);
 }
 
 function handleChargeOperationsSchemaError(

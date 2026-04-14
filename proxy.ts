@@ -10,6 +10,7 @@ export const config = {
     "/admin/:path*",
     "/mypage/:path*",
     "/match/[^/]+/apply",
+    "/api/cash/refund-requests",
     "/api/matches/[^/]+/applications",
     "/api/matches/[^/]+/applications/me",
   ],

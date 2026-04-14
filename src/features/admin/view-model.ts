@@ -9,6 +9,7 @@ import type {
   CashAccountEntity,
   CashChargeOrderEntity,
   CashChargeOrderEventEntity,
+  CashRefundRequestEntity,
   CashTransactionEntity,
 } from "@/lib/cash";
 import {
@@ -22,6 +23,7 @@ import type {
   AdminCashAccountRow,
   AdminCashChargeOrderRow,
   AdminCashChargeOrderEventRow,
+  AdminCashRefundRequestRow,
   AdminCashTransactionRow,
   AdminMatchFormValue,
   AdminMatchRecord,
@@ -111,13 +113,18 @@ export function buildAdminOverviewCards(matches: AdminMatchRecord[]): AdminOverv
 export function buildAdminCashOverviewCards({
   accounts,
   chargeOrders,
+  refundRequests,
 }: {
   accounts: CashAccountEntity[];
   chargeOrders: CashChargeOrderEntity[];
+  refundRequests: CashRefundRequestEntity[];
 }): AdminOverviewCard[] {
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
   const pendingOrders = chargeOrders.filter((order) => order.status === "pending").length;
   const failedOrders = chargeOrders.filter((order) => order.status === "failed").length;
+  const pendingRefundRequests = refundRequests.filter(
+    (request) => request.status === "pending",
+  ).length;
 
   return [
     {
@@ -147,6 +154,13 @@ export function buildAdminCashOverviewCards({
       value: `${failedOrders}건`,
       helper: "후속 확인이 필요한 충전 주문",
       tone: "danger",
+    },
+    {
+      id: "cash-refund-pending",
+      label: "환불 대기",
+      value: `${pendingRefundRequests}건`,
+      helper: "운영 처리가 필요한 환불 신청",
+      tone: pendingRefundRequests > 0 ? "danger" : "neutral",
     },
   ];
 }
@@ -203,6 +217,22 @@ export function buildAdminCashChargeOrderEventRows(
     metaLabel: `${formatCompactDateLabel(new Date(event.createdAt))} · ${compactEventId(event.providerEventId)}`,
     orderId: event.orderId,
     processedResultLabel: event.processedResult,
+  }));
+}
+
+export function buildAdminCashRefundRequestRows(
+  requests: CashRefundRequestEntity[],
+): AdminCashRefundRequestRow[] {
+  return requests.map((request) => ({
+    accountHolder: request.accountHolder,
+    accountNumber: request.accountNumber,
+    bankName: request.bankName,
+    id: request.id,
+    metaLabel: formatCompactDateLabel(new Date(request.createdAt)),
+    requestedAmountLabel: `${formatMoney(request.requestedAmount)}원`,
+    statusLabel: getRefundRequestStatusLabel(request.status),
+    statusTone: getRefundRequestStatusTone(request.status),
+    userId: request.userId,
   }));
 }
 
@@ -431,6 +461,10 @@ function getCashTransactionTitle(transaction: CashTransactionEntity) {
       return "캐시 충전";
     case "charge_refund":
       return "충전 환불";
+    case "refund_hold":
+      return "캐시 환불 신청";
+    case "refund_release":
+      return "환불 신청 반려";
     case "match_refund":
       return "매치 환급";
     case "adjustment":
@@ -444,7 +478,11 @@ function getCashTransactionTitle(transaction: CashTransactionEntity) {
 function getCashTransactionTone(
   transaction: CashTransactionEntity,
 ): AdminBadgeTone {
-  if (transaction.type === "match_debit" || transaction.deltaAmount < 0) {
+  if (
+    transaction.type === "match_debit" ||
+    transaction.type === "refund_hold" ||
+    transaction.deltaAmount < 0
+  ) {
     return "danger";
   }
 
@@ -477,6 +515,32 @@ function getChargeOrderStatusTone(status: CashChargeOrderEntity["status"]): Admi
   }
 
   if (status === "failed" || status === "expired") {
+    return "danger";
+  }
+
+  return "neutral";
+}
+
+function getRefundRequestStatusLabel(status: CashRefundRequestEntity["status"]) {
+  switch (status) {
+    case "processed":
+      return "처리 완료";
+    case "rejected":
+      return "반려";
+    case "cancelled":
+      return "취소";
+    case "pending":
+    default:
+      return "처리 대기";
+  }
+}
+
+function getRefundRequestStatusTone(status: CashRefundRequestEntity["status"]): AdminBadgeTone {
+  if (status === "processed") {
+    return "accent";
+  }
+
+  if (status === "pending") {
     return "danger";
   }
 
