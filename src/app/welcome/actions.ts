@@ -3,11 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  buildAuthContinueHref,
   buildLoginHref,
   normalizeWelcomeNextPath,
 } from "@/lib/auth/redirect";
-import { getMemberSetupState } from "@/lib/member-access";
 import {
   normalizePreferredTimeSlots,
   normalizePreferredWeekdays,
@@ -40,12 +38,6 @@ export async function completeWelcomeOnboardingAction(formData: FormData) {
   }
 
   await assertProfileOnboardingSchemaReady(supabase);
-
-  const setupState = await getMemberSetupState(supabase, user.id);
-
-  if (setupState.phoneVerificationRequired) {
-    redirect(buildAuthContinueHref(nextPath));
-  }
 
   const temporaryLevel = toTemporaryLevel(
     String(formData.get("temporaryLevelChoice") ?? ""),

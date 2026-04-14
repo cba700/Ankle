@@ -30,7 +30,7 @@ export async function updateMyPageDisplayNameAction(formData: FormData) {
 
   const setupState = await getMemberSetupState(supabase, user.id);
 
-  if (setupState.phoneVerificationRequired || setupState.onboardingRequired) {
+  if (setupState.onboardingRequired) {
     redirect(buildAuthContinueHref("/mypage/settings"));
   }
 
@@ -71,7 +71,7 @@ export async function updateMyPageTemporaryLevelAction(formData: FormData) {
   await assertProfileOnboardingSchemaReady(supabase);
   const setupState = await getMemberSetupState(supabase, user.id);
 
-  if (setupState.phoneVerificationRequired || setupState.onboardingRequired) {
+  if (setupState.onboardingRequired) {
     redirect(buildAuthContinueHref("/mypage/settings"));
   }
 

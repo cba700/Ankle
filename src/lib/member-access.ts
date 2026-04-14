@@ -23,8 +23,11 @@ export async function getMemberSetupState(
 export function getRequiredMemberSetupHref(
   setupState: ProfileOnboardingState,
   nextPath?: string | null,
+  options?: {
+    skipPhoneVerification?: boolean;
+  },
 ) {
-  if (setupState.phoneVerificationRequired) {
+  if (setupState.phoneVerificationRequired && !options?.skipPhoneVerification) {
     return buildVerifyPhoneHref(nextPath);
   }
 
@@ -39,7 +42,10 @@ export async function getRequiredMemberSetupRedirectPath(
   supabase: SupabaseServerClient,
   userId: string,
   nextPath?: string | null,
+  options?: {
+    skipPhoneVerification?: boolean;
+  },
 ) {
   const setupState = await getMemberSetupState(supabase, userId);
-  return getRequiredMemberSetupHref(setupState, nextPath);
+  return getRequiredMemberSetupHref(setupState, nextPath, options);
 }

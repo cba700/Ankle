@@ -28,7 +28,7 @@ export function VerifyPhonePage({
           <p className={styles.accountTitle}>현재 계정</p>
           <p className={styles.accountEmail}>{accountLabel}</p>
           <p className={styles.infoDescription}>
-            캐시, 신청 내역, 계정 중복 방지를 위해 휴대폰 인증이 필요합니다.
+            충전이나 매치 신청을 진행하기 전에 1회 휴대폰 인증이 필요합니다.
           </p>
         </div>
 

@@ -54,6 +54,7 @@ export default async function MatchApply({
     supabase,
     user.id,
     `/match/${match.publicId}/apply`,
+    { skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {

@@ -42,6 +42,7 @@ export async function GET(request: Request) {
     supabase,
     user.id,
     nextPath,
+    { skipPhoneVerification: true },
   );
 
   return NextResponse.redirect(

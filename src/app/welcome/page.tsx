@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { WelcomePage } from "@/components/welcome/welcome-page";
 import {
-  buildAuthContinueHref,
   buildLoginHref,
   normalizeWelcomeNextPath,
 } from "@/lib/auth/redirect";
@@ -46,10 +45,6 @@ export default async function WelcomeRoute({
   await assertProfileOnboardingSchemaReady(supabase);
 
   const onboardingState = await getMemberSetupState(supabase, user.id);
-
-  if (onboardingState.phoneVerificationRequired) {
-    redirect(buildAuthContinueHref(nextPath));
-  }
 
   if (!onboardingState.onboardingRequired) {
     redirect(nextPath);

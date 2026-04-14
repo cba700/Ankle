@@ -44,6 +44,7 @@ export default async function MyPageSettingsRoute() {
     supabase,
     user.id,
     "/mypage/settings",
+    { skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {
