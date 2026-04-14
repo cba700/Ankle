@@ -14,6 +14,9 @@ type SupabaseServerClient = NonNullable<
 type ProfileOnboardingRow = {
   onboarding_completed_at: string | null;
   onboarding_required: boolean | null;
+  phone_number_e164: string | null;
+  phone_verification_required: boolean | null;
+  phone_verified_at: string | null;
   preferred_time_slots: string[] | null;
   preferred_weekdays: string[] | null;
   temporary_level: string | null;
@@ -22,6 +25,9 @@ type ProfileOnboardingRow = {
 export type ProfileOnboardingState = {
   onboardingCompletedAt: string | null;
   onboardingRequired: boolean;
+  phoneNumber: string | null;
+  phoneVerificationRequired: boolean;
+  phoneVerifiedAt: string | null;
   preferredTimeSlots: PreferredTimeSlot[];
   preferredWeekdays: PreferredWeekday[];
   temporaryLevel: TemporaryLevel | null;
@@ -30,6 +36,9 @@ export type ProfileOnboardingState = {
 const PROFILE_ONBOARDING_SELECT = `
   onboarding_required,
   onboarding_completed_at,
+  phone_number_e164,
+  phone_verification_required,
+  phone_verified_at,
   temporary_level,
   preferred_weekdays,
   preferred_time_slots
@@ -54,6 +63,10 @@ export async function getProfileOnboardingState(
   return {
     onboardingCompletedAt: row?.onboarding_completed_at ?? null,
     onboardingRequired: row?.onboarding_required ?? false,
+    phoneNumber: row?.phone_number_e164 ?? null,
+    phoneVerificationRequired:
+      row?.phone_verification_required ?? !(row?.phone_verified_at ?? null),
+    phoneVerifiedAt: row?.phone_verified_at ?? null,
     preferredTimeSlots: ((row?.preferred_time_slots ?? []) as PreferredTimeSlot[]),
     preferredWeekdays: ((row?.preferred_weekdays ?? []) as PreferredWeekday[]),
     temporaryLevel: (row?.temporary_level as TemporaryLevel | null) ?? null,

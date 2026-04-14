@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPageSettings } from "@/components/mypage/my-page-settings";
-import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
+import { buildLoginHref } from "@/lib/auth/redirect";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getMyPageData } from "@/lib/mypage";
-import { getProfileOnboardingState } from "@/lib/profile-onboarding";
 import { getServerAuthState } from "@/lib/supabase/auth";
-import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   updateMyPageDisplayNameAction,
@@ -41,12 +40,14 @@ export default async function MyPageSettingsRoute() {
     redirect(buildLoginHref("/mypage/settings", "supabase_not_configured"));
   }
 
-  await assertProfileOnboardingSchemaReady(supabase);
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/mypage/settings",
+  );
 
-  const onboardingState = await getProfileOnboardingState(supabase, user.id);
-
-  if (onboardingState.onboardingRequired) {
-    redirect(buildWelcomeHref("/mypage/settings"));
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const { data: profileRow } = supabase

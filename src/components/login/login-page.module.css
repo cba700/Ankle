@@ -50,7 +50,8 @@
 }
 
 .errorMessage,
-.helperText {
+.helperText,
+.successMessage {
   width: 100%;
   margin: 24px 0 0;
   padding: 12px 14px;
@@ -67,6 +68,49 @@
 .helperText {
   background: rgba(17, 17, 17, 0.05);
   color: #666666;
+}
+
+.successMessage {
+  background: rgba(11, 122, 63, 0.08);
+  color: #0b7a3f;
+}
+
+.formMessage,
+.formHelperMessage,
+.formSuccessMessage {
+  width: 100%;
+  margin: -2px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.formMessage {
+  background: rgba(255, 89, 89, 0.08);
+  color: #b63b30;
+}
+
+.formHelperMessage {
+  background: rgba(17, 17, 17, 0.05);
+  color: #666666;
+}
+
+.formSuccessMessage {
+  background: rgba(11, 122, 63, 0.08);
+  color: #0b7a3f;
+}
+
+.entryActions,
+.form,
+.verificationSection {
+  width: 100%;
+  display: grid;
+}
+
+.entryActions {
+  gap: 12px;
+  margin-top: 40px;
 }
 
 .kakaoButton {
@@ -87,15 +131,132 @@
   box-shadow: 0 12px 28px rgba(254, 229, 0, 0.34);
 }
 
+.emailStartButton,
+.primaryButton,
+.inlineButton {
+  border: 0;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.emailStartButton {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 20px;
+  background: #111111;
+  color: #ffffff;
+}
+
 .kakaoButtonDisabled {
   opacity: 0.58;
   box-shadow: none;
+}
+
+.emailStartButton:disabled,
+.primaryButton:disabled,
+.inlineButton:disabled {
+  opacity: 0.48;
 }
 
 .kakaoIcon {
   width: 20px;
   height: 20px;
   flex: 0 0 auto;
+}
+
+.form {
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.field {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: #444444;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.textField {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111111;
+  font-size: 15px;
+}
+
+.textField:focus {
+  outline: 2px solid rgba(255, 107, 0, 0.2);
+  border-color: rgba(255, 107, 0, 0.5);
+}
+
+.inlineFieldRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.inlineButton {
+  min-width: 96px;
+  min-height: 54px;
+  padding: 0 16px;
+  background: rgba(17, 17, 17, 0.92);
+  color: #ffffff;
+}
+
+.primaryButton {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #ff7a00, #ff5b00);
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(255, 107, 0, 0.22);
+}
+
+.verificationSection {
+  gap: 14px;
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: #888888;
+  font-size: 12px;
+}
+
+.placeholderLink,
+.inlineLink,
+.linkText {
+  color: #888888;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.placeholderLink {
+  user-select: none;
+}
+
+.inlineLink {
+  color: #444444;
+  text-decoration: underline;
+}
+
+.linkDivider {
+  color: rgba(17, 17, 17, 0.2);
 }
 
 .accountPanel {
@@ -119,6 +280,23 @@
   margin: 0;
   color: #666666;
   font-size: 14px;
+}
+
+.infoPanel {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  background: rgba(17, 17, 17, 0.04);
+}
+
+.infoDescription {
+  margin: 4px 0 0;
+  color: #666666;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .actionRow {
@@ -157,6 +335,11 @@
   color: #111111;
 }
 
+.signoutForm {
+  width: 100%;
+  margin-top: 18px;
+}
+
 .terms {
   margin: 24px 0 0;
   color: #888888;
@@ -177,5 +360,12 @@
 
   .card {
     padding: 56px 36px 40px;
+  }
+
+  .textField,
+  .inlineButton,
+  .primaryButton,
+  .emailStartButton {
+    min-height: 56px;
   }
 }

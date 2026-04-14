@@ -7,6 +7,7 @@ import {
   listCashChargeOrdersByUserId,
 } from "@/lib/cash";
 import { formatCompactDateLabel, formatMoney } from "@/lib/date";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import {
   assertCashChargeOperationsSchemaReady,
 } from "@/lib/supabase/schema";
@@ -45,6 +46,15 @@ export default async function CashChargeRoute({
   }
 
   await assertCashChargeOperationsSchemaReady(supabase);
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/cash/charge",
+  );
+
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
+  }
 
   const [cashAccount, recentOrders] = await Promise.all([
     getCashAccountByUserId(supabase, user.id),

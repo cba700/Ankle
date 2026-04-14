@@ -1,13 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { MatchApplyPage } from "@/components/match/match-apply-page";
 import { buildMatchDetailViewModel } from "@/components/match/match-detail-view-model";
-import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
+import { buildLoginHref } from "@/lib/auth/redirect";
 import { formatMoney } from "@/lib/date";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getPublicMatchByPublicId } from "@/lib/matches-data";
-import { getProfileOnboardingState } from "@/lib/profile-onboarding";
 import {
   assertCashFoundationSchemaReady,
-  assertProfileOnboardingSchemaReady,
 } from "@/lib/supabase/schema";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -51,12 +50,14 @@ export default async function MatchApply({
   let existingApplication = null;
 
   await assertCashFoundationSchemaReady(supabase);
-  await assertProfileOnboardingSchemaReady(supabase);
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    `/match/${match.publicId}/apply`,
+  );
 
-  const onboardingState = await getProfileOnboardingState(supabase, user.id);
-
-  if (onboardingState.onboardingRequired) {
-    redirect(buildWelcomeHref(`/match/${match.publicId}/apply`));
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const [{ data: application }, { data: cashAccount }] = await Promise.all([

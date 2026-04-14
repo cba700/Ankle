@@ -114,6 +114,15 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
     }
   }
 
+  function handleEmailStart() {
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    window.location.href =
+      nextPath === "/" ? "/login/email" : `/login/email?next=${encodeURIComponent(nextPath)}`;
+  }
+
   const serverError = errorCode ? ERROR_MESSAGES[errorCode] : null;
 
   return (
@@ -153,19 +162,30 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
             </div>
           </div>
         ) : (
-          <button
-            className={`${styles.kakaoButton} ${
-              isSubmitting || !isSupabaseConfigured() ? styles.kakaoButtonDisabled : ""
-            }`}
-            disabled={isSubmitting || !isSupabaseConfigured()}
-            onClick={handleKakaoLogin}
-            type="button"
-          >
-            <KakaoIcon />
-            <span>
-              {isSubmitting ? "카카오 로그인으로 이동 중..." : "카카오로 3초 만에 시작하기"}
-            </span>
-          </button>
+          <div className={styles.entryActions}>
+            <button
+              className={`${styles.kakaoButton} ${
+                isSubmitting || !isSupabaseConfigured() ? styles.kakaoButtonDisabled : ""
+              }`}
+              disabled={isSubmitting || !isSupabaseConfigured()}
+              onClick={handleKakaoLogin}
+              type="button"
+            >
+              <KakaoIcon />
+              <span>
+                {isSubmitting ? "카카오 로그인으로 이동 중..." : "카카오로 시작하기"}
+              </span>
+            </button>
+
+            <button
+              className={styles.emailStartButton}
+              disabled={!isSupabaseConfigured()}
+              onClick={handleEmailStart}
+              type="button"
+            >
+              이메일로 시작하기
+            </button>
+          </div>
         )}
 
         <p className={styles.terms}>

@@ -26,10 +26,12 @@ import {
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/auth";
 import { listWishlistMatchesByUserId } from "@/lib/wishlist";
+import { formatPhoneNumberForDisplay } from "@/lib/phone-number";
 
 type ProfileRow = {
   avatar_url: string | null;
   display_name: string | null;
+  phone_number_e164: string | null;
   preferred_time_slots: PreferredTimeSlot[] | null;
   preferred_weekdays: PreferredWeekday[] | null;
   role: UserRole | null;
@@ -62,6 +64,7 @@ export type MyPageProfile = {
   avatarUrl: string | null;
   displayName: string;
   email: string;
+  phoneNumber: string;
   preferredTimeSlots: PreferredTimeSlot[];
   preferredWeekdays: PreferredWeekday[];
   providerLabel: string;
@@ -145,7 +148,7 @@ export async function getMyPageData({
       supabase
         .from("profiles")
         .select(
-          "display_name, avatar_url, role, temporary_level, preferred_weekdays, preferred_time_slots",
+          "display_name, avatar_url, role, temporary_level, preferred_weekdays, preferred_time_slots, phone_number_e164",
         )
         .eq("id", user.id)
         .maybeSingle(),
@@ -175,6 +178,7 @@ export async function getMyPageData({
       avatarUrl: typedProfile?.avatar_url ?? null,
       displayName: getDisplayName(user, typedProfile),
       email: user.email ?? "이메일 정보 없음",
+      phoneNumber: formatPhoneNumberForDisplay(typedProfile?.phone_number_e164 ?? null),
       preferredTimeSlots: typedProfile?.preferred_time_slots ?? [],
       preferredWeekdays: typedProfile?.preferred_weekdays ?? [],
       providerLabel: getProviderLabel(user),
