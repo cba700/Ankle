@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         code: "SERVICE_ROLE_NOT_CONFIGURED",
-        message: "회원가입 서버 권한이 설정되지 않았습니다.",
+        message: "휴대폰 인증 서버 권한이 설정되지 않았습니다.",
       },
       { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
