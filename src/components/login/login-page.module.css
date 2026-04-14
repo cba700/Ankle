@@ -227,6 +227,97 @@
   gap: 14px;
 }
 
+.segmentedRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.segmentedButton {
+  min-height: 54px;
+  padding: 0 16px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #555555;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.segmentedButtonActive {
+  border-color: rgba(255, 107, 0, 0.5);
+  background: rgba(255, 107, 0, 0.08);
+  color: #111111;
+}
+
+.agreementSection {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(17, 17, 17, 0.04);
+}
+
+.agreementHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.agreementList {
+  display: grid;
+  gap: 10px;
+}
+
+.agreementRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.agreementRowStrong {
+  justify-self: end;
+}
+
+.agreementCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #ff6b00;
+}
+
+.agreementCopy {
+  display: grid;
+  gap: 2px;
+}
+
+.agreementLabel {
+  color: #222222;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.agreementRequired {
+  color: #777777;
+  font-weight: 600;
+}
+
+.agreementMeta {
+  color: #888888;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.agreementLink {
+  color: #555555;
+  font-size: 12px;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
 .linkRow {
   display: flex;
   flex-wrap: wrap;
@@ -365,7 +456,8 @@
   .textField,
   .inlineButton,
   .primaryButton,
-  .emailStartButton {
+  .emailStartButton,
+  .segmentedButton {
     min-height: 56px;
   }
 }

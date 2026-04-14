@@ -89,6 +89,18 @@ export function buildVerifyPhoneHref(nextPath?: string | null) {
   return query ? `/verify-phone?${query}` : "/verify-phone";
 }
 
+export function buildSignupCompleteHref(nextPath?: string | null) {
+  const params = new URLSearchParams();
+  const normalizedNextPath = normalizePostAuthNextPath(nextPath);
+
+  if (normalizedNextPath !== DEFAULT_NEXT_PATH) {
+    params.set("next", normalizedNextPath);
+  }
+
+  const query = params.toString();
+  return query ? `/signup/complete?${query}` : "/signup/complete";
+}
+
 export function buildAuthContinueHref(nextPath?: string | null) {
   const params = new URLSearchParams();
   const normalizedNextPath = normalizePostAuthNextPath(nextPath);

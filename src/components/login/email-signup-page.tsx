@@ -2,10 +2,19 @@
 
 import { useState, useTransition } from "react";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
+import {
+  areRequiredSignupAgreementsAccepted,
+  getDefaultSignupAgreementValues,
+  isAtLeastAge,
+  normalizeBirthDate,
+  normalizeLegalName,
+  type ProfileGender,
+} from "@/lib/signup-profile";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { PhoneVerificationForm } from "./phone-verification-form";
+import { SignupAgreementSection } from "./signup-agreement-section";
 import styles from "./login-page.module.css";
 
 type EmailSignupPageProps = {
@@ -19,10 +28,14 @@ type VerifiedPhoneState = {
 };
 
 export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
+  const [agreements, setAgreements] = useState(getDefaultSignupAgreementValues());
+  const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
+  const [gender, setGender] = useState<ProfileGender | null>(null);
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [inlineError, setInlineError] = useState<string | null>(null);
+  const [legalName, setLegalName] = useState("");
   const [verifiedPhone, setVerifiedPhone] = useState<VerifiedPhoneState | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -52,9 +65,41 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
         return;
       }
 
+      const normalizedLegalName = normalizeLegalName(legalName);
+      const normalizedBirthDate = normalizeBirthDate(birthDate);
+
+      if (!normalizedLegalName) {
+        setInlineError("이름을 입력해 주세요.");
+        return;
+      }
+
+      if (!normalizedBirthDate) {
+        setInlineError("생년월일을 정확히 입력해 주세요.");
+        return;
+      }
+
+      if (!gender) {
+        setInlineError("성별을 선택해 주세요.");
+        return;
+      }
+
+      if (!isAtLeastAge(normalizedBirthDate, 16) || !agreements.ageOver16) {
+        setInlineError("만 16세 이상만 가입할 수 있습니다.");
+        return;
+      }
+
+      if (!areRequiredSignupAgreementsAccepted(agreements)) {
+        setInlineError("필수 약관에 모두 동의해 주세요.");
+        return;
+      }
+
       const response = await fetch("/api/auth/email-signup", {
         body: JSON.stringify({
+          agreements,
+          birthDate: normalizedBirthDate,
           email,
+          gender,
+          name: normalizedLegalName,
           password,
         }),
         headers: {
@@ -115,20 +160,6 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
         {inlineError ? <p className={styles.errorMessage}>{inlineError}</p> : null}
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <PhoneVerificationForm
-            onVerified={(result) => {
-              setInlineError(null);
-              setVerifiedPhone(result);
-            }}
-            purpose="signup"
-          />
-
-          {verifiedPhone ? (
-            <p className={styles.formSuccessMessage}>
-              인증된 번호 {verifiedPhone.maskedPhoneNumber}
-            </p>
-          ) : null}
-
           <label className={styles.field}>
             <span className={styles.fieldLabel}>이메일</span>
             <input
@@ -165,13 +196,85 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
             />
           </label>
 
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>이름</span>
+            <input
+              autoComplete="name"
+              className={styles.textField}
+              onChange={(event) => setLegalName(event.target.value)}
+              placeholder="실명을 입력해 주세요"
+              type="text"
+              value={legalName}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>생년월일</span>
+            <input
+              className={styles.textField}
+              max="9999-12-31"
+              onChange={(event) => setBirthDate(event.target.value)}
+              type="date"
+              value={birthDate}
+            />
+          </label>
+
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>성별</span>
+            <div className={styles.segmentedRow}>
+              <button
+                aria-pressed={gender === "male"}
+                className={`${styles.segmentedButton} ${
+                  gender === "male" ? styles.segmentedButtonActive : ""
+                }`}
+                onClick={() => setGender("male")}
+                type="button"
+              >
+                남
+              </button>
+              <button
+                aria-pressed={gender === "female"}
+                className={`${styles.segmentedButton} ${
+                  gender === "female" ? styles.segmentedButtonActive : ""
+                }`}
+                onClick={() => setGender("female")}
+                type="button"
+              >
+                여
+              </button>
+            </div>
+          </div>
+
+          <PhoneVerificationForm
+            onVerified={(result) => {
+              setInlineError(null);
+              setVerifiedPhone(result);
+            }}
+            purpose="signup"
+          />
+
+          {verifiedPhone ? (
+            <p className={styles.formSuccessMessage}>
+              인증된 번호 {verifiedPhone.maskedPhoneNumber}
+            </p>
+          ) : null}
+
+          <SignupAgreementSection
+            disabled={isPending}
+            onChange={setAgreements}
+            value={agreements}
+          />
+
           <button
             className={styles.primaryButton}
             disabled={
               isPending ||
               !isSupabaseConfigured() ||
+              !birthDate ||
+              !gender ||
               !verifiedPhone ||
               email.trim().length === 0 ||
+              legalName.trim().length === 0 ||
               password.length === 0 ||
               passwordConfirm.length === 0
             }

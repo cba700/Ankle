@@ -5,7 +5,9 @@ import {
   buildLoginHref,
   normalizeNextPath,
 } from "@/lib/auth/redirect";
+import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { syncKakaoSignupProfile } from "@/lib/signup-profile-server";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -36,7 +38,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     return NextResponse.redirect(
@@ -45,8 +47,38 @@ export async function GET(request: Request) {
     );
   }
 
+  if (
+    data.session?.provider_token &&
+    data.user &&
+    isKakaoUser(data.user)
+  ) {
+    await assertSignupProfileSchemaReady(supabase);
+
+    try {
+      await syncKakaoSignupProfile(supabase as any, {
+        providerToken: data.session.provider_token,
+        userId: data.user.id,
+      });
+    } catch {}
+  }
+
   return NextResponse.redirect(new URL(buildAuthContinueHref(nextPath), requestUrl.origin), {
     headers: PRIVATE_NO_STORE_HEADERS,
     status: 303,
   });
+}
+
+function isKakaoUser(user: {
+  app_metadata?: {
+    provider?: unknown;
+    providers?: unknown;
+  };
+}) {
+  if (user.app_metadata?.provider === "kakao") {
+    return true;
+  }
+
+  return Array.isArray(user.app_metadata?.providers)
+    ? user.app_metadata.providers.includes("kakao")
+    : false;
 }

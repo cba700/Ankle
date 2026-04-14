@@ -22,6 +22,8 @@ const REQUIRED_CASH_REFUND_REQUEST_MIGRATION =
   "20260414170000_add_cash_refund_requests.sql";
 const REQUIRED_PHONE_AUTH_MIGRATION =
   "20260414153000_add_phone_auth_and_email_login.sql";
+const REQUIRED_SIGNUP_PROFILE_MIGRATION =
+  "20260414203000_add_signup_profile_and_consents.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -31,6 +33,7 @@ const REQUIRED_WISHLIST_MIGRATION_MESSAGE = `Database schema is outdated. Apply 
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PROFILE_ONBOARDING_MIGRATION} before running onboarding preference features.`;
 const REQUIRED_CASH_REFUND_REQUEST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CASH_REFUND_REQUEST_MIGRATION} before running cash refund request features.`;
 const REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PHONE_AUTH_MIGRATION} before running phone verification and email auth features.`;
+const REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_SIGNUP_PROFILE_MIGRATION} before running signup profile and consent features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -39,6 +42,7 @@ let chargeOperationsCheckPromise: Promise<void> | null = null;
 let wishlistSchemaCheckPromise: Promise<void> | null = null;
 let profileOnboardingSchemaCheckPromise: Promise<void> | null = null;
 let cashRefundRequestSchemaCheckPromise: Promise<void> | null = null;
+let signupProfileSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -179,6 +183,27 @@ export async function assertCashRefundRequestSchemaReady(
   return cashRefundRequestSchemaCheckPromise;
 }
 
+export async function assertSignupProfileSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!signupProfileSchemaCheckPromise) {
+    signupProfileSchemaCheckPromise = runSignupProfileSchemaCheck(client).catch(
+      (error) => {
+        signupProfileSchemaCheckPromise = null;
+        throw error;
+      },
+    );
+  }
+
+  return signupProfileSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -298,6 +323,26 @@ async function runCashRefundRequestSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleCashRefundRequestSchemaError(cashRefundRequestCheck.error);
+}
+
+async function runSignupProfileSchemaCheck(supabase: SupabaseServerClient) {
+  await runProfileOnboardingSchemaCheck(supabase);
+
+  const signupProfileCheck = await supabase
+    .from("profiles")
+    .select(
+      "legal_name, birth_date, gender, signup_profile_required, signup_profile_completed_at",
+    )
+    .limit(1);
+
+  handleSignupProfileSchemaError(signupProfileCheck.error);
+
+  const signupConsentCheck = await supabase
+    .from("profile_consents")
+    .select("consent_type")
+    .limit(1);
+
+  handleSignupProfileSchemaError(signupConsentCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -421,6 +466,27 @@ function handleCashRefundRequestSchemaError(
   }
 
   throw new Error(`Failed to verify cash refund request schema: ${error.message}`);
+}
+
+function handleSignupProfileSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify signup profile schema: ${error.message}`);
 }
 
 function handleChargeOperationsSchemaError(

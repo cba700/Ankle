@@ -8,11 +8,24 @@ import {
   getVerifiedSignupPhoneVerification,
   PhoneVerificationError,
 } from "@/lib/phone-auth";
-import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
+import {
+  areRequiredSignupAgreementsAccepted,
+  isAtLeastAge,
+  normalizeBirthDate,
+  normalizeLegalName,
+  normalizeProfileGender,
+  normalizeSignupAgreementValues,
+} from "@/lib/signup-profile";
+import { saveSignupProfileData } from "@/lib/signup-profile-server";
+import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 
 type EmailSignupBody = {
+  agreements?: unknown;
+  birthDate?: unknown;
   email?: unknown;
+  gender?: unknown;
+  name?: unknown;
   password?: unknown;
 };
 
@@ -29,10 +42,14 @@ export async function POST(request: Request) {
     );
   }
 
-  await assertProfileOnboardingSchemaReady(admin as any);
+  await assertSignupProfileSchemaReady(admin as any);
 
   const body = (await request.json().catch(() => null)) as EmailSignupBody | null;
+  const agreements = normalizeSignupAgreementValues(body?.agreements);
+  const birthDate = normalizeBirthDate(body?.birthDate);
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+  const gender = normalizeProfileGender(body?.gender);
+  const legalName = normalizeLegalName(body?.name);
   const password = typeof body?.password === "string" ? body.password : "";
   const cookieStore = await cookies();
   const verificationRequestId =
@@ -43,6 +60,36 @@ export async function POST(request: Request) {
       {
         code: "INVALID_EMAIL_SIGNUP_REQUEST",
         message: "이메일과 비밀번호를 다시 확인해 주세요.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
+    );
+  }
+
+  if (!legalName || !birthDate || !gender) {
+    return NextResponse.json(
+      {
+        code: "INVALID_SIGNUP_PROFILE",
+        message: "이름, 생년월일, 성별을 다시 확인해 주세요.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
+    );
+  }
+
+  if (!areRequiredSignupAgreementsAccepted(agreements)) {
+    return NextResponse.json(
+      {
+        code: "REQUIRED_CONSENTS_MISSING",
+        message: "필수 약관에 모두 동의해 주세요.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
+    );
+  }
+
+  if (!isAtLeastAge(birthDate, 16)) {
+    return NextResponse.json(
+      {
+        code: "AGE_REQUIREMENT_NOT_MET",
+        message: "만 16세 이상만 가입할 수 있습니다.",
       },
       { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
     );
@@ -71,6 +118,9 @@ export async function POST(request: Request) {
         email,
         email_confirm: true,
         password,
+        user_metadata: {
+          name: legalName,
+        },
       });
 
     if (createUserError) {
@@ -102,7 +152,7 @@ export async function POST(request: Request) {
     }
 
     const verifiedAt = new Date().toISOString();
-    const { error: updateProfileError } = await (admin.from("profiles" as any) as any)
+    const { error: phoneProfileError } = await (admin.from("profiles" as any) as any)
       .update({
         phone_number_e164: verifiedPhone.phoneNumberE164,
         phone_verification_required: false,
@@ -110,12 +160,12 @@ export async function POST(request: Request) {
       })
       .eq("id", createdUserId);
 
-    if (updateProfileError) {
+    if (phoneProfileError) {
       try {
         await admin.auth.admin.deleteUser(createdUserId);
       } catch {}
 
-      if (updateProfileError.code === "23505") {
+      if (phoneProfileError.code === "23505") {
         return NextResponse.json(
           {
             code: "PHONE_ALREADY_REGISTERED",
@@ -125,7 +175,24 @@ export async function POST(request: Request) {
         );
       }
 
-      throw new Error(`Failed to update new profile with phone number: ${updateProfileError.message}`);
+      throw new Error(`Failed to update new profile with phone number: ${phoneProfileError.message}`);
+    }
+
+    try {
+      await saveSignupProfileData(admin as any, {
+        agreements,
+        birthDate,
+        gender,
+        legalName,
+        source: "email_signup",
+        userId: createdUserId,
+      });
+    } catch (signupProfileError) {
+      try {
+        await admin.auth.admin.deleteUser(createdUserId);
+      } catch {}
+
+      throw signupProfileError;
     }
 
     await consumeVerifiedSignupPhoneVerification(admin, verificationRequestId);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { getKakaoSyncOAuthOptions } from "@/lib/kakao-sync";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
 
@@ -98,9 +99,7 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
       }
 
       const { error } = await supabase.auth.signInWithOAuth({
-        options: {
-          redirectTo: redirectTo.toString(),
-        },
+        options: getKakaoSyncOAuthOptions(redirectTo.toString()),
         provider: "kakao",
       });
 
