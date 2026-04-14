@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
-import styles from "./cash-charge-page.module.css";
+import styles from "./cash-charge-result-page.module.css";
 
 type CashChargeSuccessPageProps = {
   amount: string | null;
@@ -15,11 +15,8 @@ type CashChargeSuccessPageProps = {
 
 type ConfirmResponse = {
   chargedAmount?: number;
-  code?: string;
   message?: string;
-  method?: string | null;
   ok?: boolean;
-  orderId?: string;
   remainingCash?: number;
 };
 
@@ -69,56 +66,46 @@ export function CashChargeSuccessPage({
           </AppLink>
 
           {!result && !errorMessage ? (
-            <section className={styles.resultCard}>
+            <section className={styles.card}>
               <div className={styles.loadingBox}>
                 <div className={styles.spinner} />
-                <strong>결제 승인과 캐시 적립을 확인하는 중입니다.</strong>
-                <p className={styles.sectionDescription}>
-                  승인 결과를 서버에서 다시 검증하고 있습니다. 페이지를 닫지 말고 잠시만 기다려
-                  주세요.
-                </p>
+                <span
+                  className={`${styles.statusPill} ${styles.statusPending} ${styles.statusPillCentered}`}
+                >
+                  충전 확인 중
+                </span>
+                <h1 className={styles.title}>결제를 확인하고 있어요.</h1>
+                <p className={styles.description}>잠시만 기다려 주세요.</p>
               </div>
             </section>
           ) : null}
 
           {result ? (
-            <section className={styles.resultCard}>
-              <p className={styles.eyebrow}>Charge Success</p>
-              <div className={styles.resultTop}>
-                <div>
-                  <div className={`${styles.resultBadge} ${styles.resultSuccess}`}>
-                    충전 완료
-                  </div>
-                  <h1 className={styles.title}>캐시가 정상적으로 적립되었습니다.</h1>
-                  <p className={styles.resultDescription}>
-                    주문 승인과 잔액 반영까지 모두 끝났습니다. 이제 매치 신청 시 바로 사용할 수
-                    있습니다.
-                  </p>
+            <section className={styles.card}>
+              <span className={`${styles.statusPill} ${styles.statusSuccess}`}>
+                충전 완료
+              </span>
+              <h1 className={styles.title}>캐시가 충전됐어요.</h1>
+              <p className={styles.description}>
+                잔액 반영까지 끝났습니다. 바로 사용할 수 있어요.
+              </p>
+
+              <div className={styles.summaryGrid}>
+                <div className={styles.summaryCard}>
+                  <span className={styles.summaryLabel}>적립 금액</span>
+                  <strong className={styles.summaryValue}>
+                    {formatMoneyLabel(result.chargedAmount ?? Number(amount))}
+                  </strong>
                 </div>
-                <div className={styles.balance}>
-                  <span className={styles.balanceLabel}>현재 캐시</span>
-                  <strong className={styles.resultValue}>
+                <div className={styles.summaryCard}>
+                  <span className={styles.summaryLabel}>현재 캐시</span>
+                  <strong className={styles.summaryValue}>
                     {formatMoneyLabel(result.remainingCash)}
                   </strong>
                 </div>
               </div>
 
-              <ul className={styles.resultList}>
-                <li className={styles.resultItem}>
-                  <span>주문번호</span>
-                  <strong>{result.orderId ?? orderId}</strong>
-                </li>
-                <li className={styles.resultItem}>
-                  <span>충전 금액</span>
-                  <strong>{formatMoneyLabel(result.chargedAmount ?? Number(amount))}</strong>
-                </li>
-                <li className={styles.resultItem}>
-                  <span>결제수단</span>
-                  <strong>{result.method ?? "토스 결제창"}</strong>
-                </li>
-              </ul>
-
-              <div className={styles.resultActions}>
+              <div className={styles.actionRow}>
                 <AppLink className={styles.primaryLink} href={nextPath || "/mypage"}>
                   {nextPath ? "신청 화면으로 돌아가기" : "마이페이지로 이동"}
                 </AppLink>
@@ -130,30 +117,14 @@ export function CashChargeSuccessPage({
           ) : null}
 
           {errorMessage ? (
-            <section className={styles.resultCard}>
-              <p className={styles.eyebrow}>Charge Review</p>
-              <div className={styles.resultTop}>
-                <div>
-                  <div className={`${styles.resultBadge} ${styles.resultFailure}`}>
-                    확인 필요
-                  </div>
-                  <h1 className={styles.title}>충전 결과를 자동 확정하지 못했습니다.</h1>
-                  <p className={styles.resultDescription}>{errorMessage}</p>
-                </div>
-              </div>
+            <section className={styles.card}>
+              <span className={`${styles.statusPill} ${styles.statusFailure}`}>
+                확인 필요
+              </span>
+              <h1 className={styles.title}>충전 상태를 바로 확인하지 못했어요.</h1>
+              <p className={styles.description}>{errorMessage}</p>
 
-              <ul className={styles.resultList}>
-                <li className={styles.resultItem}>
-                  <span>주문번호</span>
-                  <strong>{orderId ?? "확인 불가"}</strong>
-                </li>
-                <li className={styles.resultItem}>
-                  <span>결제 인증 금액</span>
-                  <strong>{amount ? formatMoneyLabel(Number(amount)) : "확인 불가"}</strong>
-                </li>
-              </ul>
-
-              <div className={styles.resultActions}>
+              <div className={styles.actionRow}>
                 <AppLink className={styles.primaryLink} href={nextPath || "/mypage"}>
                   {nextPath ? "신청 화면으로 돌아가기" : "마이페이지로 이동"}
                 </AppLink>
