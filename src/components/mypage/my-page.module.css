@@ -262,6 +262,20 @@
   font-weight: 800;
 }
 
+.statLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statLinkArrow {
+  width: 14px;
+  height: 14px;
+}
+
 .levelMarker {
   width: 4px;
   height: 14px;

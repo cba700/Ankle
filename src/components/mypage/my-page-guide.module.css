@@ -1,0 +1,320 @@
+.page {
+  min-height: 100vh;
+  background: var(--user-page-background);
+}
+
+.main {
+  padding: 24px 0 40px;
+  display: grid;
+  gap: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.backIcon,
+.heroBadgeIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.heroCard {
+  padding: 24px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 194, 117, 0.4), transparent 34%),
+    rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
+  display: grid;
+  gap: 18px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.heroEyebrow {
+  margin: 18px 0 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.heroTitle {
+  margin: 8px 0 0;
+  font-size: clamp(30px, 4.4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
+.heroDescription {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.heroCallout {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 123, 27, 0.1), rgba(255, 232, 203, 0.6));
+}
+
+.heroCalloutTitle {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.heroCalloutBody {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.structureSection {
+  min-width: 0;
+}
+
+.structureGrid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.structureCard {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  display: grid;
+  gap: 8px;
+}
+
+.structureGrade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.05);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.structureSubLevel {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.structureMetaLabel {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.structureAudience {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sectionList {
+  display: grid;
+  gap: 16px;
+}
+
+.guideSection {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.05);
+}
+
+.toneBasic {
+  --guide-accent: #ff8d3a;
+  --guide-surface: rgba(255, 152, 74, 0.1);
+}
+
+.toneMiddle {
+  --guide-accent: #c39712;
+  --guide-surface: rgba(255, 211, 94, 0.16);
+}
+
+.toneHigh {
+  --guide-accent: #d95540;
+  --guide-surface: rgba(233, 117, 96, 0.12);
+}
+
+.toneStar {
+  --guide-accent: #5b5d72;
+  --guide-surface: rgba(91, 93, 114, 0.12);
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 8px;
+}
+
+.sectionBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--guide-surface);
+  color: var(--guide-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: clamp(24px, 3.4vw, 32px);
+  line-height: 1.18;
+  letter-spacing: -0.04em;
+}
+
+.sectionDescription {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.levelList {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.levelCard {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(201, 193, 183, 0.72);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff 0%, #fcfbf8 100%);
+  display: grid;
+  gap: 14px;
+}
+
+.levelHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.levelName {
+  margin: 0;
+  color: var(--guide-accent);
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.levelSummary {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.levelDetails {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.detailRow {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(201, 193, 183, 0.56);
+}
+
+.detailRow:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.detailLabel {
+  color: var(--guide-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.detailValue {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+@media (min-width: 768px) {
+  .heroCard {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    align-items: end;
+  }
+
+  .heroCallout {
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 16px 0 36px;
+    gap: 12px;
+  }
+
+  .heroCard,
+  .guideSection {
+    padding: 18px;
+  }
+
+  .structureGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
