@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CashChargeSuccessPage } from "@/components/cash/cash-charge-success-page";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getServerUserState } from "@/lib/supabase/auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "충전 완료",
@@ -30,6 +32,22 @@ export default async function CashChargeSuccessRoute({
         configured ? undefined : "supabase_not_configured",
       ),
     );
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(buildLoginHref("/cash/charge", "supabase_not_configured"));
+  }
+
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/cash/charge",
+  );
+
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const params = await searchParams;

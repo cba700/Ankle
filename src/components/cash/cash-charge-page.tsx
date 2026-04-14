@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { buildVerifyPhoneHref, buildWelcomeHref } from "@/lib/auth/redirect";
 import {
   buildCashChargePackageLabel,
   type CashChargePackage,
@@ -155,6 +156,16 @@ export function CashChargePage({
       const payload = (await response.json().catch(() => null)) as ChargeOrderResponse | null;
 
       if (!response.ok || !payload) {
+        if (payload?.code === "PHONE_VERIFICATION_REQUIRED") {
+          window.location.href = buildVerifyPhoneHref("/cash/charge");
+          return;
+        }
+
+        if (payload?.code === "ONBOARDING_REQUIRED") {
+          window.location.href = buildWelcomeHref("/cash/charge");
+          return;
+        }
+
         setFeedbackMessage(getChargeErrorMessage(payload?.code));
         return;
       }

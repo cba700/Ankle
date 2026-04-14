@@ -4,7 +4,11 @@ import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
-import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
+import {
+  buildLoginHref,
+  buildVerifyPhoneHref,
+  buildWelcomeHref,
+} from "@/lib/auth/redirect";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
@@ -90,6 +94,11 @@ export function MatchApplyPage({
 
       if (payload?.code === "ONBOARDING_REQUIRED") {
         window.location.href = buildWelcomeHref(applyPath);
+        return;
+      }
+
+      if (payload?.code === "PHONE_VERIFICATION_REQUIRED") {
+        window.location.href = buildVerifyPhoneHref(applyPath);
         return;
       }
 

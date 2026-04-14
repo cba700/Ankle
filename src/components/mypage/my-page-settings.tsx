@@ -56,6 +56,7 @@ export function MyPageSettings({
     },
   ];
   const infoRows = [
+    { label: "휴대폰 번호", value: profile.phoneNumber },
     { label: "이메일", value: profile.email },
     { label: "로그인 방식", value: profile.providerLabel },
     { label: "권한", value: getRoleLabel(profile.role) },

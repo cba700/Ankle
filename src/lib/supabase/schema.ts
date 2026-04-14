@@ -18,6 +18,8 @@ const REQUIRED_WISHLIST_MIGRATION =
   "20260410153000_add_match_wishlist_items.sql";
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION =
   "20260414103000_add_profile_onboarding_preferences.sql";
+const REQUIRED_PHONE_AUTH_MIGRATION =
+  "20260414153000_add_phone_auth_and_email_login.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -25,6 +27,7 @@ const REQUIRED_CASH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migr
 const REQUIRED_CHARGE_OPERATIONS_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CHARGE_OPERATIONS_MIGRATION} before running Toss charge features.`;
 const REQUIRED_WISHLIST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_WISHLIST_MIGRATION} before running match wishlist features.`;
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PROFILE_ONBOARDING_MIGRATION} before running onboarding preference features.`;
+const REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PHONE_AUTH_MIGRATION} before running phone verification and email auth features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -247,11 +250,18 @@ async function runProfileOnboardingSchemaCheck(supabase: SupabaseServerClient) {
   const profileOnboardingCheck = await supabase
     .from("profiles")
     .select(
-      "temporary_level, preferred_weekdays, preferred_time_slots, onboarding_required, onboarding_completed_at",
+      "temporary_level, preferred_weekdays, preferred_time_slots, onboarding_required, onboarding_completed_at, phone_number_e164, phone_verified_at, phone_verification_required",
     )
     .limit(1);
 
   handleProfileOnboardingSchemaError(profileOnboardingCheck.error);
+
+  const phoneVerificationCheck = await supabase
+    .from("phone_verification_requests")
+    .select("phone_number_e164")
+    .limit(1);
+
+  handlePhoneAuthSchemaError(phoneVerificationCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -312,6 +322,27 @@ function handleProfileOnboardingSchemaError(
   }
 
   throw new Error(`Failed to verify profile onboarding schema: ${error.message}`);
+}
+
+function handlePhoneAuthSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify phone auth schema: ${error.message}`);
 }
 
 function handlePublicIdSchemaError(

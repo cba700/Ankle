@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
+import { getMemberSetupState } from "@/lib/member-access";
 import { finalizeTossChargeOrder } from "@/lib/payments/toss-charge";
 import { assertCashChargeOperationsSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient, getSupabaseServiceRoleClient } from "@/lib/supabase/server";
@@ -45,6 +46,27 @@ export async function POST(request: Request) {
   }
 
   await assertCashChargeOperationsSchemaReady(supabase);
+  const setupState = await getMemberSetupState(supabase, user.id);
+
+  if (setupState.phoneVerificationRequired) {
+    return NextResponse.json(
+      {
+        code: "PHONE_VERIFICATION_REQUIRED",
+        message: "휴대폰 인증이 필요한 기능입니다.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+    );
+  }
+
+  if (setupState.onboardingRequired) {
+    return NextResponse.json(
+      {
+        code: "ONBOARDING_REQUIRED",
+        message: "온보딩을 먼저 완료해 주세요.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+    );
+  }
 
   const admin = getSupabaseServiceRoleClient() as any;
 

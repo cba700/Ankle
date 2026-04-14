@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPageCash } from "@/components/mypage/my-page-cash";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "캐시 내역",
@@ -22,6 +24,22 @@ export default async function MyPageCashRoute() {
         configured ? undefined : "supabase_not_configured",
       ),
     );
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(buildLoginHref("/mypage/cash", "supabase_not_configured"));
+  }
+
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/mypage/cash",
+  );
+
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const data = await getMyPageData({

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
+import { getMemberSetupState } from "@/lib/member-access";
 import { buildCashChargeOrderId, buildCashChargeOrderName, isCashChargePackage } from "@/lib/payments/toss";
 import { assertCashChargeOperationsSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -45,6 +46,21 @@ export async function POST(request: Request) {
   }
 
   await assertCashChargeOperationsSchemaReady(supabase);
+  const setupState = await getMemberSetupState(supabase, user.id);
+
+  if (setupState.phoneVerificationRequired) {
+    return NextResponse.json(
+      { code: "PHONE_VERIFICATION_REQUIRED" },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+    );
+  }
+
+  if (setupState.onboardingRequired) {
+    return NextResponse.json(
+      { code: "ONBOARDING_REQUIRED" },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+    );
+  }
 
   const orderId = buildCashChargeOrderId();
   const { data, error } = await supabase.rpc("create_cash_charge_order", {

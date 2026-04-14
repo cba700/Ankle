@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import {
+  buildAuthContinueHref,
   buildLoginHref,
-  buildWelcomeHref,
   normalizeNextPath,
 } from "@/lib/auth/redirect";
-import { getProfileOnboardingState } from "@/lib/profile-onboarding";
-import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -47,27 +45,7 @@ export async function GET(request: Request) {
     );
   }
 
-  await assertProfileOnboardingSchemaReady(supabase);
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    const onboardingState = await getProfileOnboardingState(supabase, user.id);
-
-    if (onboardingState.onboardingRequired) {
-      return NextResponse.redirect(
-        new URL(buildWelcomeHref(nextPath), requestUrl.origin),
-        {
-          headers: PRIVATE_NO_STORE_HEADERS,
-          status: 303,
-        },
-      );
-    }
-  }
-
-  return NextResponse.redirect(new URL(nextPath, requestUrl.origin), {
+  return NextResponse.redirect(new URL(buildAuthContinueHref(nextPath), requestUrl.origin), {
     headers: PRIVATE_NO_STORE_HEADERS,
     status: 303,
   });

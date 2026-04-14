@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPageCoupons } from "@/components/mypage/my-page-coupons";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "쿠폰",
@@ -22,6 +24,22 @@ export default async function MyPageCouponsRoute() {
         configured ? undefined : "supabase_not_configured",
       ),
     );
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(buildLoginHref("/mypage/coupons", "supabase_not_configured"));
+  }
+
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/mypage/coupons",
+  );
+
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const data = await getMyPageData({

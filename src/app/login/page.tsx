@@ -4,7 +4,7 @@ import { LoginPage } from "@/components/login/login-page";
 
 export const metadata: Metadata = {
   title: "로그인",
-  description: "앵클 카카오 로그인 화면",
+  description: "앵클 로그인 화면",
 };
 
 export default async function Login({
