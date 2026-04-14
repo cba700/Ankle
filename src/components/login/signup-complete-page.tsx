@@ -10,6 +10,7 @@ import {
   type ProfileGender,
   type SignupAgreementValues,
 } from "@/lib/signup-profile";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import {
@@ -116,8 +117,7 @@ export function SignupCompletePage({
     <div className={styles.page}>
       <div className={styles.card}>
         <AppLink className={styles.logoWrap} href="/">
-          <span className={styles.logoWord}>앵클</span>
-          <span className={styles.logoDot}>.</span>
+          <BrandLogo className={styles.logoImage} priority />
         </AppLink>
         <p className={styles.tagline}>가입 정보 확인</p>
 

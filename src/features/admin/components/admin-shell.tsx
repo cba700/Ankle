@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { AppLink } from "@/components/navigation/app-link";
 import {
   BadgeIcon,
@@ -64,8 +65,7 @@ export function AdminShell({
         <aside className={styles.sidebar}>
           <div className={styles.brandBlock}>
             <AppLink className={styles.brand} href="/">
-              <span className={styles.brandWord}>앵클</span>
-              <span className={styles.brandDot}>.</span>
+              <BrandLogo className={styles.brandLogo} priority />
             </AppLink>
             <p className={styles.brandLabel}>ADMIN CONSOLE</p>
           </div>

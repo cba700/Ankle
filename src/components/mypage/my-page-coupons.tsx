@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { ArrowLeftIcon, BadgeIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -22,8 +23,7 @@ export function MyPageCoupons({
       <header className={baseStyles.header}>
         <div className={baseStyles.headerInner}>
           <AppLink className={baseStyles.brand} href="/">
-            <span className={baseStyles.brandWord}>앵클</span>
-            <span className={baseStyles.brandDot}>.</span>
+            <BrandLogo className={baseStyles.brandLogo} priority />
           </AppLink>
 
           <div className={baseStyles.headerActions}>

@@ -11,6 +11,7 @@ import {
   type ProfileGender,
 } from "@/lib/signup-profile";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import {
@@ -153,8 +154,7 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
     <div className={styles.page}>
       <div className={styles.card}>
         <AppLink className={styles.logoWrap} href="/">
-          <span className={styles.logoWord}>앵클</span>
-          <span className={styles.logoDot}>.</span>
+          <BrandLogo className={styles.logoImage} priority />
         </AppLink>
         <p className={styles.tagline}>이메일로 회원가입</p>
 

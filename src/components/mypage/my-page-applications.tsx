@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { MyPageApplication } from "@/lib/mypage";
 import { addDays, getSeoulTodayStart, toDateKey } from "@/lib/date";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -96,8 +97,7 @@ export function MyPageApplications({
       <header className={baseStyles.header}>
         <div className={baseStyles.headerInner}>
           <AppLink className={baseStyles.brand} href="/">
-            <span className={baseStyles.brandWord}>앵클</span>
-            <span className={baseStyles.brandDot}>.</span>
+            <BrandLogo className={baseStyles.brandLogo} priority />
           </AppLink>
 
           <div className={baseStyles.headerActions}>

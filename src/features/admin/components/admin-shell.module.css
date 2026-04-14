@@ -23,19 +23,12 @@
 
 .brand {
   display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: center;
 }
 
-.brandWord,
-.brandDot {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.06em;
-}
-
-.brandDot {
-  color: #e05a28;
+.brandLogo {
+  width: auto;
+  height: 30px;
 }
 
 .brandLabel {
