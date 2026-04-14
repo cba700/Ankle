@@ -90,14 +90,13 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
 
 function buildInfoItems(match: MatchRecord): MatchDetailInfoItem[] {
   return [
-    { key: "level", label: "레벨", value: match.levelCondition },
-    { key: "gender", label: "성별", value: match.genderCondition },
-    { key: "duration", label: "진행 시간", value: match.durationText },
-    { key: "format", label: "경기 방식", value: formatMatchFormat(match.format) },
-    { key: "shoes", label: "준비물", value: match.preparation },
+    { key: "level", value: match.levelCondition },
+    { key: "gender", value: match.genderCondition },
+    { key: "duration", value: match.durationText },
+    { key: "format", value: formatMatchFormat(match.format) },
+    { key: "shoes", value: match.preparation },
     {
       key: "participants",
-      label: "참가 인원",
       value: `${match.currentParticipants}/${match.capacity}명`,
     },
   ];
