@@ -15,6 +15,7 @@ import {
 } from "@/lib/cash";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import {
+  assertAdminPlayerLevelSchemaReady,
   assertCashChargeOperationsSchemaReady,
   assertCashRefundRequestSchemaReady,
 } from "@/lib/supabase/schema";
@@ -22,15 +23,35 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { buildAdminVenueLabel } from "./match-form";
-import type { AdminMatchRecord, AdminVenueOption, AdminVenueRecord } from "./types";
+import type {
+  AdminMatchParticipantRecord,
+  AdminMatchRecord,
+  AdminVenueOption,
+  AdminVenueRecord,
+} from "./types";
 
 export async function getAdminMatches() {
   if (!isSupabaseConfigured()) {
     return getMockAdminMatches();
   }
 
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return getMockAdminMatches();
+  }
+
+  await assertAdminPlayerLevelSchemaReady(supabase);
+
   const entities = await listAdminMatchEntities();
-  return entities.map(mapEntityToAdminRecord);
+  const participantsByMatchId = await getAdminMatchParticipantsByMatchId(
+    supabase,
+    entities.map((entity) => entity.id),
+  );
+
+  return entities.map((entity) =>
+    mapEntityToAdminRecord(entity, participantsByMatchId.get(entity.id) ?? []),
+  );
 }
 
 export async function getAdminMatchById(id: string) {
@@ -38,8 +59,22 @@ export async function getAdminMatchById(id: string) {
     return getMockAdminMatchById(id);
   }
 
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return getMockAdminMatchById(id);
+  }
+
+  await assertAdminPlayerLevelSchemaReady(supabase);
+
   const entity = await getAdminMatchEntityById(id);
-  return entity ? mapEntityToAdminRecord(entity) : undefined;
+
+  if (!entity) {
+    return undefined;
+  }
+
+  const participantsByMatchId = await getAdminMatchParticipantsByMatchId(supabase, [id]);
+  return mapEntityToAdminRecord(entity, participantsByMatchId.get(id) ?? []);
 }
 
 export async function getAdminVenues() {
@@ -112,7 +147,24 @@ export async function getAdminCashDashboardData() {
   };
 }
 
-function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {
+type MatchParticipantProfileRow = {
+  display_name: string | null;
+  gender: "female" | "male" | null;
+  player_level: string | null;
+  temporary_level: string | null;
+};
+
+type MatchParticipantRow = {
+  id: string;
+  match_id: string;
+  user_id: string | null;
+  profile: MatchParticipantProfileRow | MatchParticipantProfileRow[] | null;
+};
+
+function mapEntityToAdminRecord(
+  entity: MatchEntity,
+  participants: AdminMatchParticipantRecord[],
+): AdminMatchRecord {
   return {
     id: entity.id,
     slug: entity.slug,
@@ -139,6 +191,7 @@ function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {
     imageUrls: entity.imageUrls,
     rules: entity.rules,
     safetyNotes: entity.safetyNotes,
+    participants,
     venueInfo: {
       directions: entity.venue.directions,
       parking: entity.venue.parking,
@@ -146,6 +199,80 @@ function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {
       showerLocker: entity.venue.showerLocker,
     },
   };
+}
+
+async function getAdminMatchParticipantsByMatchId(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  matchIds: string[],
+) {
+  const participantsByMatchId = new Map<string, AdminMatchParticipantRecord[]>();
+
+  if (matchIds.length === 0) {
+    return participantsByMatchId;
+  }
+
+  const { data, error } = await supabase
+    .from("match_applications")
+    .select(
+      `
+        id,
+        match_id,
+        user_id,
+        profile:profiles!match_applications_user_id_fkey (
+          display_name,
+          gender,
+          player_level,
+          temporary_level
+        )
+      `,
+    )
+    .in("match_id", matchIds)
+    .eq("status", "confirmed")
+    .not("user_id", "is", null)
+    .order("applied_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load admin match participants: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as MatchParticipantRow[]) {
+    if (!row.user_id) {
+      continue;
+    }
+
+    const profile = normalizeParticipantProfile(row.profile);
+    const existingParticipants = participantsByMatchId.get(row.match_id) ?? [];
+
+    existingParticipants.push({
+      applicationId: row.id,
+      displayName: profile?.display_name?.trim() || "이름 미등록",
+      gender: profile?.gender ?? null,
+      playerLevel:
+        profile?.player_level ??
+        profile?.temporary_level ??
+        null,
+      playerLevelSource: profile?.player_level
+        ? "player_level"
+        : profile?.temporary_level
+          ? "temporary_level"
+          : "unset",
+      userId: row.user_id,
+    });
+
+    participantsByMatchId.set(row.match_id, existingParticipants);
+  }
+
+  return participantsByMatchId;
+}
+
+function normalizeParticipantProfile(
+  profile: MatchParticipantRow["profile"],
+) {
+  if (Array.isArray(profile)) {
+    return profile[0] ?? null;
+  }
+
+  return profile;
 }
 
 function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {

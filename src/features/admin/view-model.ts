@@ -12,6 +12,7 @@ import type {
   CashRefundRequestEntity,
   CashTransactionEntity,
 } from "@/lib/cash";
+import { formatPlayerLevel, formatProfileGenderLabel } from "@/lib/player-levels";
 import {
   buildAdminVenueLabel,
   formatMatchDurationLabel,
@@ -256,6 +257,7 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
 
     return {
       id: match.id,
+      startAt: match.startAt,
       title: match.title,
       venueLabel: buildAdminVenueLabel(match.venueName, match.district),
       dateLabel: formatSeoulDateShortLabel(new Date(match.startAt)),
@@ -274,6 +276,19 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       isSoldOut,
       tags: match.tags,
       editHref: `/admin/matches/${match.id}/edit`,
+      participantPreviewLabel:
+        match.participants.length > 0
+          ? `${match.participants[0]?.displayName ?? ""}${match.participants.length > 1 ? ` 외 ${match.participants.length - 1}명` : ""}`
+          : "참가자 없음",
+      participants: match.participants.map((participant) => ({
+        applicationId: participant.applicationId,
+        displayName: participant.displayName,
+        genderLabel: formatProfileGenderLabel(participant.gender),
+        playerLevelLabel: formatPlayerLevel(participant.playerLevel),
+        resolvedPlayerLevel: participant.playerLevel,
+        userId: participant.userId,
+      })),
+      quickSummary: `${match.format} · ${match.genderCondition || "성별 무관"} · ${match.price > 0 ? `${formatMoney(match.price)}원` : "무료"}`,
     };
   });
 }

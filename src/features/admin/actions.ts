@@ -1,10 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
+import { buildPlayerLevelValue } from "@/lib/player-levels";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
+  assertAdminPlayerLevelSchemaReady,
   assertCashFoundationSchemaReady,
   assertCashChargeOperationsSchemaReady,
   assertCashRefundRequestSchemaReady,
@@ -409,6 +412,37 @@ export async function rejectCashRefundRequestAction(formData: FormData) {
   }
 
   redirect("/admin/cash");
+}
+
+export async function updateAdminPlayerLevelAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertAdminPlayerLevelSchemaReady(supabase);
+  const userId = String(formData.get("userId") ?? "").trim();
+  const levelCategory = String(formData.get("levelCategory") ?? "").trim();
+  const levelNumber = String(formData.get("levelNumber") ?? "").trim();
+  const playerLevel = buildPlayerLevelValue(levelCategory, levelNumber);
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  if (!playerLevel) {
+    throw new Error("Player level is required");
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      player_level: playerLevel,
+    })
+    .eq("id", userId);
+
+  if (error) {
+    throw new Error(`Failed to update player level: ${error.message}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/matches");
 }
 
 async function requireAdminSupabase() {
