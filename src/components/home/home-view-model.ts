@@ -50,7 +50,7 @@ function getHomeStatus(match: MatchRecord) {
   }
 
   if (match.currentParticipants >= thresholds.confirmedSoon) {
-    return { label: "확정 임박", tone: "accent" as const, isUrgent: false };
+    return { label: "확정 임박!", tone: "accent" as const, isUrgent: false };
   }
 
   return { label: "", tone: "open" as const, isUrgent: false };
