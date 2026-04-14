@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import styles from "./legal-document.module.css";
 
@@ -17,10 +16,6 @@ export function LegalDocument({
     <div className={styles.page}>
       <div className="pageShell">
         <main className={styles.main}>
-          <Link className={styles.backLink} href="/">
-            앵클 홈으로 돌아가기
-          </Link>
-
           <article className={styles.document}>
             <header className={styles.header}>
               <h1 className={styles.title}>{title}</h1>

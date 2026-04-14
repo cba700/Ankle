@@ -13,6 +13,11 @@ import {
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import {
+  BirthDateFields,
+  buildBirthDateFromParts,
+  parseBirthDateParts,
+} from "./birth-date-fields";
 import { PhoneVerificationForm } from "./phone-verification-form";
 import { SignupAgreementSection } from "./signup-agreement-section";
 import styles from "./login-page.module.css";
@@ -29,7 +34,7 @@ type VerifiedPhoneState = {
 
 export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
   const [agreements, setAgreements] = useState(getDefaultSignupAgreementValues());
-  const [birthDate, setBirthDate] = useState("");
+  const [birthDateParts, setBirthDateParts] = useState(() => parseBirthDateParts(""));
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState<ProfileGender | null>(null);
   const [password, setPassword] = useState("");
@@ -66,7 +71,9 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
       }
 
       const normalizedLegalName = normalizeLegalName(legalName);
-      const normalizedBirthDate = normalizeBirthDate(birthDate);
+      const normalizedBirthDate = normalizeBirthDate(
+        buildBirthDateFromParts(birthDateParts),
+      );
 
       if (!normalizedLegalName) {
         setInlineError("이름을 입력해 주세요.");
@@ -208,16 +215,11 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
             />
           </label>
 
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>생년월일</span>
-            <input
-              className={styles.textField}
-              max="9999-12-31"
-              onChange={(event) => setBirthDate(event.target.value)}
-              type="date"
-              value={birthDate}
-            />
-          </label>
+          <BirthDateFields
+            disabled={isPending}
+            onChange={setBirthDateParts}
+            value={birthDateParts}
+          />
 
           <div className={styles.field}>
             <span className={styles.fieldLabel}>성별</span>
@@ -270,7 +272,9 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
             disabled={
               isPending ||
               !isSupabaseConfigured() ||
-              !birthDate ||
+              !birthDateParts.year ||
+              !birthDateParts.month ||
+              !birthDateParts.day ||
               !gender ||
               !verifiedPhone ||
               email.trim().length === 0 ||

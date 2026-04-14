@@ -195,9 +195,30 @@
   font-size: 15px;
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 .textField:focus {
   outline: 2px solid rgba(255, 107, 0, 0.2);
   border-color: rgba(255, 107, 0, 0.5);
+}
+
+.birthDateRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.birthDateSelectWrap {
+  display: block;
 }
 
 .inlineFieldRow {
@@ -278,6 +299,14 @@
   gap: 10px;
 }
 
+.agreementToggle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .agreementRowStrong {
   justify-self: end;
 }
@@ -312,9 +341,14 @@
 }
 
 .agreementLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   color: #555555;
-  font-size: 12px;
-  text-decoration: underline;
+  font-size: 18px;
+  font-weight: 700;
   white-space: nowrap;
 }
 

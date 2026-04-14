@@ -15,7 +15,6 @@ const AGREEMENT_ITEMS: Array<{
   key: keyof SignupAgreementValues;
   label: string;
   linkHref?: string;
-  linkLabel?: string;
   required: boolean;
 }> = [
   {
@@ -28,21 +27,18 @@ const AGREEMENT_ITEMS: Array<{
     key: "privacy",
     label: "개인정보 수집 동의",
     linkHref: "/privacy",
-    linkLabel: "전문 보기",
     required: true,
   },
   {
     key: "terms",
     label: "이용약관 동의",
     linkHref: "/terms",
-    linkLabel: "전문 보기",
     required: true,
   },
   {
     key: "marketingProfile",
     label: "개인정보 마케팅 활용 동의",
     linkHref: "/privacy",
-    linkLabel: "전문 보기",
     required: false,
   },
   {
@@ -97,31 +93,39 @@ export function SignupAgreementSection({
 
       <div className={styles.agreementList}>
         {AGREEMENT_ITEMS.map((item) => (
-          <label className={styles.agreementRow} key={item.key}>
-            <input
-              checked={value[item.key]}
-              className={styles.agreementCheckbox}
-              disabled={disabled}
-              onChange={(event) => handleToggleItem(item.key, event.target.checked)}
-              type="checkbox"
-            />
-            <span className={styles.agreementCopy}>
-              <span className={styles.agreementLabel}>
-                {item.label}
-                <span className={styles.agreementRequired}>
-                  {item.required ? " (필수)" : " (선택)"}
+          <div className={styles.agreementRow} key={item.key}>
+            <label className={styles.agreementToggle}>
+              <input
+                checked={value[item.key]}
+                className={styles.agreementCheckbox}
+                disabled={disabled}
+                onChange={(event) => handleToggleItem(item.key, event.target.checked)}
+                type="checkbox"
+              />
+              <span className={styles.agreementCopy}>
+                <span className={styles.agreementLabel}>
+                  {item.label}
+                  <span className={styles.agreementRequired}>
+                    {item.required ? " (필수)" : " (선택)"}
+                  </span>
                 </span>
+                {item.description ? (
+                  <span className={styles.agreementMeta}>{item.description}</span>
+                ) : null}
               </span>
-              {item.description ? (
-                <span className={styles.agreementMeta}>{item.description}</span>
-              ) : null}
-            </span>
-            {item.linkHref && item.linkLabel ? (
-              <AppLink className={styles.agreementLink} href={item.linkHref}>
-                {item.linkLabel}
+            </label>
+            {item.linkHref ? (
+              <AppLink
+                aria-label={`${item.label} 문서를 새 탭에서 열기`}
+                className={styles.agreementLink}
+                href={item.linkHref}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {">"}
               </AppLink>
             ) : null}
-          </label>
+          </div>
         ))}
       </div>
     </section>

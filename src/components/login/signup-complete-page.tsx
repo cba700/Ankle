@@ -12,6 +12,11 @@ import {
 } from "@/lib/signup-profile";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import {
+  BirthDateFields,
+  buildBirthDateFromParts,
+  parseBirthDateParts,
+} from "./birth-date-fields";
 import { SignupAgreementSection } from "./signup-agreement-section";
 import styles from "./login-page.module.css";
 
@@ -33,7 +38,9 @@ export function SignupCompletePage({
   nextPath,
 }: SignupCompletePageProps) {
   const [agreements, setAgreements] = useState(initialAgreements);
-  const [birthDate, setBirthDate] = useState(initialBirthDate);
+  const [birthDateParts, setBirthDateParts] = useState(() =>
+    parseBirthDateParts(initialBirthDate),
+  );
   const [gender, setGender] = useState<ProfileGender | null>(initialGender);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [legalName, setLegalName] = useState(initialLegalName);
@@ -46,7 +53,9 @@ export function SignupCompletePage({
       setInlineError(null);
 
       const normalizedLegalName = normalizeLegalName(legalName);
-      const normalizedBirthDate = normalizeBirthDate(birthDate);
+      const normalizedBirthDate = normalizeBirthDate(
+        buildBirthDateFromParts(birthDateParts),
+      );
 
       if (!normalizedLegalName) {
         setInlineError("이름을 입력해 주세요.");
@@ -135,16 +144,11 @@ export function SignupCompletePage({
             />
           </label>
 
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>생년월일</span>
-            <input
-              className={styles.textField}
-              max="9999-12-31"
-              onChange={(event) => setBirthDate(event.target.value)}
-              type="date"
-              value={birthDate}
-            />
-          </label>
+          <BirthDateFields
+            disabled={isPending}
+            onChange={setBirthDateParts}
+            value={birthDateParts}
+          />
 
           <div className={styles.field}>
             <span className={styles.fieldLabel}>성별</span>
@@ -180,7 +184,14 @@ export function SignupCompletePage({
 
           <button
             className={styles.primaryButton}
-            disabled={isPending || !birthDate || !gender || legalName.trim().length === 0}
+            disabled={
+              isPending ||
+              !birthDateParts.year ||
+              !birthDateParts.month ||
+              !birthDateParts.day ||
+              !gender ||
+              legalName.trim().length === 0
+            }
             type="submit"
           >
             {isPending ? "저장 중..." : "가입 완료"}

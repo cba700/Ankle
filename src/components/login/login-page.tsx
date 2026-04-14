@@ -188,8 +188,22 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
         )}
 
         <p className={styles.terms}>
-          로그인 시 <AppLink className={styles.termsLink} href="/terms">이용약관</AppLink> 및{" "}
-          <AppLink className={styles.termsLink} href="/privacy">
+          로그인 시{" "}
+          <AppLink
+            className={styles.termsLink}
+            href="/terms"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            이용약관
+          </AppLink>{" "}
+          및{" "}
+          <AppLink
+            className={styles.termsLink}
+            href="/privacy"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             개인정보 처리방침
           </AppLink>
           에 동의하게 됩니다.
