@@ -415,8 +415,14 @@ export async function rejectCashRefundRequestAction(formData: FormData) {
 }
 
 export async function updateAdminPlayerLevelAction(formData: FormData) {
-  const supabase = await requireAdminSupabase();
-  await assertAdminPlayerLevelSchemaReady(supabase);
+  await requireAdminSupabase();
+  const admin = getSupabaseServiceRoleClient();
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  await assertAdminPlayerLevelSchemaReady(admin);
   const userId = String(formData.get("userId") ?? "").trim();
   const levelCategory = String(formData.get("levelCategory") ?? "").trim();
   const levelNumber = String(formData.get("levelNumber") ?? "").trim();
@@ -430,12 +436,11 @@ export async function updateAdminPlayerLevelAction(formData: FormData) {
     throw new Error("Player level is required");
   }
 
-  const { error } = await supabase
-    .from("profiles")
+  const { error } = await ((admin.from("profiles" as any) as any)
     .update({
       player_level: playerLevel,
     })
-    .eq("id", userId);
+    .eq("id", userId));
 
   if (error) {
     throw new Error(`Failed to update player level: ${error.message}`);
