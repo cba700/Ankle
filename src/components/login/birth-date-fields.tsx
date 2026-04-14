@@ -88,7 +88,7 @@ export function BirthDateFields({
           <span className={styles.srOnly}>출생 일</span>
           <select
             className={styles.textField}
-            disabled={disabled || dayOptions.length === 0}
+            disabled={disabled}
             onChange={(event) => handleDayChange(event.target.value)}
             value={value.day}
           >
@@ -150,7 +150,9 @@ function normalizeBirthDateParts(value: BirthDateParts): BirthDateParts {
 
 function getDayOptions(year: string, month: string) {
   if (!/^\d{4}$/.test(year) || !/^\d{2}$/.test(month)) {
-    return [] as string[];
+    return Array.from({ length: 31 }, (_, index) =>
+      String(index + 1).padStart(2, "0"),
+    );
   }
 
   const daysInMonth = new Date(
