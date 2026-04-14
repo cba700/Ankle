@@ -30,12 +30,12 @@
 
 .brandLogo {
   width: auto;
-  height: 24px;
+  height: 28px;
 }
 
 @media (min-width: 768px) {
   .brandLogo {
-    height: 28px;
+    height: 34px;
   }
 
   .search {
@@ -636,7 +636,7 @@
   }
 
   .brandLogo {
-    height: 24px;
+    height: 28px;
   }
 
   .search {
@@ -708,7 +708,7 @@
 
 @media (max-width: 360px) {
   .brandLogo {
-    height: 22px;
+    height: 25px;
   }
 }
 

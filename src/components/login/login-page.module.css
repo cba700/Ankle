@@ -28,7 +28,7 @@
 
 .logoImage {
   width: auto;
-  height: clamp(44px, 8vw, 56px);
+  height: clamp(56px, 10vw, 76px);
 }
 
 .tagline {

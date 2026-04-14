@@ -24,7 +24,7 @@
 
 .brandLogo {
   width: auto;
-  height: 24px;
+  height: 28px;
 }
 
 .headerActions {
@@ -80,7 +80,7 @@
 
 @media (min-width: 768px) {
   .brandLogo {
-    height: 28px;
+    height: 34px;
   }
 
   .search {
@@ -106,7 +106,7 @@
 
 @media (max-width: 360px) {
   .brandLogo {
-    height: 22px;
+    height: 26px;
   }
 
   .search {

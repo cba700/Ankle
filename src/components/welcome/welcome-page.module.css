@@ -20,7 +20,7 @@
 
 .brandLogo {
   width: auto;
-  height: 30px;
+  height: 40px;
 }
 
 @media (max-width: 767px) {
@@ -34,6 +34,6 @@
   }
 
   .brandLogo {
-    height: 26px;
+    height: 34px;
   }
 }
