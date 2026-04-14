@@ -55,6 +55,7 @@ const NAV_ITEMS = [
 export function AdminShell({
   activeNav,
   eyebrow,
+  description,
   title,
   actions,
   children,
@@ -102,6 +103,27 @@ export function AdminShell({
             <div className={styles.headerCopy}>
               <p className={styles.eyebrow}>{eyebrow}</p>
               <h1 className={styles.title}>{title}</h1>
+              {description ? (
+                <p className={styles.description}>{description}</p>
+              ) : null}
+            </div>
+
+            <div className={styles.mobileNav}>
+              {NAV_ITEMS.map((item) => {
+                const active = item.id === activeNav;
+                const Icon = item.icon;
+
+                return (
+                  <AppLink
+                    key={item.id}
+                    className={`${styles.mobileNavLink} ${active ? styles.mobileNavActive : ""}`}
+                    href={item.href}
+                  >
+                    <Icon className={styles.mobileNavIcon} />
+                    <span>{item.label}</span>
+                  </AppLink>
+                );
+              })}
             </div>
 
             {actions ? <div className={styles.actions}>{actions}</div> : null}

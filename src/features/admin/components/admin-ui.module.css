@@ -2,14 +2,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 0.5px solid var(--line);
-  border-radius: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0.5px solid rgba(201, 193, 183, 0.82);
+  border-radius: 12px;
   background: #fff;
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   white-space: nowrap;
 }
@@ -27,23 +27,25 @@
 }
 
 .buttonSmall {
-  min-height: 28px;
-  padding: 4px 10px;
+  min-height: 32px;
+  padding: 4px 11px;
   font-size: 12px;
 }
 
 .sectionCard {
-  border: 0.5px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  padding: 14px 16px;
+  border: 0.5px solid rgba(201, 193, 183, 0.72);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 16px 18px;
+  box-shadow: 0 14px 34px rgba(29, 24, 19, 0.04);
 }
 
 .tableCard {
   overflow: hidden;
-  border: 0.5px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
+  border: 0.5px solid rgba(201, 193, 183, 0.72);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 34px rgba(29, 24, 19, 0.04);
 }
 
 .tableScroll {
@@ -56,22 +58,22 @@
 }
 
 .tableHeadCell {
-  padding: 10px 12px;
-  background: #f4f2ee;
+  padding: 12px 14px;
+  background: #f5f1ea;
   color: var(--text-tertiary);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
   text-align: left;
   white-space: nowrap;
 }
 
 .tableCell {
-  padding: 12px;
+  padding: 14px;
   border-top: 0.5px solid var(--line);
   color: var(--text-primary);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
   vertical-align: middle;
 }
 

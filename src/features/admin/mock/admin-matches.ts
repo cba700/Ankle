@@ -35,6 +35,24 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
       "과도한 몸싸움은 즉시 제지",
       "우천 시 운영 공지 우선",
     ],
+    participants: [
+      {
+        applicationId: "app-01",
+        displayName: "김민준",
+        gender: "male",
+        playerLevel: "Middle 2",
+        playerLevelSource: "player_level",
+        userId: "user-01",
+      },
+      {
+        applicationId: "app-02",
+        displayName: "이서윤",
+        gender: "female",
+        playerLevel: "Basic 3",
+        playerLevelSource: "temporary_level",
+        userId: "user-02",
+      },
+    ],
     venueInfo: {
       directions: "잠실나들목 도보 7분, 자전거길과 바로 연결",
       parking: "잠실 한강공원 주차장 이용 가능, 저녁 혼잡도 높음",
@@ -76,6 +94,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
       "발목 테이핑 권장",
       "컨디션 이상 시 강도 조절 요청",
     ],
+    participants: [],
     venueInfo: {
       directions: "자양역 2번 출구 도보 10분",
       parking: "뚝섬 한강공원 3주차장 이용 가능",
@@ -116,6 +135,16 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
       "코트 외곽 가방 적재 제한",
       "수분 보충 자주 권장",
       "무릎 통증 시 운영자에게 사전 전달",
+    ],
+    participants: [
+      {
+        applicationId: "app-03",
+        displayName: "박도윤",
+        gender: "male",
+        playerLevel: "High 1",
+        playerLevelSource: "temporary_level",
+        userId: "user-03",
+      },
     ],
     venueInfo: {
       directions: "고속터미널역 환승 후 도보 5분",
@@ -158,6 +187,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
       "코트 밖 돌진 플레이 제한",
       "통증이 있으면 바로 플레이 중단",
     ],
+    participants: [],
     venueInfo: {
       directions: "망원역 버스 10분, 성산대교 남단 인근",
       parking: "평일 저녁 비교적 수월",
@@ -199,6 +229,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
       "어지러움 발생 시 즉시 교체",
       "비 예보 시 시작 2시간 전 운영 공지 확인",
     ],
+    participants: [],
     venueInfo: {
       directions: "국회의사당역 환승 후 도보 6분",
       parking: "퇴근 시간대 정체 잦음",
@@ -240,6 +271,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
       "시야를 방해하지 않는 밴드 권장",
       "과격한 파울은 즉시 경고",
     ],
+    participants: [],
     venueInfo: {
       directions: "이촌역 도보 12분, 한강예술공원 산책로 옆",
       parking: "오전 시간대는 비교적 여유",
