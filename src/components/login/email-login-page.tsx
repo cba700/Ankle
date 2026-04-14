@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import styles from "./login-page.module.css";
@@ -99,8 +100,7 @@ export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
     <div className={styles.page}>
       <div className={styles.card}>
         <AppLink className={styles.logoWrap} href="/">
-          <span className={styles.logoWord}>앵클</span>
-          <span className={styles.logoDot}>.</span>
+          <BrandLogo className={styles.logoImage} priority />
         </AppLink>
         <p className={styles.tagline}>이메일로 로그인</p>
 

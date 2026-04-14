@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { getKakaoSyncOAuthOptions } from "@/lib/kakao-sync";
@@ -128,8 +129,7 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
     <div className={styles.page}>
       <div className={styles.card}>
         <AppLink className={styles.logoWrap} href="/">
-          <span className={styles.logoWord}>앵클</span>
-          <span className={styles.logoDot}>.</span>
+          <BrandLogo className={styles.logoImage} priority />
         </AppLink>
         <p className={styles.tagline}>코트에서 만나는 모든 농구</p>
 

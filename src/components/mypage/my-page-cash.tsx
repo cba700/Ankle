@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import type { MyPageCashTransaction } from "@/lib/mypage";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import {
   CASH_REFUND_BANK_OPTIONS,
   isValidCashRefundAccountHolder,
@@ -194,8 +195,7 @@ export function MyPageCash({
       <header className={baseStyles.header}>
         <div className={baseStyles.headerInner}>
           <AppLink className={baseStyles.brand} href="/">
-            <span className={baseStyles.brandWord}>앵클</span>
-            <span className={baseStyles.brandDot}>.</span>
+            <BrandLogo className={baseStyles.brandLogo} priority />
           </AppLink>
 
           <div className={baseStyles.headerActions}>

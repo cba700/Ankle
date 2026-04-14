@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { SearchIcon } from "@/components/icons";
 import { AppLink } from "@/components/navigation/app-link";
 import { MatchSearch } from "@/components/navigation/match-search";
@@ -10,8 +11,7 @@ export function MatchDetailHeader() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <AppLink className={styles.brand} href="/">
-          <span className={styles.brandWord}>앵클</span>
-          <span className={styles.brandDot}>.</span>
+          <BrandLogo className={styles.brandLogo} priority />
         </AppLink>
 
         <div className={styles.actions}>

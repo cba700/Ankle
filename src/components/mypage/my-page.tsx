@@ -1,5 +1,6 @@
 import type { MyPageData } from "@/lib/mypage";
 import { formatTemporaryLevel } from "@/lib/player-preferences";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { ArrowRightIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -74,8 +75,7 @@ export function MyPage({ data }: MyPageProps) {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <AppLink className={styles.brand} href="/">
-            <span className={styles.brandWord}>앵클</span>
-            <span className={styles.brandDot}>.</span>
+            <BrandLogo className={styles.brandLogo} priority />
           </AppLink>
 
           <div className={styles.headerActions}>

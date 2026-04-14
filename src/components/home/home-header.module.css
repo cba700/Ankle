@@ -18,22 +18,13 @@
 
 .brand {
   display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: center;
   flex-shrink: 0;
 }
 
-.brandWord {
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-}
-
-.brandDot {
-  color: var(--accent);
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1;
+.brandLogo {
+  width: auto;
+  height: 24px;
 }
 
 .headerActions {
@@ -88,8 +79,8 @@
 }
 
 @media (min-width: 768px) {
-  .brandWord {
-    font-size: 26px;
+  .brandLogo {
+    height: 28px;
   }
 
   .search {
@@ -114,12 +105,8 @@
 }
 
 @media (max-width: 360px) {
-  .brandWord {
-    font-size: 20px;
-  }
-
-  .brandDot {
-    font-size: 24px;
+  .brandLogo {
+    height: 22px;
   }
 
   .search {

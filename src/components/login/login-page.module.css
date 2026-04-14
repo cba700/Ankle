@@ -23,23 +23,12 @@
 
 .logoWrap {
   display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: center;
 }
 
-.logoWord {
-  color: #111111;
-  font-size: clamp(42px, 8vw, 50px);
-  font-weight: 900;
-  letter-spacing: -0.08em;
-  line-height: 1;
-}
-
-.logoDot {
-  color: #ff6b00;
-  font-size: clamp(48px, 9vw, 58px);
-  font-weight: 900;
-  line-height: 1;
+.logoImage {
+  width: auto;
+  height: clamp(44px, 8vw, 56px);
 }
 
 .tagline {
