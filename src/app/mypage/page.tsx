@@ -36,7 +36,7 @@ export default async function MyPageRoute() {
     supabase,
     user.id,
     "/mypage",
-    { skipPhoneVerification: true },
+    { skipOnboarding: true, skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {

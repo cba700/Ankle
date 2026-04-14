@@ -36,7 +36,7 @@ export default async function MyPageWishlistRoute() {
     supabase,
     user.id,
     "/mypage/wishlist",
-    { skipPhoneVerification: true },
+    { skipOnboarding: true, skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {

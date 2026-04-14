@@ -24,6 +24,7 @@ export function getRequiredMemberSetupHref(
   setupState: ProfileOnboardingState,
   nextPath?: string | null,
   options?: {
+    skipOnboarding?: boolean;
     skipPhoneVerification?: boolean;
   },
 ) {
@@ -31,7 +32,7 @@ export function getRequiredMemberSetupHref(
     return buildVerifyPhoneHref(nextPath);
   }
 
-  if (setupState.onboardingRequired) {
+  if (setupState.onboardingRequired && !options?.skipOnboarding) {
     return buildWelcomeHref(nextPath);
   }
 
@@ -43,6 +44,7 @@ export async function getRequiredMemberSetupRedirectPath(
   userId: string,
   nextPath?: string | null,
   options?: {
+    skipOnboarding?: boolean;
     skipPhoneVerification?: boolean;
   },
 ) {

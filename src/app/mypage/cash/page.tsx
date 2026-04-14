@@ -40,7 +40,7 @@ export default async function MyPageCashRoute() {
     supabase,
     user.id,
     "/mypage/cash",
-    { skipPhoneVerification: true },
+    { skipOnboarding: true, skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {

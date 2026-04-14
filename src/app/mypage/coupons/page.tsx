@@ -36,7 +36,7 @@ export default async function MyPageCouponsRoute() {
     supabase,
     user.id,
     "/mypage/coupons",
-    { skipPhoneVerification: true },
+    { skipOnboarding: true, skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {

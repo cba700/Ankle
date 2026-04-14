@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { buildAuthContinueHref, buildLoginHref } from "@/lib/auth/redirect";
-import { getMemberSetupState } from "@/lib/member-access";
+import { buildLoginHref } from "@/lib/auth/redirect";
 import { toTemporaryLevel } from "@/lib/player-preferences";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
@@ -26,12 +25,6 @@ export async function updateMyPageDisplayNameAction(formData: FormData) {
 
   if (!supabase) {
     redirect(buildLoginHref("/mypage/settings", "supabase_not_configured"));
-  }
-
-  const setupState = await getMemberSetupState(supabase, user.id);
-
-  if (setupState.onboardingRequired) {
-    redirect(buildAuthContinueHref("/mypage/settings"));
   }
 
   const { error } = await supabase
@@ -69,11 +62,6 @@ export async function updateMyPageTemporaryLevelAction(formData: FormData) {
   }
 
   await assertProfileOnboardingSchemaReady(supabase);
-  const setupState = await getMemberSetupState(supabase, user.id);
-
-  if (setupState.onboardingRequired) {
-    redirect(buildAuthContinueHref("/mypage/settings"));
-  }
 
   const temporaryLevel = toTemporaryLevel(
     String(formData.get("temporaryLevelChoice") ?? ""),

@@ -36,7 +36,7 @@ export default async function MyPageApplicationsRoute() {
     supabase,
     user.id,
     "/mypage/applications",
-    { skipPhoneVerification: true },
+    { skipOnboarding: true, skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {
