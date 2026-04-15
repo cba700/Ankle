@@ -171,25 +171,42 @@ export function buildAdminCashOverviewCards({
 export function buildAdminCouponOverviewCards(
   templates: AdminCouponTemplateRecord[],
 ): AdminOverviewCard[] {
-  const activeTemplate = templates.find((template) => template.isActive) ?? null;
+  const activeTemplates = templates.filter((template) => template.isActive);
+  const activeTemplate = activeTemplates[0] ?? null;
+  const highestDiscountAmount = activeTemplates.reduce(
+    (max, template) => Math.max(max, template.discountAmount),
+    0,
+  );
   const issuedCount = templates.reduce((sum, template) => sum + template.issuedCount, 0);
   const availableCount = templates.reduce((sum, template) => sum + template.availableCount, 0);
   const usedCount = templates.reduce((sum, template) => sum + template.usedCount, 0);
+  const activeSummary =
+    activeTemplates.length === 0
+      ? "없음"
+      : activeTemplates.length === 1
+        ? activeTemplates[0].name
+        : `${activeTemplates.length}개 운영 중`;
+  const activeHelper =
+    activeTemplates.length === 0
+      ? "현재 운영 중인 쿠폰 없음"
+      : activeTemplates.length === 1
+        ? "신규가입 시 자동 지급 중"
+        : `${activeTemplate?.name ?? "쿠폰"} 외 ${activeTemplates.length - 1}개 자동 지급`;
 
   return [
     {
       id: "coupon-active",
       label: "운영 중인 쿠폰",
-      value: activeTemplate ? activeTemplate.name : "없음",
-      helper: activeTemplate ? "신규가입 시 자동 지급 중" : "현재 운영 중인 쿠폰 없음",
-      tone: activeTemplate ? "accent" : "neutral",
+      value: activeSummary,
+      helper: activeHelper,
+      tone: activeTemplates.length > 0 ? "accent" : "neutral",
     },
     {
       id: "coupon-discount",
-      label: "현재 할인액",
-      value: activeTemplate ? `${formatMoney(activeTemplate.discountAmount)}원` : "-",
+      label: "최대 할인액",
+      value: highestDiscountAmount > 0 ? `${formatMoney(highestDiscountAmount)}원` : "-",
       helper: "운영 중인 쿠폰 기준",
-      tone: activeTemplate ? "accent" : "neutral",
+      tone: highestDiscountAmount > 0 ? "accent" : "neutral",
     },
     {
       id: "coupon-issued",

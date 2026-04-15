@@ -276,6 +276,61 @@
   border: 0;
 }
 
+.couponOptionList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.couponOption {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.couponOptionSelected {
+  border-color: rgba(243, 109, 33, 0.46);
+  background: #fff9f3;
+  box-shadow: 0 10px 18px rgba(243, 109, 33, 0.1);
+}
+
+.couponOptionInput {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.couponOptionCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.couponOptionName {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.couponOptionMeta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.couponOptionAmount {
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
 .checkboxList {
   display: grid;
   gap: 12px;
@@ -425,6 +480,14 @@
   .heroTop,
   .policyItem {
     display: grid;
+  }
+
+  .couponOption {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .couponOptionAmount {
+    grid-column: 2;
   }
 
   .price {

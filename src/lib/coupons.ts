@@ -74,22 +74,9 @@ export async function getAvailableSignupCouponByUserId(
   supabase: SupabaseServerClient,
   userId: string,
 ) {
-  const { data, error } = await supabase
-    .from("user_coupons")
-    .select(
-      "id, template_id, user_id, name_snapshot, discount_amount_snapshot, status, issued_reason, used_match_application_id, issued_at, used_at, restored_at, restore_count, created_at, updated_at",
-    )
-    .eq("user_id", userId)
-    .eq("status", "available")
-    .eq("issued_reason", "signup_welcome")
-    .order("issued_at", { ascending: true })
-    .maybeSingle();
+  const coupons = await listAvailableUserCouponsByUserId(supabase, userId, 20);
 
-  if (error) {
-    throw new Error(`Failed to load available signup coupon: ${error.message}`);
-  }
-
-  return data ? mapUserCoupon(data as UserCouponRow) : null;
+  return coupons.find((coupon) => coupon.issuedReason === "signup_welcome") ?? null;
 }
 
 export async function listUserCouponsByUserId(
@@ -108,6 +95,29 @@ export async function listUserCouponsByUserId(
 
   if (error) {
     throw new Error(`Failed to load user coupons: ${error.message}`);
+  }
+
+  return ((data ?? []) as UserCouponRow[]).map(mapUserCoupon);
+}
+
+export async function listAvailableUserCouponsByUserId(
+  supabase: SupabaseServerClient,
+  userId: string,
+  limit = 20,
+) {
+  const { data, error } = await supabase
+    .from("user_coupons")
+    .select(
+      "id, template_id, user_id, name_snapshot, discount_amount_snapshot, status, issued_reason, used_match_application_id, issued_at, used_at, restored_at, restore_count, created_at, updated_at",
+    )
+    .eq("user_id", userId)
+    .eq("status", "available")
+    .order("discount_amount_snapshot", { ascending: false })
+    .order("issued_at", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to load available user coupons: ${error.message}`);
   }
 
   return ((data ?? []) as UserCouponRow[]).map(mapUserCoupon);
