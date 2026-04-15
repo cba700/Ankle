@@ -461,10 +461,6 @@ export async function createAdminCouponTemplateAction(formData: FormData) {
   await assertCouponSchemaReady(supabase);
   const values = readCouponTemplateFormValues(formData);
 
-  if (values.isActive) {
-    await deactivateSignupCouponTemplates(supabase);
-  }
-
   const { error } = await ((supabase.from("coupon_templates" as any) as any).insert({
     auto_issue_on_signup: true,
     discount_amount: values.discountAmount,
@@ -488,10 +484,6 @@ export async function updateAdminCouponTemplateAction(formData: FormData) {
 
   if (!templateId) {
     throw new Error("Coupon template ID is required");
-  }
-
-  if (values.isActive) {
-    await deactivateSignupCouponTemplates(supabase, templateId);
   }
 
   const { error } = await ((supabase.from("coupon_templates" as any) as any)
@@ -812,27 +804,6 @@ function readCouponTemplateFormValues(formData: FormData): CouponTemplateFormVal
     isActive: formData.get("isActive") === "on",
     name: getRequiredString(formData, "name"),
   };
-}
-
-async function deactivateSignupCouponTemplates(
-  supabase: AdminSupabaseClient,
-  excludeTemplateId?: string,
-) {
-  let query = (supabase.from("coupon_templates" as any) as any)
-    .update({ is_active: false })
-    .eq("template_type", "signup_welcome")
-    .eq("auto_issue_on_signup", true)
-    .eq("is_active", true);
-
-  if (excludeTemplateId) {
-    query = query.neq("id", excludeTemplateId);
-  }
-
-  const { error } = await query;
-
-  if (error) {
-    throw new Error(`Failed to deactivate active coupon templates: ${error.message}`);
-  }
 }
 
 function getNonNegativeInteger(formData: FormData, key: string) {

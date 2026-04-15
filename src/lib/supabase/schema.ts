@@ -29,7 +29,7 @@ const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION =
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
   "20260414234500_add_admin_match_participants_rpc.sql";
 const REQUIRED_COUPON_MIGRATION =
-  "20260415093000_add_coupon_system.sql";
+  "20260415123000_support_multiple_signup_coupons.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -467,6 +467,18 @@ async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleCouponSchemaCheckError(matchApplicationCouponCheck.error);
+
+  const applyToMatchCheck = await ((supabase.rpc(
+    "apply_to_match",
+    {
+      p_coupon_id: null,
+      p_match_id: "00000000-0000-0000-0000-000000000000",
+    },
+  ) as any) as { error: { code?: string; message?: string } | null });
+
+  if (!isExpectedCouponRpcProbeError(applyToMatchCheck.error)) {
+    handleCouponSchemaCheckError(applyToMatchCheck.error);
+  }
 }
 
 function handleSchemaCheckError(
@@ -676,6 +688,18 @@ function handleCouponSchemaCheckError(
   }
 
   throw new Error(`Failed to verify coupon schema: ${error.message}`);
+}
+
+function isExpectedCouponRpcProbeError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error?.message) {
+    return false;
+  }
+
+  const normalized = error.message.toUpperCase();
+
+  return normalized.includes("AUTH_REQUIRED") || normalized.includes("MATCH_NOT_FOUND");
 }
 
 function handleChargeOperationsSchemaError(

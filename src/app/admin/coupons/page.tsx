@@ -54,8 +54,8 @@ export default async function AdminCouponsPage() {
             <div className={styles.sectionCopy}>
               <h2 className={styles.sectionTitle}>새 쿠폰 템플릿</h2>
               <p className={styles.sectionDescription}>
-                기본 신규가입 쿠폰은 미리 등록됩니다. 새 템플릿을 추가한 뒤 활성화하면 이후 가입자부터 그
-                설정으로 지급됩니다.
+                기본 신규가입 쿠폰은 미리 등록됩니다. 템플릿을 활성화하면 이후 가입자에게 다른 활성 쿠폰과
+                함께 자동 지급됩니다.
               </p>
             </div>
           </div>
