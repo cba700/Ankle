@@ -28,6 +28,8 @@ const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION =
   "20260414233000_add_admin_player_level.sql";
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
   "20260414234500_add_admin_match_participants_rpc.sql";
+const REQUIRED_COUPON_MIGRATION =
+  "20260415093000_add_coupon_system.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -40,6 +42,7 @@ const REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE = `Database schema is outdated. Appl
 const REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_SIGNUP_PROFILE_MIGRATION} before running signup profile and consent features.`;
 const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION} before running admin player level features.`;
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
+const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -51,6 +54,7 @@ let cashRefundRequestSchemaCheckPromise: Promise<void> | null = null;
 let signupProfileSchemaCheckPromise: Promise<void> | null = null;
 let adminPlayerLevelSchemaCheckPromise: Promise<void> | null = null;
 let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
+let couponSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -254,6 +258,25 @@ export async function assertAdminMatchParticipantsSchemaReady(
   return adminMatchParticipantsSchemaCheckPromise;
 }
 
+export async function assertCouponSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!couponSchemaCheckPromise) {
+    couponSchemaCheckPromise = runCouponSchemaCheck(client).catch((error) => {
+      couponSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return couponSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -419,6 +442,31 @@ async function runAdminMatchParticipantsSchemaCheck(
   ) as any) as { error: { code?: string; message?: string } | null });
 
   handleAdminMatchParticipantsSchemaError(participantRpcCheck.error);
+}
+
+async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
+  await runCashSchemaCheck(supabase);
+
+  const couponTemplateCheck = await supabase
+    .from("coupon_templates")
+    .select("discount_amount, auto_issue_on_signup, is_active")
+    .limit(1);
+
+  handleCouponSchemaCheckError(couponTemplateCheck.error);
+
+  const userCouponCheck = await supabase
+    .from("user_coupons")
+    .select("discount_amount_snapshot, issued_reason, used_match_application_id, restore_count")
+    .limit(1);
+
+  handleCouponSchemaCheckError(userCouponCheck.error);
+
+  const matchApplicationCouponCheck = await supabase
+    .from("match_applications")
+    .select("coupon_id, coupon_discount_amount, charged_amount_snapshot")
+    .limit(1);
+
+  handleCouponSchemaCheckError(matchApplicationCouponCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -606,6 +654,28 @@ function handleAdminMatchParticipantsSchemaError(
   }
 
   throw new Error(`Failed to verify admin participant schema: ${error.message}`);
+}
+
+function handleCouponSchemaCheckError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation") ||
+    error.message?.includes("Could not find the function")
+  ) {
+    throw new Error(REQUIRED_COUPON_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify coupon schema: ${error.message}`);
 }
 
 function handleChargeOperationsSchemaError(

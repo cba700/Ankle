@@ -139,6 +139,63 @@
   line-height: 1.6;
 }
 
+.priceSummaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.couponBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.priceSummaryList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.priceSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.priceSummaryRow strong {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.priceSummaryRowStrong {
+  padding-top: 12px;
+  border-top: 1px solid rgba(201, 193, 183, 0.62);
+  color: var(--text-primary);
+}
+
+.priceSummaryRowStrong strong {
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.discountValue {
+  color: var(--accent-strong) !important;
+}
+
 .accountBox {
   display: grid;
   gap: 6px;

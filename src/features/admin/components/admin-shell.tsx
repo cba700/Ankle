@@ -11,7 +11,7 @@ import {
 import styles from "./admin-shell.module.css";
 
 type AdminShellProps = {
-  activeNav: "dashboard" | "matches" | "venues" | "cash" | "create";
+  activeNav: "dashboard" | "matches" | "venues" | "cash" | "coupons" | "create";
   eyebrow: string;
   title: string;
   description?: string;
@@ -43,6 +43,12 @@ const NAV_ITEMS = [
     label: "캐시 현황",
     href: "/admin/cash",
     icon: WalletIcon,
+  },
+  {
+    id: "coupons",
+    label: "쿠폰 관리",
+    href: "/admin/coupons",
+    icon: BadgeIcon,
   },
   {
     id: "create",

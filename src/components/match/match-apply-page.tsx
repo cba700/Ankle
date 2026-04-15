@@ -9,6 +9,7 @@ import {
   buildVerifyPhoneHref,
   buildWelcomeHref,
 } from "@/lib/auth/redirect";
+import { formatMoney } from "@/lib/date";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
@@ -17,6 +18,14 @@ type MatchApplyPageProps = {
   alreadyApplied: boolean;
   canApply: boolean;
   cashBalanceLabel: string;
+  priceSummary: {
+    couponDiscountAmount: number;
+    couponDiscountLabel: string | null;
+    couponName: string | null;
+    finalChargeAmount: number;
+    finalChargeLabel: string;
+    originalPriceLabel: string;
+  };
   view: MatchDetailViewModel;
 };
 
@@ -31,6 +40,7 @@ export function MatchApplyPage({
   alreadyApplied,
   canApply,
   cashBalanceLabel,
+  priceSummary,
   view,
 }: MatchApplyPageProps) {
   const router = useRouter();
@@ -67,7 +77,13 @@ export function MatchApplyPage({
         method: "POST",
       });
       const payload = (await response.json().catch(() => null)) as
-        | { code?: string }
+        | {
+            code?: string;
+            couponApplied?: boolean;
+            couponDiscountAmount?: number;
+            debitedAmount?: number;
+            remainingCash?: number;
+          }
         | null;
 
       if (response.ok || payload?.code === "ALREADY_APPLIED") {
@@ -75,7 +91,7 @@ export function MatchApplyPage({
         setFeedbackMessage(
           payload?.code === "ALREADY_APPLIED"
             ? "이미 신청이 완료된 매치입니다."
-            : "캐시 차감 후 현재 계정으로 매치 신청이 확정되었습니다.",
+            : buildSuccessMessage(payload),
         );
         startTransition(() => router.refresh());
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -162,6 +178,33 @@ export function MatchApplyPage({
                 <div className={styles.accountBox}>
                   <span className={styles.accountLabel}>현재 보유 캐시</span>
                   <strong className={styles.accountValue}>{cashBalanceLabel}</strong>
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <div className={styles.priceSummaryHeader}>
+                  <h2 className={styles.sectionTitle}>차감 요약</h2>
+                  {priceSummary.couponName ? (
+                    <span className={styles.couponBadge}>신규가입 쿠폰 자동 적용</span>
+                  ) : null}
+                </div>
+                <div className={styles.priceSummaryList}>
+                  <div className={styles.priceSummaryRow}>
+                    <span>참가비</span>
+                    <strong>{priceSummary.originalPriceLabel}</strong>
+                  </div>
+                  {priceSummary.couponDiscountAmount > 0 ? (
+                    <div className={styles.priceSummaryRow}>
+                      <span>{priceSummary.couponName}</span>
+                      <strong className={styles.discountValue}>
+                        -{priceSummary.couponDiscountLabel}
+                      </strong>
+                    </div>
+                  ) : null}
+                  <div className={`${styles.priceSummaryRow} ${styles.priceSummaryRowStrong}`}>
+                    <span>최종 차감</span>
+                    <strong>{priceSummary.finalChargeLabel}</strong>
+                  </div>
                 </div>
               </section>
 
@@ -305,4 +348,23 @@ function getStatusClassName(
   }
 
   return `${classNames.statusPill} ${classNames.statusNeutral}`;
+}
+
+function buildSuccessMessage(payload?: {
+  couponApplied?: boolean;
+  couponDiscountAmount?: number;
+  debitedAmount?: number;
+} | null) {
+  const debitedAmount = payload?.debitedAmount ?? 0;
+  const couponDiscountAmount = payload?.couponDiscountAmount ?? 0;
+
+  if (payload?.couponApplied && couponDiscountAmount > 0 && debitedAmount === 0) {
+    return `쿠폰 ${formatMoney(couponDiscountAmount)}원 적용으로 차감 없이 신청이 확정되었습니다.`;
+  }
+
+  if (payload?.couponApplied && couponDiscountAmount > 0) {
+    return `쿠폰 ${formatMoney(couponDiscountAmount)}원 적용 후 ${formatMoney(debitedAmount)}원 차감되었습니다.`;
+  }
+
+  return `캐시 ${formatMoney(debitedAmount)}원 차감으로 신청이 확정되었습니다.`;
 }

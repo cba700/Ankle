@@ -13,10 +13,15 @@ import {
   listRecentCashRefundRequests,
   listRecentCashTransactions,
 } from "@/lib/cash";
+import {
+  listCouponTemplates,
+  listCouponUsageSummaries,
+} from "@/lib/coupons";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import {
   assertAdminMatchParticipantsSchemaReady,
   assertCashChargeOperationsSchemaReady,
+  assertCouponSchemaReady,
   assertCashRefundRequestSchemaReady,
 } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -26,6 +31,7 @@ import { buildAdminVenueLabel } from "./match-form";
 import type {
   AdminMatchParticipantRecord,
   AdminMatchRecord,
+  AdminCouponTemplateRecord,
   AdminVenueOption,
   AdminVenueRecord,
 } from "./types";
@@ -144,6 +150,79 @@ export async function getAdminCashDashboardData() {
     chargeOrderEvents,
     refundRequests,
     transactions,
+  };
+}
+
+export async function getAdminCouponDashboardData() {
+  if (!isSupabaseConfigured()) {
+    return {
+      templates: [] as AdminCouponTemplateRecord[],
+    };
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      templates: [] as AdminCouponTemplateRecord[],
+    };
+  }
+
+  await assertCouponSchemaReady(supabase);
+
+  const [templates, usageSummaries] = await Promise.all([
+    listCouponTemplates(supabase),
+    listCouponUsageSummaries(supabase),
+  ]);
+
+  const usageByTemplateId = new Map<
+    string,
+    { availableCount: number; issuedCount: number; usedCount: number }
+  >();
+
+  for (const summary of usageSummaries) {
+    if (!summary.templateId) {
+      continue;
+    }
+
+    const current = usageByTemplateId.get(summary.templateId) ?? {
+      availableCount: 0,
+      issuedCount: 0,
+      usedCount: 0,
+    };
+    current.issuedCount += 1;
+
+    if (summary.status === "available") {
+      current.availableCount += 1;
+    }
+
+    if (summary.status === "used") {
+      current.usedCount += 1;
+    }
+
+    usageByTemplateId.set(summary.templateId, current);
+  }
+
+  return {
+    templates: templates.map((template) => {
+      const usage = usageByTemplateId.get(template.id) ?? {
+        availableCount: 0,
+        issuedCount: 0,
+        usedCount: 0,
+      };
+
+      return {
+        availableCount: usage.availableCount,
+        createdAt: template.createdAt,
+        discountAmount: template.discountAmount,
+        id: template.id,
+        isActive: template.isActive,
+        issuedCount: usage.issuedCount,
+        name: template.name,
+        updatedAt: template.updatedAt,
+        usedCount: usage.usedCount,
+      };
+    }),
   };
 }
 

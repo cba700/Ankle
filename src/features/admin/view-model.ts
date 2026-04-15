@@ -26,6 +26,8 @@ import type {
   AdminCashChargeOrderEventRow,
   AdminCashRefundRequestRow,
   AdminCashTransactionRow,
+  AdminCouponTemplateRecord,
+  AdminCouponTemplateRow,
   AdminMatchFormValue,
   AdminMatchRecord,
   AdminMatchRow,
@@ -164,6 +166,64 @@ export function buildAdminCashOverviewCards({
       tone: pendingRefundRequests > 0 ? "danger" : "neutral",
     },
   ];
+}
+
+export function buildAdminCouponOverviewCards(
+  templates: AdminCouponTemplateRecord[],
+): AdminOverviewCard[] {
+  const activeTemplate = templates.find((template) => template.isActive) ?? null;
+  const issuedCount = templates.reduce((sum, template) => sum + template.issuedCount, 0);
+  const availableCount = templates.reduce((sum, template) => sum + template.availableCount, 0);
+  const usedCount = templates.reduce((sum, template) => sum + template.usedCount, 0);
+
+  return [
+    {
+      id: "coupon-active",
+      label: "활성 쿠폰",
+      value: activeTemplate ? activeTemplate.name : "없음",
+      helper: activeTemplate ? "신규가입 자동 지급 중" : "현재 자동 지급 쿠폰 없음",
+      tone: activeTemplate ? "accent" : "neutral",
+    },
+    {
+      id: "coupon-discount",
+      label: "현재 할인액",
+      value: activeTemplate ? `${formatMoney(activeTemplate.discountAmount)}원` : "-",
+      helper: "활성 템플릿 기준",
+      tone: activeTemplate ? "accent" : "neutral",
+    },
+    {
+      id: "coupon-issued",
+      label: "누적 발급",
+      value: `${issuedCount}장`,
+      helper: "전체 지급 수",
+      tone: "neutral",
+    },
+    {
+      id: "coupon-available",
+      label: "사용 가능",
+      value: `${availableCount}장`,
+      helper: `사용 완료 ${usedCount}장`,
+      tone: availableCount > 0 ? "accent" : "neutral",
+    },
+  ];
+}
+
+export function buildAdminCouponTemplateRows(
+  templates: AdminCouponTemplateRecord[],
+): AdminCouponTemplateRow[] {
+  return templates.map((template) => ({
+    availableCountLabel: `${template.availableCount}장`,
+    discountAmount: template.discountAmount,
+    discountAmountLabel: `${formatMoney(template.discountAmount)}원`,
+    id: template.id,
+    isActive: template.isActive,
+    issuedCountLabel: `${template.issuedCount}장`,
+    metaLabel: `${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
+    name: template.name,
+    statusLabel: template.isActive ? "활성" : "비활성",
+    statusTone: template.isActive ? "accent" : "neutral",
+    usedCountLabel: `${template.usedCount}장`,
+  }));
 }
 
 export function buildAdminCashAccountRows(

@@ -8,8 +8,8 @@ import { buildPlayerLevelValue } from "@/lib/player-levels";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
   assertAdminPlayerLevelSchemaReady,
-  assertCashFoundationSchemaReady,
   assertCashChargeOperationsSchemaReady,
+  assertCouponSchemaReady,
   assertCashRefundRequestSchemaReady,
   assertVenueManagementSchemaReady,
 } from "@/lib/supabase/schema";
@@ -82,6 +82,12 @@ type MatchCountResult = {
   confirmed_count: number;
 };
 
+type CouponTemplateFormValues = {
+  discountAmount: number;
+  isActive: boolean;
+  name: string;
+};
+
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
 const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
@@ -142,7 +148,7 @@ export async function createAdminMatchAction(formData: FormData) {
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
-  await assertCashFoundationSchemaReady(supabase);
+  await assertCouponSchemaReady(supabase);
   const values = readUpdateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
@@ -450,6 +456,59 @@ export async function updateAdminPlayerLevelAction(formData: FormData) {
   revalidatePath("/admin/matches");
 }
 
+export async function createAdminCouponTemplateAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const values = readCouponTemplateFormValues(formData);
+
+  if (values.isActive) {
+    await deactivateSignupCouponTemplates(supabase);
+  }
+
+  const { error } = await ((supabase.from("coupon_templates" as any) as any).insert({
+    auto_issue_on_signup: true,
+    discount_amount: values.discountAmount,
+    is_active: values.isActive,
+    name: values.name,
+    template_type: "signup_welcome",
+  }));
+
+  if (error) {
+    throw new Error(`Failed to create coupon template: ${error.message}`);
+  }
+
+  redirect("/admin/coupons");
+}
+
+export async function updateAdminCouponTemplateAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const templateId = String(formData.get("templateId") ?? "").trim();
+  const values = readCouponTemplateFormValues(formData);
+
+  if (!templateId) {
+    throw new Error("Coupon template ID is required");
+  }
+
+  if (values.isActive) {
+    await deactivateSignupCouponTemplates(supabase, templateId);
+  }
+
+  const { error } = await ((supabase.from("coupon_templates" as any) as any)
+    .update({
+      discount_amount: values.discountAmount,
+      is_active: values.isActive,
+      name: values.name,
+    })
+    .eq("id", templateId));
+
+  if (error) {
+    throw new Error(`Failed to update coupon template: ${error.message}`);
+  }
+
+  redirect("/admin/coupons");
+}
+
 async function requireAdminSupabase() {
   const { configured, role, user } = await getServerAuthState();
 
@@ -745,6 +804,35 @@ function getPositiveInteger(formData: FormData, key: string) {
   }
 
   return value;
+}
+
+function readCouponTemplateFormValues(formData: FormData): CouponTemplateFormValues {
+  return {
+    discountAmount: getPositiveInteger(formData, "discountAmount"),
+    isActive: formData.get("isActive") === "on",
+    name: getRequiredString(formData, "name"),
+  };
+}
+
+async function deactivateSignupCouponTemplates(
+  supabase: AdminSupabaseClient,
+  excludeTemplateId?: string,
+) {
+  let query = (supabase.from("coupon_templates" as any) as any)
+    .update({ is_active: false })
+    .eq("template_type", "signup_welcome")
+    .eq("auto_issue_on_signup", true)
+    .eq("is_active", true);
+
+  if (excludeTemplateId) {
+    query = query.neq("id", excludeTemplateId);
+  }
+
+  const { error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to deactivate active coupon templates: ${error.message}`);
+  }
 }
 
 function getNonNegativeInteger(formData: FormData, key: string) {

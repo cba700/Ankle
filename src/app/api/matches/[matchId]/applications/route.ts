@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getMatchApplicationError } from "@/lib/match-application-errors";
 import { getMemberSetupState } from "@/lib/member-access";
-import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
+import { assertCouponSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(
@@ -29,7 +29,7 @@ export async function POST(
     );
   }
 
-  await assertCashFoundationSchemaReady(supabase);
+  await assertCouponSchemaReady(supabase);
   const onboardingState = await getMemberSetupState(supabase, user.id);
 
   if (onboardingState.phoneVerificationRequired) {
