@@ -9,6 +9,10 @@ import {
   buildVerifyPhoneHref,
   buildWelcomeHref,
 } from "@/lib/auth/redirect";
+import {
+  MATCH_REFUND_POLICY_HREF,
+  RAIN_REFUND_POLICY_HREF,
+} from "@/lib/refund-policy";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
@@ -180,6 +184,14 @@ export function MatchApplyPage({
                       </li>
                     ))}
                   </ul>
+                  <div className={styles.policyLinkRow}>
+                    <AppLink className={styles.policyLink} href={MATCH_REFUND_POLICY_HREF}>
+                      매치 환불 전체 보기
+                    </AppLink>
+                    <AppLink className={styles.policyLink} href={RAIN_REFUND_POLICY_HREF}>
+                      강수 환불 보기
+                    </AppLink>
+                  </div>
                 </div>
                 <div className={styles.noticeBox}>
                   <p>{view.notice}</p>

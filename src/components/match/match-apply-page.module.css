@@ -196,6 +196,27 @@
   font-size: 14px;
 }
 
+.policyLinkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.policyLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(201, 193, 183, 0.92);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .noticeBox {
   display: grid;
   gap: 10px;
