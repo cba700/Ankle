@@ -9,8 +9,10 @@ import type {
   CashAccountEntity,
   CashChargeOrderEntity,
   CashChargeOrderEventEntity,
+  CashRefundRequestEntity,
   CashTransactionEntity,
 } from "@/lib/cash";
+import { formatPlayerLevel, formatProfileGenderLabel } from "@/lib/player-levels";
 import {
   buildAdminVenueLabel,
   formatMatchDurationLabel,
@@ -22,7 +24,10 @@ import type {
   AdminCashAccountRow,
   AdminCashChargeOrderRow,
   AdminCashChargeOrderEventRow,
+  AdminCashRefundRequestRow,
   AdminCashTransactionRow,
+  AdminCouponTemplateRecord,
+  AdminCouponTemplateRow,
   AdminMatchFormValue,
   AdminMatchRecord,
   AdminMatchRow,
@@ -111,13 +116,18 @@ export function buildAdminOverviewCards(matches: AdminMatchRecord[]): AdminOverv
 export function buildAdminCashOverviewCards({
   accounts,
   chargeOrders,
+  refundRequests,
 }: {
   accounts: CashAccountEntity[];
   chargeOrders: CashChargeOrderEntity[];
+  refundRequests: CashRefundRequestEntity[];
 }): AdminOverviewCard[] {
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
   const pendingOrders = chargeOrders.filter((order) => order.status === "pending").length;
   const failedOrders = chargeOrders.filter((order) => order.status === "failed").length;
+  const pendingRefundRequests = refundRequests.filter(
+    (request) => request.status === "pending",
+  ).length;
 
   return [
     {
@@ -148,7 +158,89 @@ export function buildAdminCashOverviewCards({
       helper: "후속 확인이 필요한 충전 주문",
       tone: "danger",
     },
+    {
+      id: "cash-refund-pending",
+      label: "환불 대기",
+      value: `${pendingRefundRequests}건`,
+      helper: "운영 처리가 필요한 환불 신청",
+      tone: pendingRefundRequests > 0 ? "danger" : "neutral",
+    },
   ];
+}
+
+export function buildAdminCouponOverviewCards(
+  templates: AdminCouponTemplateRecord[],
+): AdminOverviewCard[] {
+  const activeTemplates = templates.filter((template) => template.isActive);
+  const activeTemplate = activeTemplates[0] ?? null;
+  const highestDiscountAmount = activeTemplates.reduce(
+    (max, template) => Math.max(max, template.discountAmount),
+    0,
+  );
+  const issuedCount = templates.reduce((sum, template) => sum + template.issuedCount, 0);
+  const availableCount = templates.reduce((sum, template) => sum + template.availableCount, 0);
+  const usedCount = templates.reduce((sum, template) => sum + template.usedCount, 0);
+  const activeSummary =
+    activeTemplates.length === 0
+      ? "없음"
+      : activeTemplates.length === 1
+        ? activeTemplates[0].name
+        : `${activeTemplates.length}개 운영 중`;
+  const activeHelper =
+    activeTemplates.length === 0
+      ? "현재 운영 중인 쿠폰 없음"
+      : activeTemplates.length === 1
+        ? "신규가입 시 자동 지급 중"
+        : `${activeTemplate?.name ?? "쿠폰"} 외 ${activeTemplates.length - 1}개 자동 지급`;
+
+  return [
+    {
+      id: "coupon-active",
+      label: "운영 중인 쿠폰",
+      value: activeSummary,
+      helper: activeHelper,
+      tone: activeTemplates.length > 0 ? "accent" : "neutral",
+    },
+    {
+      id: "coupon-discount",
+      label: "최대 할인액",
+      value: highestDiscountAmount > 0 ? `${formatMoney(highestDiscountAmount)}원` : "-",
+      helper: "운영 중인 쿠폰 기준",
+      tone: highestDiscountAmount > 0 ? "accent" : "neutral",
+    },
+    {
+      id: "coupon-issued",
+      label: "누적 발급",
+      value: `${issuedCount}장`,
+      helper: "전체 지급 수",
+      tone: "neutral",
+    },
+    {
+      id: "coupon-available",
+      label: "사용 가능",
+      value: `${availableCount}장`,
+      helper: `사용 완료 ${usedCount}장`,
+      tone: availableCount > 0 ? "accent" : "neutral",
+    },
+  ];
+}
+
+export function buildAdminCouponTemplateRows(
+  templates: AdminCouponTemplateRecord[],
+): AdminCouponTemplateRow[] {
+  return templates.map((template) => ({
+    availableCountLabel: `${template.availableCount}장`,
+    discountAmount: template.discountAmount,
+    discountAmountLabel: `${formatMoney(template.discountAmount)}원`,
+    id: template.id,
+    isActive: template.isActive,
+    issuedCountLabel: `${template.issuedCount}장`,
+    metaLabel: `신규가입 자동 지급 · ${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
+    name: template.name,
+    statusLabel: template.isActive ? "활성" : "비활성",
+    statusTone: template.isActive ? "accent" : "neutral",
+    usedCountLabel: `${template.usedCount}장`,
+  }));
 }
 
 export function buildAdminCashAccountRows(
@@ -206,6 +298,22 @@ export function buildAdminCashChargeOrderEventRows(
   }));
 }
 
+export function buildAdminCashRefundRequestRows(
+  requests: CashRefundRequestEntity[],
+): AdminCashRefundRequestRow[] {
+  return requests.map((request) => ({
+    accountHolder: request.accountHolder,
+    accountNumber: request.accountNumber,
+    bankName: request.bankName,
+    id: request.id,
+    metaLabel: formatCompactDateLabel(new Date(request.createdAt)),
+    requestedAmountLabel: `${formatMoney(request.requestedAmount)}원`,
+    statusLabel: getRefundRequestStatusLabel(request.status),
+    statusTone: getRefundRequestStatusTone(request.status),
+    userId: request.userId,
+  }));
+}
+
 export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[] {
   return matches.map((match) => {
     const durationMinutes = Number.parseInt(
@@ -226,6 +334,7 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
 
     return {
       id: match.id,
+      startAt: match.startAt,
       title: match.title,
       venueLabel: buildAdminVenueLabel(match.venueName, match.district),
       dateLabel: formatSeoulDateShortLabel(new Date(match.startAt)),
@@ -244,6 +353,19 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       isSoldOut,
       tags: match.tags,
       editHref: `/admin/matches/${match.id}/edit`,
+      participantPreviewLabel:
+        match.participants.length > 0
+          ? `${match.participants[0]?.displayName ?? ""}${match.participants.length > 1 ? ` 외 ${match.participants.length - 1}명` : ""}`
+          : "참가자 없음",
+      participants: match.participants.map((participant) => ({
+        applicationId: participant.applicationId,
+        displayName: participant.displayName,
+        genderLabel: formatProfileGenderLabel(participant.gender),
+        playerLevelLabel: formatPlayerLevel(participant.playerLevel),
+        resolvedPlayerLevel: participant.playerLevel,
+        userId: participant.userId,
+      })),
+      quickSummary: `${match.format} · ${match.genderCondition || "성별 무관"} · ${match.price > 0 ? `${formatMoney(match.price)}원` : "무료"}`,
     };
   });
 }
@@ -431,6 +553,10 @@ function getCashTransactionTitle(transaction: CashTransactionEntity) {
       return "캐시 충전";
     case "charge_refund":
       return "충전 환불";
+    case "refund_hold":
+      return "캐시 환불 신청";
+    case "refund_release":
+      return "환불 신청 반려";
     case "match_refund":
       return "매치 환급";
     case "adjustment":
@@ -444,7 +570,11 @@ function getCashTransactionTitle(transaction: CashTransactionEntity) {
 function getCashTransactionTone(
   transaction: CashTransactionEntity,
 ): AdminBadgeTone {
-  if (transaction.type === "match_debit" || transaction.deltaAmount < 0) {
+  if (
+    transaction.type === "match_debit" ||
+    transaction.type === "refund_hold" ||
+    transaction.deltaAmount < 0
+  ) {
     return "danger";
   }
 
@@ -477,6 +607,32 @@ function getChargeOrderStatusTone(status: CashChargeOrderEntity["status"]): Admi
   }
 
   if (status === "failed" || status === "expired") {
+    return "danger";
+  }
+
+  return "neutral";
+}
+
+function getRefundRequestStatusLabel(status: CashRefundRequestEntity["status"]) {
+  switch (status) {
+    case "processed":
+      return "처리 완료";
+    case "rejected":
+      return "반려";
+    case "cancelled":
+      return "취소";
+    case "pending":
+    default:
+      return "처리 대기";
+  }
+}
+
+function getRefundRequestStatusTone(status: CashRefundRequestEntity["status"]): AdminBadgeTone {
+  if (status === "processed") {
+    return "accent";
+  }
+
+  if (status === "pending") {
     return "danger";
   }
 

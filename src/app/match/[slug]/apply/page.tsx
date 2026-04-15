@@ -1,13 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { MatchApplyPage } from "@/components/match/match-apply-page";
 import { buildMatchDetailViewModel } from "@/components/match/match-detail-view-model";
-import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
+import { buildLoginHref } from "@/lib/auth/redirect";
+import { listAvailableUserCouponsByUserId } from "@/lib/coupons";
 import { formatMoney } from "@/lib/date";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getPublicMatchByPublicId } from "@/lib/matches-data";
-import { getProfileOnboardingState } from "@/lib/profile-onboarding";
 import {
-  assertCashFoundationSchemaReady,
-  assertProfileOnboardingSchemaReady,
+  assertCouponSchemaReady,
 } from "@/lib/supabase/schema";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -50,16 +50,19 @@ export default async function MatchApply({
   let cashBalance = 0;
   let existingApplication = null;
 
-  await assertCashFoundationSchemaReady(supabase);
-  await assertProfileOnboardingSchemaReady(supabase);
+  await assertCouponSchemaReady(supabase);
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    `/match/${match.publicId}/apply`,
+    { skipPhoneVerification: true },
+  );
 
-  const onboardingState = await getProfileOnboardingState(supabase, user.id);
-
-  if (onboardingState.onboardingRequired) {
-    redirect(buildWelcomeHref(`/match/${match.publicId}/apply`));
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
-  const [{ data: application }, { data: cashAccount }] = await Promise.all([
+  const [{ data: application }, { data: cashAccount }, availableCoupons] = await Promise.all([
     supabase
       .from("match_applications")
       .select("id")
@@ -72,17 +75,37 @@ export default async function MatchApply({
       .select("balance")
       .eq("user_id", user.id)
       .maybeSingle(),
+    listAvailableUserCouponsByUserId(supabase, user.id),
   ]);
 
   existingApplication = application;
   cashBalance = cashAccount?.balance ?? 0;
+  const couponOptions = availableCoupons
+    .map((coupon) => {
+      const discountAmount = match.price > 0
+        ? Math.min(coupon.discountAmountSnapshot, match.price)
+        : 0;
+
+      return {
+        discountAmount,
+        discountLabel: `${formatMoney(discountAmount)}원`,
+        id: coupon.id,
+        name: coupon.nameSnapshot,
+      };
+    })
+    .filter((coupon) => coupon.discountAmount > 0);
 
   return (
     <MatchApplyPage
       accountLabel={accountLabel}
       alreadyApplied={Boolean(existingApplication)}
+      availableCoupons={couponOptions}
       canApply={match.canApply}
       cashBalanceLabel={`${formatMoney(cashBalance)}원`}
+      priceSummary={{
+        originalPriceAmount: match.price,
+        originalPriceLabel: `${formatMoney(match.price)}원`,
+      }}
       view={buildMatchDetailViewModel(match)}
     />
   );

@@ -34,7 +34,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 70px;
+  min-width: 76px;
   flex-shrink: 0;
   padding-left: 12px;
   align-self: center;
@@ -43,11 +43,11 @@
 .timeMain {
   display: flex;
   align-items: flex-start;
-  min-height: 18px;
+  min-height: 20px;
 }
 
 .time {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: -0.03em;
@@ -80,7 +80,7 @@
   min-width: 0;
   margin: 0;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 500;
   line-height: 1.35;
   letter-spacing: -0.03em;
 }
@@ -90,7 +90,7 @@
 }
 
 .toneAccent {
-  color: #4d7d5f;
+  color: #009e5c;
 }
 
 .toneDanger {
@@ -171,16 +171,16 @@
   }
 
   .timeColumn {
-    min-width: 64px;
+    min-width: 68px;
   }
 
   .time {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .timeMain,
   .titleRow {
-    min-height: 16px;
+    min-height: 18px;
   }
 
   .statusText {

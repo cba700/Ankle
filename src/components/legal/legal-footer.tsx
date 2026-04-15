@@ -4,9 +4,10 @@ import { AppLink } from "@/components/navigation/app-link";
 import styles from "./legal-footer.module.css";
 
 const LEGAL_LINKS = [
-  { href: "/terms", label: "이용약관" },
-  { href: "/privacy", label: "개인정보처리방침" },
-  { href: "/business-info", label: "사업자정보확인" },
+  { href: "/terms", label: "이용약관", newTab: true },
+  { href: "/privacy", label: "개인정보처리방침", newTab: true },
+  { href: "/refund", label: "환불규정", newTab: true },
+  { href: "/business-info", label: "사업자정보확인", newTab: false },
 ] as const;
 
 export function LegalFooter() {
@@ -15,7 +16,13 @@ export function LegalFooter() {
       <div className={`pageShell ${styles.inner}`}>
         <nav aria-label="법률 및 운영 문서" className={styles.links}>
           {LEGAL_LINKS.map((link) => (
-            <AppLink className={styles.link} href={link.href} key={link.href}>
+            <AppLink
+              className={styles.link}
+              href={link.href}
+              key={link.href}
+              rel={link.newTab ? "noopener noreferrer" : undefined}
+              target={link.newTab ? "_blank" : undefined}
+            >
               {link.label}
             </AppLink>
           ))}

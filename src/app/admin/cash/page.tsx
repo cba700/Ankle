@@ -1,5 +1,7 @@
 import {
+  approveCashRefundRequestAction,
   adjustAdminCashBalanceAction,
+  rejectCashRefundRequestAction,
   retryPendingCashChargeOrderAction,
 } from "@/features/admin/actions";
 import { AdminOverviewCards } from "@/features/admin/components/admin-overview-cards";
@@ -14,6 +16,7 @@ import {
   buildAdminCashChargeOrderRows,
   buildAdminCashChargeOrderEventRows,
   buildAdminCashOverviewCards,
+  buildAdminCashRefundRequestRows,
   buildAdminCashTransactionRows,
 } from "@/features/admin/view-model";
 import styles from "./page.module.css";
@@ -27,6 +30,7 @@ export default async function AdminCashPage() {
   const chargeOrderEventRows = buildAdminCashChargeOrderEventRows(
     data.chargeOrderEvents,
   );
+  const refundRequestRows = buildAdminCashRefundRequestRows(data.refundRequests);
 
   return (
     <AdminShell
@@ -60,6 +64,84 @@ export default async function AdminCashPage() {
                 캐시 보정 반영
               </button>
             </form>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>환불 신청</h2>
+            <span className={styles.sectionMeta}>{refundRequestRows.length}건</span>
+          </div>
+          <div className={ui.tableCard}>
+            <div className={ui.tableScroll}>
+              <table className={ui.table}>
+                <thead>
+                  <tr>
+                    <th className={ui.tableHeadCell}>신청 시각</th>
+                    <th className={ui.tableHeadCell}>사용자</th>
+                    <th className={ui.tableHeadCell}>금액</th>
+                    <th className={ui.tableHeadCell}>은행</th>
+                    <th className={ui.tableHeadCell}>계좌번호</th>
+                    <th className={ui.tableHeadCell}>예금주</th>
+                    <th className={ui.tableHeadCell}>상태</th>
+                    <th className={ui.tableHeadCell}>처리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {refundRequestRows.length === 0 ? (
+                    <tr>
+                      <td className={ui.tableCell} colSpan={8}>
+                        표시할 환불 신청이 없습니다.
+                      </td>
+                    </tr>
+                  ) : (
+                    refundRequestRows.map((row, index) => (
+                      <tr key={row.id} className={ui.tableRow}>
+                        <td className={ui.tableCell}>{row.metaLabel}</td>
+                        <td className={ui.tableCell}>
+                          <span className={styles.code}>{row.userId}</span>
+                        </td>
+                        <td className={ui.tableCell}>{row.requestedAmountLabel}</td>
+                        <td className={ui.tableCell}>{row.bankName}</td>
+                        <td className={ui.tableCell}>
+                          <span className={styles.code}>{row.accountNumber}</span>
+                        </td>
+                        <td className={ui.tableCell}>{row.accountHolder}</td>
+                        <td className={ui.tableCell}>
+                          <AdminStatusBadge label={row.statusLabel} tone={row.statusTone} />
+                        </td>
+                        <td className={ui.tableCell}>
+                          {data.refundRequests[index]?.status === "pending" ? (
+                            <div className={styles.actionCluster}>
+                              <form action={approveCashRefundRequestAction}>
+                                <input name="requestId" type="hidden" value={row.id} />
+                                <button
+                                  className={`${ui.button} ${ui.buttonBrand} ${ui.buttonSmall}`}
+                                  type="submit"
+                                >
+                                  승인
+                                </button>
+                              </form>
+                              <form action={rejectCashRefundRequestAction}>
+                                <input name="requestId" type="hidden" value={row.id} />
+                                <button
+                                  className={`${ui.button} ${ui.buttonSmall}`}
+                                  type="submit"
+                                >
+                                  반려
+                                </button>
+                              </form>
+                            </div>
+                          ) : (
+                            <span className={ui.tertiary}>처리 완료</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 

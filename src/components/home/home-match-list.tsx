@@ -62,7 +62,7 @@ export function HomeMatchList({
 
               <div className={styles.infoColumn}>
                 <div className={styles.titleRow}>
-                  <strong className={styles.matchTitle}>{row.venueName}</strong>
+                  <span className={styles.matchTitle}>{row.venueName}</span>
                 </div>
                 <p className={styles.metaRow}>{row.meta}</p>
               </div>

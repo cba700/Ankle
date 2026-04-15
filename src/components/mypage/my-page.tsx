@@ -1,5 +1,6 @@
 import type { MyPageData } from "@/lib/mypage";
 import { formatTemporaryLevel } from "@/lib/player-preferences";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { ArrowRightIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -58,6 +59,14 @@ export function MyPage({ data }: MyPageProps) {
       href: "/mypage/settings",
     },
   ];
+  const guideMenuItems: MenuItem[] = [
+    {
+      href: "/mypage/guide",
+      iconSrc: "/emoji/mypage/notice.svg",
+      key: "level-guide",
+      label: "레벨 가이드",
+    },
+  ];
   const supportMenuItems: MenuItem[] = [
     {
       external: true,
@@ -74,8 +83,7 @@ export function MyPage({ data }: MyPageProps) {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <AppLink className={styles.brand} href="/">
-            <span className={styles.brandWord}>앵클</span>
-            <span className={styles.brandDot}>.</span>
+            <BrandLogo className={styles.brandLogo} priority />
           </AppLink>
 
           <div className={styles.headerActions}>
@@ -128,6 +136,10 @@ export function MyPage({ data }: MyPageProps) {
                   <span className={styles.levelMarker} />
                   {temporaryLevelLabel}
                 </strong>
+                <AppLink className={styles.statLink} href="/mypage/guide">
+                  가이드 보기
+                  <ArrowRightIcon className={styles.statLinkArrow} />
+                </AppLink>
               </div>
             </div>
           </article>
@@ -187,6 +199,53 @@ export function MyPage({ data }: MyPageProps) {
                     {content}
                   </a>
                 ) : (
+                  <AppLink className={styles.menuRow} href={item.href} key={item.key}>
+                    {content}
+                  </AppLink>
+                );
+              })}
+            </div>
+          </article>
+
+          <article className={styles.menuSection}>
+            <p className={styles.menuSectionTitle}>앵클 가이드</p>
+            <div className={styles.menuList}>
+              {guideMenuItems.map((item) => {
+                const content = (
+                  <>
+                    <span aria-hidden="true" className={styles.menuIconWrap}>
+                      <img
+                        alt=""
+                        className={styles.menuIconImage}
+                        decoding="async"
+                        height="28"
+                        src={item.iconSrc}
+                        width="28"
+                      />
+                    </span>
+                    <span className={styles.menuLabel}>{item.label}</span>
+                    {item.statusText ? (
+                      <span className={styles.menuMeta}>{item.statusText}</span>
+                    ) : (
+                      <span aria-hidden="true" className={styles.menuMetaPlaceholder} />
+                    )}
+                    <ArrowRightIcon className={styles.menuArrow} />
+                  </>
+                );
+
+                if (!item.href) {
+                  return (
+                    <div
+                      aria-disabled="true"
+                      className={`${styles.menuRow} ${styles.menuRowDisabled}`}
+                      key={item.key}
+                    >
+                      {content}
+                    </div>
+                  );
+                }
+
+                return (
                   <AppLink className={styles.menuRow} href={item.href} key={item.key}>
                     {content}
                   </AppLink>

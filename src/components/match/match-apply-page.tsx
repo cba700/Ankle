@@ -4,16 +4,37 @@ import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
-import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
+import {
+  buildLoginHref,
+  buildVerifyPhoneHref,
+  buildWelcomeHref,
+} from "@/lib/auth/redirect";
+import { formatMoney } from "@/lib/date";
+import {
+  MATCH_REFUND_POLICY_HREF,
+  RAIN_REFUND_POLICY_HREF,
+} from "@/lib/refund-policy";
 import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
 type MatchApplyPageProps = {
   accountLabel: string;
   alreadyApplied: boolean;
+  availableCoupons: MatchApplyCouponOption[];
   canApply: boolean;
   cashBalanceLabel: string;
+  priceSummary: {
+    originalPriceAmount: number;
+    originalPriceLabel: string;
+  };
   view: MatchDetailViewModel;
+};
+
+type MatchApplyCouponOption = {
+  discountAmount: number;
+  discountLabel: string;
+  id: string;
+  name: string;
 };
 
 const CHECK_ITEMS = [
@@ -25,14 +46,19 @@ const CHECK_ITEMS = [
 export function MatchApplyPage({
   accountLabel,
   alreadyApplied,
+  availableCoupons,
   canApply,
   cashBalanceLabel,
+  priceSummary,
   view,
 }: MatchApplyPageProps) {
   const router = useRouter();
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [isComplete, setIsComplete] = useState(alreadyApplied);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCouponId, setSelectedCouponId] = useState<string | null>(
+    availableCoupons[0]?.id ?? null,
+  );
   const [feedbackMessage, setFeedbackMessage] = useState(
     alreadyApplied ? "이미 신청이 완료된 매치입니다." : null,
   );
@@ -41,6 +67,11 @@ export function MatchApplyPage({
   const applyPath = `${detailHref}/apply`;
   const allConfirmed = checkedIds.length === CHECK_ITEMS.length || alreadyApplied;
   const canSubmit = allConfirmed && canApply && !isComplete && !isSubmitting;
+  const selectedCoupon =
+    availableCoupons.find((coupon) => coupon.id === selectedCouponId) ?? null;
+  const couponDiscountAmount = selectedCoupon?.discountAmount ?? 0;
+  const finalChargeAmount = Math.max(priceSummary.originalPriceAmount - couponDiscountAmount, 0);
+  const finalChargeLabel = `${formatMoney(finalChargeAmount)}원`;
 
   function toggleCheck(id: string) {
     setCheckedIds((current) =>
@@ -60,10 +91,20 @@ export function MatchApplyPage({
 
     try {
       const response = await fetch(`/api/matches/${view.id}/applications`, {
+        body: JSON.stringify({ couponId: selectedCouponId }),
+        headers: {
+          "content-type": "application/json",
+        },
         method: "POST",
       });
       const payload = (await response.json().catch(() => null)) as
-        | { code?: string }
+        | {
+            code?: string;
+            couponApplied?: boolean;
+            couponDiscountAmount?: number;
+            debitedAmount?: number;
+            remainingCash?: number;
+          }
         | null;
 
       if (response.ok || payload?.code === "ALREADY_APPLIED") {
@@ -71,7 +112,7 @@ export function MatchApplyPage({
         setFeedbackMessage(
           payload?.code === "ALREADY_APPLIED"
             ? "이미 신청이 완료된 매치입니다."
-            : "캐시 차감 후 현재 계정으로 매치 신청이 확정되었습니다.",
+            : buildSuccessMessage(payload),
         );
         startTransition(() => router.refresh());
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -90,6 +131,11 @@ export function MatchApplyPage({
 
       if (payload?.code === "ONBOARDING_REQUIRED") {
         window.location.href = buildWelcomeHref(applyPath);
+        return;
+      }
+
+      if (payload?.code === "PHONE_VERIFICATION_REQUIRED") {
+        window.location.href = buildVerifyPhoneHref(applyPath);
         return;
       }
 
@@ -157,6 +203,86 @@ export function MatchApplyPage({
               </section>
 
               <section className={styles.card}>
+                <div className={styles.fieldset}>
+                  <div className={styles.priceSummaryHeader}>
+                    <h2 className={styles.sectionTitle}>쿠폰 선택</h2>
+                    <span className={styles.couponBadge}>{availableCoupons.length}장 보유</span>
+                  </div>
+                  <p className={styles.sectionDescription}>신청할 때는 쿠폰 1장만 사용할 수 있습니다.</p>
+
+                  <div className={styles.couponOptionList}>
+                    <label
+                      className={`${styles.couponOption} ${
+                        selectedCouponId === null ? styles.couponOptionSelected : ""
+                      }`}
+                    >
+                      <input
+                        checked={selectedCouponId === null}
+                        className={styles.couponOptionInput}
+                        name="coupon"
+                        onChange={() => setSelectedCouponId(null)}
+                        type="radio"
+                      />
+                      <span className={styles.couponOptionCopy}>
+                        <strong className={styles.couponOptionName}>쿠폰 없이 진행</strong>
+                        <span className={styles.couponOptionMeta}>정가 그대로 차감</span>
+                      </span>
+                      <strong className={styles.couponOptionAmount}>
+                        {priceSummary.originalPriceLabel}
+                      </strong>
+                    </label>
+
+                    {availableCoupons.map((coupon) => (
+                      <label
+                        className={`${styles.couponOption} ${
+                          selectedCouponId === coupon.id ? styles.couponOptionSelected : ""
+                        }`}
+                        key={coupon.id}
+                      >
+                        <input
+                          checked={selectedCouponId === coupon.id}
+                          className={styles.couponOptionInput}
+                          name="coupon"
+                          onChange={() => setSelectedCouponId(coupon.id)}
+                          type="radio"
+                        />
+                        <span className={styles.couponOptionCopy}>
+                          <strong className={styles.couponOptionName}>{coupon.name}</strong>
+                          <span className={styles.couponOptionMeta}>{coupon.discountLabel} 할인</span>
+                        </span>
+                        <strong className={styles.couponOptionAmount}>{coupon.discountLabel}</strong>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <div className={styles.priceSummaryHeader}>
+                  <h2 className={styles.sectionTitle}>차감 요약</h2>
+                  {selectedCoupon ? (
+                    <span className={styles.couponBadge}>{selectedCoupon.name}</span>
+                  ) : null}
+                </div>
+                <div className={styles.priceSummaryList}>
+                  <div className={styles.priceSummaryRow}>
+                    <span>참가비</span>
+                    <strong>{priceSummary.originalPriceLabel}</strong>
+                  </div>
+                  {selectedCoupon ? (
+                    <div className={styles.priceSummaryRow}>
+                      <span>{selectedCoupon.name}</span>
+                      <strong className={styles.discountValue}>-{selectedCoupon.discountLabel}</strong>
+                    </div>
+                  ) : null}
+                  <div className={`${styles.priceSummaryRow} ${styles.priceSummaryRowStrong}`}>
+                    <span>최종 차감</span>
+                    <strong>{finalChargeLabel}</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section className={styles.card}>
                 <h2 className={styles.sectionTitle}>신청 전 확인</h2>
                 <p className={styles.sectionDescription}>
                   일정과 운영 방식, 환불 기준을 마지막으로 확인해 주세요.
@@ -171,6 +297,14 @@ export function MatchApplyPage({
                       </li>
                     ))}
                   </ul>
+                  <div className={styles.policyLinkRow}>
+                    <AppLink className={styles.policyLink} href={MATCH_REFUND_POLICY_HREF}>
+                      매치 환불 전체 보기
+                    </AppLink>
+                    <AppLink className={styles.policyLink} href={RAIN_REFUND_POLICY_HREF}>
+                      강수 환불 보기
+                    </AppLink>
+                  </div>
                 </div>
                 <div className={styles.noticeBox}>
                   <p>{view.notice}</p>
@@ -276,6 +410,10 @@ function getErrorMessage(code?: string) {
     return "매치를 찾을 수 없습니다.";
   }
 
+  if (code === "INVALID_COUPON") {
+    return "사용 가능한 쿠폰이 아닙니다. 다시 선택해 주세요.";
+  }
+
   return "신청 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
@@ -296,4 +434,23 @@ function getStatusClassName(
   }
 
   return `${classNames.statusPill} ${classNames.statusNeutral}`;
+}
+
+function buildSuccessMessage(payload?: {
+  couponApplied?: boolean;
+  couponDiscountAmount?: number;
+  debitedAmount?: number;
+} | null) {
+  const debitedAmount = payload?.debitedAmount ?? 0;
+  const couponDiscountAmount = payload?.couponDiscountAmount ?? 0;
+
+  if (payload?.couponApplied && couponDiscountAmount > 0 && debitedAmount === 0) {
+    return `쿠폰 ${formatMoney(couponDiscountAmount)}원 적용으로 차감 없이 신청이 확정되었습니다.`;
+  }
+
+  if (payload?.couponApplied && couponDiscountAmount > 0) {
+    return `쿠폰 ${formatMoney(couponDiscountAmount)}원 적용 후 ${formatMoney(debitedAmount)}원 차감되었습니다.`;
+  }
+
+  return `캐시 ${formatMoney(debitedAmount)}원 차감으로 신청이 확정되었습니다.`;
 }

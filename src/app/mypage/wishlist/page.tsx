@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPageWishlist } from "@/components/mypage/my-page-wishlist";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { listWishlistMatchesByUserId } from "@/lib/wishlist";
 
 export const metadata: Metadata = {
@@ -22,6 +24,23 @@ export default async function MyPageWishlistRoute() {
         configured ? undefined : "supabase_not_configured",
       ),
     );
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(buildLoginHref("/mypage/wishlist", "supabase_not_configured"));
+  }
+
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/mypage/wishlist",
+    { skipOnboarding: true, skipPhoneVerification: true },
+  );
+
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const matches = await listWishlistMatchesByUserId(user.id);

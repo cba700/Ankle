@@ -23,7 +23,6 @@ export function MatchInfoSection({ infoItems }: MatchInfoSectionProps) {
             <div className={styles.infoCard} key={item.key}>
               <div className={styles.infoIconWrap}>{renderInfoIcon(item.key)}</div>
               <div className={styles.infoCopy}>
-                <span className={styles.infoLabel}>{item.label}</span>
                 <strong className={styles.infoValue}>{item.value}</strong>
               </div>
             </div>

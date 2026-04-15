@@ -18,6 +18,18 @@ const REQUIRED_WISHLIST_MIGRATION =
   "20260410153000_add_match_wishlist_items.sql";
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION =
   "20260414103000_add_profile_onboarding_preferences.sql";
+const REQUIRED_CASH_REFUND_REQUEST_MIGRATION =
+  "20260414170000_add_cash_refund_requests.sql";
+const REQUIRED_PHONE_AUTH_MIGRATION =
+  "20260414153000_add_phone_auth_and_email_login.sql";
+const REQUIRED_SIGNUP_PROFILE_MIGRATION =
+  "20260414203000_add_signup_profile_and_consents.sql";
+const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION =
+  "20260414233000_add_admin_player_level.sql";
+const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
+  "20260414234500_add_admin_match_participants_rpc.sql";
+const REQUIRED_COUPON_MIGRATION =
+  "20260415123000_support_multiple_signup_coupons.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -25,6 +37,12 @@ const REQUIRED_CASH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migr
 const REQUIRED_CHARGE_OPERATIONS_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CHARGE_OPERATIONS_MIGRATION} before running Toss charge features.`;
 const REQUIRED_WISHLIST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_WISHLIST_MIGRATION} before running match wishlist features.`;
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PROFILE_ONBOARDING_MIGRATION} before running onboarding preference features.`;
+const REQUIRED_CASH_REFUND_REQUEST_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_CASH_REFUND_REQUEST_MIGRATION} before running cash refund request features.`;
+const REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PHONE_AUTH_MIGRATION} before running phone verification and email auth features.`;
+const REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_SIGNUP_PROFILE_MIGRATION} before running signup profile and consent features.`;
+const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION} before running admin player level features.`;
+const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
+const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -32,6 +50,11 @@ let cashSchemaCheckPromise: Promise<void> | null = null;
 let chargeOperationsCheckPromise: Promise<void> | null = null;
 let wishlistSchemaCheckPromise: Promise<void> | null = null;
 let profileOnboardingSchemaCheckPromise: Promise<void> | null = null;
+let cashRefundRequestSchemaCheckPromise: Promise<void> | null = null;
+let signupProfileSchemaCheckPromise: Promise<void> | null = null;
+let adminPlayerLevelSchemaCheckPromise: Promise<void> | null = null;
+let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
+let couponSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -151,6 +174,109 @@ export async function assertProfileOnboardingSchemaReady(
   return profileOnboardingSchemaCheckPromise;
 }
 
+export async function assertCashRefundRequestSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!cashRefundRequestSchemaCheckPromise) {
+    cashRefundRequestSchemaCheckPromise = runCashRefundRequestSchemaCheck(
+      client,
+    ).catch((error) => {
+      cashRefundRequestSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return cashRefundRequestSchemaCheckPromise;
+}
+
+export async function assertSignupProfileSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!signupProfileSchemaCheckPromise) {
+    signupProfileSchemaCheckPromise = runSignupProfileSchemaCheck(client).catch(
+      (error) => {
+        signupProfileSchemaCheckPromise = null;
+        throw error;
+      },
+    );
+  }
+
+  return signupProfileSchemaCheckPromise;
+}
+
+export async function assertAdminPlayerLevelSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!adminPlayerLevelSchemaCheckPromise) {
+    adminPlayerLevelSchemaCheckPromise = runAdminPlayerLevelSchemaCheck(
+      client,
+    ).catch((error) => {
+      adminPlayerLevelSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return adminPlayerLevelSchemaCheckPromise;
+}
+
+export async function assertAdminMatchParticipantsSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!adminMatchParticipantsSchemaCheckPromise) {
+    adminMatchParticipantsSchemaCheckPromise = runAdminMatchParticipantsSchemaCheck(
+      client,
+    ).catch((error) => {
+      adminMatchParticipantsSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return adminMatchParticipantsSchemaCheckPromise;
+}
+
+export async function assertCouponSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!couponSchemaCheckPromise) {
+    couponSchemaCheckPromise = runCouponSchemaCheck(client).catch((error) => {
+      couponSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return couponSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -247,11 +373,112 @@ async function runProfileOnboardingSchemaCheck(supabase: SupabaseServerClient) {
   const profileOnboardingCheck = await supabase
     .from("profiles")
     .select(
-      "temporary_level, preferred_weekdays, preferred_time_slots, onboarding_required, onboarding_completed_at",
+      "temporary_level, preferred_weekdays, preferred_time_slots, onboarding_required, onboarding_completed_at, phone_number_e164, phone_verified_at, phone_verification_required",
     )
     .limit(1);
 
   handleProfileOnboardingSchemaError(profileOnboardingCheck.error);
+
+  const phoneVerificationCheck = await supabase
+    .from("phone_verification_requests")
+    .select("phone_number_e164")
+    .limit(1);
+
+  handlePhoneAuthSchemaError(phoneVerificationCheck.error);
+}
+
+async function runCashRefundRequestSchemaCheck(supabase: SupabaseServerClient) {
+  await runCashSchemaCheck(supabase);
+
+  const cashRefundRequestCheck = await supabase
+    .from("cash_refund_requests")
+    .select("requested_amount, bank_name, hold_transaction_id, status")
+    .limit(1);
+
+  handleCashRefundRequestSchemaError(cashRefundRequestCheck.error);
+}
+
+async function runSignupProfileSchemaCheck(supabase: SupabaseServerClient) {
+  await runProfileOnboardingSchemaCheck(supabase);
+
+  const signupProfileCheck = await supabase
+    .from("profiles")
+    .select(
+      "legal_name, birth_date, gender, signup_profile_required, signup_profile_completed_at",
+    )
+    .limit(1);
+
+  handleSignupProfileSchemaError(signupProfileCheck.error);
+
+  const signupConsentCheck = await supabase
+    .from("profile_consents")
+    .select("consent_type")
+    .limit(1);
+
+  handleSignupProfileSchemaError(signupConsentCheck.error);
+}
+
+async function runAdminPlayerLevelSchemaCheck(supabase: SupabaseServerClient) {
+  await runSignupProfileSchemaCheck(supabase);
+
+  const playerLevelCheck = await supabase
+    .from("profiles")
+    .select("player_level")
+    .limit(1);
+
+  handleAdminPlayerLevelSchemaError(playerLevelCheck.error);
+}
+
+async function runAdminMatchParticipantsSchemaCheck(
+  supabase: SupabaseServerClient,
+) {
+  await runAdminPlayerLevelSchemaCheck(supabase);
+
+  const participantRpcCheck = await ((supabase.rpc(
+    "list_admin_match_participants",
+    {
+      p_match_ids: [],
+    },
+  ) as any) as { error: { code?: string; message?: string } | null });
+
+  handleAdminMatchParticipantsSchemaError(participantRpcCheck.error);
+}
+
+async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
+  await runCashSchemaCheck(supabase);
+
+  const couponTemplateCheck = await supabase
+    .from("coupon_templates")
+    .select("discount_amount, auto_issue_on_signup, is_active")
+    .limit(1);
+
+  handleCouponSchemaCheckError(couponTemplateCheck.error);
+
+  const userCouponCheck = await supabase
+    .from("user_coupons")
+    .select("discount_amount_snapshot, issued_reason, used_match_application_id, restore_count")
+    .limit(1);
+
+  handleCouponSchemaCheckError(userCouponCheck.error);
+
+  const matchApplicationCouponCheck = await supabase
+    .from("match_applications")
+    .select("coupon_id, coupon_discount_amount, charged_amount_snapshot")
+    .limit(1);
+
+  handleCouponSchemaCheckError(matchApplicationCouponCheck.error);
+
+  const applyToMatchCheck = await ((supabase.rpc(
+    "apply_to_match",
+    {
+      p_coupon_id: null,
+      p_match_id: "00000000-0000-0000-0000-000000000000",
+    },
+  ) as any) as { error: { code?: string; message?: string } | null });
+
+  if (!isExpectedCouponRpcProbeError(applyToMatchCheck.error)) {
+    handleCouponSchemaCheckError(applyToMatchCheck.error);
+  }
 }
 
 function handleSchemaCheckError(
@@ -314,6 +541,27 @@ function handleProfileOnboardingSchemaError(
   throw new Error(`Failed to verify profile onboarding schema: ${error.message}`);
 }
 
+function handlePhoneAuthSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_PHONE_AUTH_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify phone auth schema: ${error.message}`);
+}
+
 function handlePublicIdSchemaError(
   error: { code?: string; message?: string } | null,
 ) {
@@ -333,6 +581,125 @@ function handlePublicIdSchemaError(
   }
 
   throw new Error(`Failed to verify public match routing schema: ${error.message}`);
+}
+
+function handleCashRefundRequestSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_CASH_REFUND_REQUEST_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify cash refund request schema: ${error.message}`);
+}
+
+function handleSignupProfileSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify signup profile schema: ${error.message}`);
+}
+
+function handleAdminPlayerLevelSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify admin player level schema: ${error.message}`);
+}
+
+function handleAdminMatchParticipantsSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "42883" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the function") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify admin participant schema: ${error.message}`);
+}
+
+function handleCouponSchemaCheckError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation") ||
+    error.message?.includes("Could not find the function")
+  ) {
+    throw new Error(REQUIRED_COUPON_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify coupon schema: ${error.message}`);
+}
+
+function isExpectedCouponRpcProbeError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error?.message) {
+    return false;
+  }
+
+  const normalized = error.message.toUpperCase();
+
+  return normalized.includes("AUTH_REQUIRED") || normalized.includes("MATCH_NOT_FOUND");
 }
 
 function handleChargeOperationsSchemaError(

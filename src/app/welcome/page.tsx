@@ -5,7 +5,7 @@ import {
   buildLoginHref,
   normalizeWelcomeNextPath,
 } from "@/lib/auth/redirect";
-import { getProfileOnboardingState } from "@/lib/profile-onboarding";
+import { getMemberSetupState } from "@/lib/member-access";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -44,7 +44,7 @@ export default async function WelcomeRoute({
 
   await assertProfileOnboardingSchemaReady(supabase);
 
-  const onboardingState = await getProfileOnboardingState(supabase, user.id);
+  const onboardingState = await getMemberSetupState(supabase, user.id);
 
   if (!onboardingState.onboardingRequired) {
     redirect(nextPath);

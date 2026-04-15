@@ -7,19 +7,6 @@
   padding: 28px 0 0;
 }
 
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .document {
   width: min(100%, 820px);
   margin: 16px auto 0;

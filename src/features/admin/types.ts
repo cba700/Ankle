@@ -3,6 +3,13 @@ export type AdminMatchFormat = "3vs3" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
 export type AdminBadgeTone = "accent" | "neutral" | "danger";
+export type AdminShellNav =
+  | "dashboard"
+  | "matches"
+  | "venues"
+  | "cash"
+  | "coupons"
+  | "create";
 
 export type AdminVenueInfo = {
   directions: string;
@@ -90,7 +97,17 @@ export type AdminMatchRecord = {
   imageUrls: string[];
   rules: string[];
   safetyNotes: string[];
+  participants: AdminMatchParticipantRecord[];
   venueInfo: AdminVenueInfo;
+};
+
+export type AdminMatchParticipantRecord = {
+  applicationId: string;
+  displayName: string;
+  gender: "female" | "male" | null;
+  playerLevel: string | null;
+  playerLevelSource: "player_level" | "temporary_level" | "unset";
+  userId: string;
 };
 
 export type AdminOverviewTone = AdminBadgeTone;
@@ -138,8 +155,47 @@ export type AdminCashChargeOrderEventRow = {
   processedResultLabel: string;
 };
 
+export type AdminCashRefundRequestRow = {
+  accountHolder: string;
+  accountNumber: string;
+  bankName: string;
+  id: string;
+  metaLabel: string;
+  requestedAmountLabel: string;
+  statusLabel: string;
+  statusTone: AdminBadgeTone;
+  userId: string;
+};
+
+export type AdminCouponTemplateRecord = {
+  availableCount: number;
+  createdAt: string;
+  discountAmount: number;
+  id: string;
+  isActive: boolean;
+  issuedCount: number;
+  name: string;
+  updatedAt: string;
+  usedCount: number;
+};
+
+export type AdminCouponTemplateRow = {
+  availableCountLabel: string;
+  discountAmount: number;
+  discountAmountLabel: string;
+  id: string;
+  isActive: boolean;
+  issuedCountLabel: string;
+  metaLabel: string;
+  name: string;
+  statusLabel: string;
+  statusTone: AdminBadgeTone;
+  usedCountLabel: string;
+};
+
 export type AdminMatchRow = {
   id: string;
+  startAt: string;
   title: string;
   venueLabel: string;
   dateLabel: string;
@@ -158,6 +214,18 @@ export type AdminMatchRow = {
   isSoldOut: boolean;
   tags: string[];
   editHref: string;
+  participantPreviewLabel: string;
+  participants: AdminMatchParticipantRow[];
+  quickSummary: string;
+};
+
+export type AdminMatchParticipantRow = {
+  applicationId: string;
+  displayName: string;
+  genderLabel: string;
+  playerLevelLabel: string;
+  resolvedPlayerLevel: string | null;
+  userId: string;
 };
 
 export type AdminMatchFormValue = {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { buildVerifyPhoneHref, buildWelcomeHref } from "@/lib/auth/redirect";
 import {
   buildCashChargePackageLabel,
   type CashChargePackage,
@@ -123,6 +124,9 @@ export function CashChargePage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<CashChargePackage>(10000);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<ChargePaymentMethod>("CARD");
+  const currentChargePath = nextPath
+    ? `/cash/charge?next=${encodeURIComponent(nextPath)}`
+    : "/cash/charge";
 
   const canSubmit = !isSubmitting;
 
@@ -155,6 +159,16 @@ export function CashChargePage({
       const payload = (await response.json().catch(() => null)) as ChargeOrderResponse | null;
 
       if (!response.ok || !payload) {
+        if (payload?.code === "PHONE_VERIFICATION_REQUIRED") {
+          window.location.href = buildVerifyPhoneHref(currentChargePath);
+          return;
+        }
+
+        if (payload?.code === "ONBOARDING_REQUIRED") {
+          window.location.href = buildWelcomeHref(currentChargePath);
+          return;
+        }
+
         setFeedbackMessage(getChargeErrorMessage(payload?.code));
         return;
       }

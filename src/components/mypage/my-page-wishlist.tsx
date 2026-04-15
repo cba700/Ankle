@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { WishlistMatch } from "@/lib/wishlist";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -83,8 +84,7 @@ export function MyPageWishlist({
       <header className={baseStyles.header}>
         <div className={baseStyles.headerInner}>
           <AppLink className={baseStyles.brand} href="/">
-            <span className={baseStyles.brandWord}>앵클</span>
-            <span className={baseStyles.brandDot}>.</span>
+            <BrandLogo className={baseStyles.brandLogo} priority />
           </AppLink>
 
           <div className={baseStyles.headerActions}>

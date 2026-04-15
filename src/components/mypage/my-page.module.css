@@ -24,28 +24,18 @@
 
 .brand {
   display: inline-flex;
-  align-items: baseline;
-  gap: 1px;
+  align-items: center;
   flex-shrink: 0;
 }
 
-.brandWord {
-  color: #111;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-}
-
-.brandDot {
-  color: var(--accent);
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1;
+.brandLogo {
+  width: auto;
+  height: 28px;
 }
 
 @media (min-width: 768px) {
-  .brandWord {
-    font-size: 26px;
+  .brandLogo {
+    height: 34px;
   }
 
   .search {
@@ -270,6 +260,20 @@
   gap: 6px;
   font-size: 15px;
   font-weight: 800;
+}
+
+.statLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statLinkArrow {
+  width: 14px;
+  height: 14px;
 }
 
 .levelMarker {
@@ -645,12 +649,8 @@
     padding: 12px 0;
   }
 
-  .brandWord {
-    font-size: 22px;
-  }
-
-  .brandDot {
-    font-size: 28px;
+  .brandLogo {
+    height: 28px;
   }
 
   .search {
@@ -721,12 +721,8 @@
 }
 
 @media (max-width: 360px) {
-  .brandWord {
-    font-size: 20px;
-  }
-
-  .brandDot {
-    font-size: 24px;
+  .brandLogo {
+    height: 25px;
   }
 }
 

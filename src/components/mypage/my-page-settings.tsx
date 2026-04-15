@@ -3,6 +3,7 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { MyPageProfile } from "@/lib/mypage";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import {
   formatTemporaryLevel,
   TEMPORARY_LEVEL_OPTIONS,
@@ -56,6 +57,7 @@ export function MyPageSettings({
     },
   ];
   const infoRows = [
+    { label: "휴대폰 번호", value: profile.phoneNumber },
     { label: "이메일", value: profile.email },
     { label: "로그인 방식", value: profile.providerLabel },
     { label: "권한", value: getRoleLabel(profile.role) },
@@ -67,8 +69,7 @@ export function MyPageSettings({
         <header className={baseStyles.header}>
           <div className={baseStyles.headerInner}>
             <AppLink className={baseStyles.brand} href="/">
-              <span className={baseStyles.brandWord}>앵클</span>
-              <span className={baseStyles.brandDot}>.</span>
+              <BrandLogo className={baseStyles.brandLogo} priority />
             </AppLink>
 
             <div className={baseStyles.headerActions}>

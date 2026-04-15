@@ -7,6 +7,7 @@ import {
   listCashChargeOrdersByUserId,
 } from "@/lib/cash";
 import { formatCompactDateLabel, formatMoney } from "@/lib/date";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import {
   assertCashChargeOperationsSchemaReady,
 } from "@/lib/supabase/schema";
@@ -27,12 +28,17 @@ export default async function CashChargeRoute({
     next?: string;
   }>;
 }) {
+  const params = await searchParams;
+  const normalizedNextPath = normalizeInternalNextPath(params.next ?? null);
+  const chargePath = normalizedNextPath
+    ? `/cash/charge?next=${encodeURIComponent(normalizedNextPath)}`
+    : "/cash/charge";
   const { configured, user } = await getServerUserState();
 
   if (!configured || !user) {
     redirect(
       buildLoginHref(
-        "/cash/charge",
+        chargePath,
         configured ? undefined : "supabase_not_configured",
       ),
     );
@@ -41,24 +47,32 @@ export default async function CashChargeRoute({
   const supabase = await getSupabaseServerClient();
 
   if (!supabase) {
-    redirect(buildLoginHref("/cash/charge", "supabase_not_configured"));
+    redirect(buildLoginHref(chargePath, "supabase_not_configured"));
   }
 
   await assertCashChargeOperationsSchemaReady(supabase);
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    chargePath,
+    { skipPhoneVerification: true },
+  );
+
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
+  }
 
   const [cashAccount, recentOrders] = await Promise.all([
     getCashAccountByUserId(supabase, user.id),
     listCashChargeOrdersByUserId(supabase, user.id, 4),
   ]);
-  const params = await searchParams;
-
   return (
     <CashChargePage
       accountLabel={user.email ?? "카카오 계정"}
       cashBalanceLabel={`${formatMoney(cashAccount?.balance ?? 0)}원`}
       customerKey={user.id}
       displayName={getDisplayName(user)}
-      nextPath={normalizeInternalNextPath(params.next ?? null)}
+      nextPath={normalizedNextPath}
       recentOrders={recentOrders.map((order) => ({
         amountLabel: `${formatMoney(order.amount)}원`,
         metaLabel: `${formatCompactDateLabel(new Date(order.createdAt))} · ${getOrderMeta(order)}`,

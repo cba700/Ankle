@@ -1,6 +1,8 @@
 .page {
   min-height: 100vh;
-  background: #f5f4f1;
+  background:
+    radial-gradient(circle at top left, rgba(255, 132, 55, 0.1), transparent 28%),
+    linear-gradient(180deg, #f8f5ef 0%, #f3f1ec 100%);
 }
 
 .shell {
@@ -8,12 +10,14 @@
 }
 
 .sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px 16px;
-  background: #fff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 16px;
+  background: rgba(255, 255, 255, 0.9);
   border-bottom: 0.5px solid var(--line);
+  backdrop-filter: blur(14px);
 }
 
 .brandBlock {
@@ -23,19 +27,12 @@
 
 .brand {
   display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: center;
 }
 
-.brandWord,
-.brandDot {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.06em;
-}
-
-.brandDot {
-  color: #e05a28;
+.brandLogo {
+  width: auto;
+  height: 38px;
 }
 
 .brandLabel {
@@ -48,28 +45,26 @@
 }
 
 .nav {
-  display: grid;
-  gap: 4px;
+  display: none;
 }
 
 .navLink {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 36px;
-  padding: 0 10px;
-  border-radius: 8px;
-  background: transparent;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0.5px solid rgba(201, 193, 183, 0.72);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
   color: var(--text-secondary);
-  transition: background 160ms ease;
-}
-
-.navLink:hover {
-  background: #fff;
+  white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .navActive {
-  background: rgba(224, 90, 40, 0.1);
+  border-color: rgba(224, 90, 40, 0.28);
+  background: rgba(224, 90, 40, 0.12);
   color: #e05a28;
 }
 
@@ -86,21 +81,20 @@
 }
 
 .sidebarFooter {
-  margin-top: auto;
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 .signOutButton {
   width: 100%;
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 40px;
+  padding: 0 14px;
   border: 0.5px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
-  text-align: left;
+  text-align: center;
 }
 
 .content {
@@ -111,14 +105,19 @@
 .header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
+  padding: 16px;
+  border: 0.5px solid rgba(201, 193, 183, 0.72);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 34px rgba(29, 24, 19, 0.05);
 }
 
 .headerCopy {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .eyebrow {
@@ -132,10 +131,52 @@
 
 .title {
   margin: 0;
-  font-size: 19px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.2;
+}
+
+.description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.mobileNav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  width: 100%;
+  padding-bottom: 2px;
+}
+
+.mobileNavLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0.5px solid rgba(201, 193, 183, 0.72);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mobileNavActive {
+  border-color: rgba(224, 90, 40, 0.24);
+  background: rgba(224, 90, 40, 0.1);
+  color: #e05a28;
+}
+
+.mobileNavIcon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .actions {
@@ -143,31 +184,59 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .body {
   display: grid;
-  gap: 12px;
-  margin-top: 14px;
+  gap: 14px;
+  margin-top: 16px;
 }
 
 @media (min-width: 1024px) {
   .shell {
     display: grid;
-    grid-template-columns: 192px minmax(0, 1fr);
+    grid-template-columns: 228px minmax(0, 1fr);
     height: 100vh;
   }
 
   .sidebar {
+    display: flex;
+    flex-direction: column;
     position: sticky;
     top: 0;
     height: 100vh;
     border-right: 0.5px solid var(--line);
     border-bottom: 0;
+    padding: 24px 18px;
+  }
+
+  .nav {
+    display: grid;
+    gap: 6px;
+    overflow: visible;
   }
 
   .content {
     overflow: auto;
-    padding: 20px 24px 28px;
+    padding: 24px 28px 32px;
+  }
+
+  .header {
+    padding: 20px 22px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .mobileNav {
+    display: none;
+  }
+
+  .actions {
+    width: auto;
+    justify-content: flex-end;
+    align-self: start;
   }
 }

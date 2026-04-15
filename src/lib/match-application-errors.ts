@@ -2,6 +2,7 @@ export type MatchApplicationErrorCode =
   | "ALREADY_APPLIED"
   | "APPLICATION_NOT_FOUND"
   | "AUTH_REQUIRED"
+  | "INVALID_COUPON"
   | "INSUFFICIENT_CASH"
   | "MATCH_FULL"
   | "MATCH_NOT_FOUND"
@@ -25,6 +26,13 @@ export function getMatchApplicationError(message: string): {
 
   if (normalized.includes("APPLICATION_NOT_FOUND")) {
     return { code: "APPLICATION_NOT_FOUND", status: 404 };
+  }
+
+  if (
+    normalized.includes("COUPON_NOT_FOUND") ||
+    normalized.includes("COUPON_NOT_APPLICABLE")
+  ) {
+    return { code: "INVALID_COUPON", status: 409 };
   }
 
   if (normalized.includes("INSUFFICIENT_CASH")) {

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { AppLink } from "@/components/navigation/app-link";
 import { MatchSearch } from "@/components/navigation/match-search";
 import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
@@ -12,8 +13,7 @@ export function HomeHeader({ isAdmin }: HomeHeaderProps) {
     <header className={styles.header}>
       <div className={styles.inner}>
         <AppLink className={styles.brand} href="/">
-          <span className={styles.brandWord}>앵클</span>
-          <span className={styles.brandDot}>.</span>
+          <BrandLogo className={styles.brandLogo} priority />
         </AppLink>
 
         <div className={styles.headerActions}>

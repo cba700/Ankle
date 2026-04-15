@@ -1,30 +1,51 @@
 .section {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+.toolbar {
+  display: grid;
+  gap: 10px;
+}
+
+.searchField {
+  display: flex;
+}
+
+.searchInput {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0.5px solid rgba(201, 193, 183, 0.74);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-primary);
 }
 
 .tabs {
   display: flex;
-  flex-wrap: wrap;
+  overflow-x: auto;
   gap: 8px;
+  padding-bottom: 2px;
 }
 
 .tab {
-  min-height: 32px;
+  min-height: 36px;
   padding: 0 12px;
   border: 0.5px solid var(--line);
   border-radius: 999px;
   background: #fff;
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .tabActive {
@@ -35,13 +56,18 @@
 
 .cellStack {
   display: grid;
-  gap: 2px;
+  gap: 3px;
 }
 
 .primaryText {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   line-height: 1.4;
+}
+
+.matchCell {
+  display: grid;
+  gap: 4px;
 }
 
 .actionCell {
@@ -49,7 +75,185 @@
   white-space: nowrap;
 }
 
+.actionCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.expandedCell {
+  padding: 0;
+  border-top: 0;
+}
+
+.expandedPanel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: #fbf9f5;
+  border-top: 0.5px solid var(--line);
+}
+
+.summaryGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 0.5px solid rgba(201, 193, 183, 0.68);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.summaryLabel,
+.levelSectionLabel,
+.participantEyebrow {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.summaryValue {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.participantBlock {
+  display: grid;
+  gap: 12px;
+}
+
+.participantHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.participantEyebrow {
+  margin: 0;
+}
+
+.participantTitle {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.participantMeta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.participantList {
+  display: grid;
+  gap: 10px;
+}
+
+.participantCard {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 0.5px solid rgba(201, 193, 183, 0.68);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.participantIdentity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.participantCopy {
+  display: grid;
+  gap: 4px;
+}
+
+.levelEditor {
+  display: grid;
+  gap: 12px;
+}
+
+.levelSection {
+  display: grid;
+  gap: 8px;
+}
+
+.levelChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.levelChip {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0.5px solid rgba(201, 193, 183, 0.84);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.levelChipActive {
+  border-color: rgba(224, 90, 40, 0.28);
+  background: rgba(224, 90, 40, 0.1);
+  color: #e05a28;
+}
+
+.levelFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.levelPreview {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.emptyParticipantState {
+  padding: 16px;
+  border: 0.5px dashed rgba(201, 193, 183, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
 .empty {
   text-align: center;
   color: var(--text-secondary);
+}
+
+@media (min-width: 900px) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .participantCard {
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.4fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 767px) {
+  .levelFooter,
+  .participantHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

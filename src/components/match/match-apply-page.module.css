@@ -139,6 +139,63 @@
   line-height: 1.6;
 }
 
+.priceSummaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.couponBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.priceSummaryList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.priceSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.priceSummaryRow strong {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.priceSummaryRowStrong {
+  padding-top: 12px;
+  border-top: 1px solid rgba(201, 193, 183, 0.62);
+  color: var(--text-primary);
+}
+
+.priceSummaryRowStrong strong {
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.discountValue {
+  color: var(--accent-strong) !important;
+}
+
 .accountBox {
   display: grid;
   gap: 6px;
@@ -196,6 +253,27 @@
   font-size: 14px;
 }
 
+.policyLinkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.policyLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(201, 193, 183, 0.92);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .noticeBox {
   display: grid;
   gap: 10px;
@@ -217,6 +295,61 @@
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.couponOptionList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.couponOption {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.couponOptionSelected {
+  border-color: rgba(243, 109, 33, 0.46);
+  background: #fff9f3;
+  box-shadow: 0 10px 18px rgba(243, 109, 33, 0.1);
+}
+
+.couponOptionInput {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.couponOptionCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.couponOptionName {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.couponOptionMeta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.couponOptionAmount {
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .checkboxList {
@@ -368,6 +501,14 @@
   .heroTop,
   .policyItem {
     display: grid;
+  }
+
+  .couponOption {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .couponOptionAmount {
+    grid-column: 2;
   }
 
   .price {

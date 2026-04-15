@@ -1,26 +1,28 @@
 .grid {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .card {
   display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border: 0.5px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
+  gap: 6px;
+  padding: 16px 16px 15px;
+  border: 0.5px solid rgba(201, 193, 183, 0.74);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 34px rgba(29, 24, 19, 0.05);
 }
 
 .label {
   margin: 0;
   color: var(--text-secondary);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .value {
-  font-size: 21px;
+  font-size: 24px;
   line-height: 1.1;
   letter-spacing: -0.04em;
 }
@@ -30,6 +32,18 @@
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.4;
+}
+
+.cardAccent {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 244, 237, 0.96) 100%);
+}
+
+.cardNeutral {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.cardDanger {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 241, 239, 0.96) 100%);
 }
 
 @media (min-width: 720px) {

@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPage } from "@/components/mypage/my-page";
-import { buildLoginHref, buildWelcomeHref } from "@/lib/auth/redirect";
+import { buildLoginHref } from "@/lib/auth/redirect";
+import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getMyPageData } from "@/lib/mypage";
-import { getProfileOnboardingState } from "@/lib/profile-onboarding";
 import { getServerAuthState } from "@/lib/supabase/auth";
-import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -33,12 +32,15 @@ export default async function MyPageRoute() {
     redirect(buildLoginHref("/mypage", "supabase_not_configured"));
   }
 
-  await assertProfileOnboardingSchemaReady(supabase);
+  const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
+    supabase,
+    user.id,
+    "/mypage",
+    { skipOnboarding: true, skipPhoneVerification: true },
+  );
 
-  const onboardingState = await getProfileOnboardingState(supabase, user.id);
-
-  if (onboardingState.onboardingRequired) {
-    redirect(buildWelcomeHref("/mypage"));
+  if (requiredSetupHref) {
+    redirect(requiredSetupHref);
   }
 
   const data = await getMyPageData({

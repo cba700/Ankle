@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { getKakaoSyncOAuthOptions } from "@/lib/kakao-sync";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
 
@@ -98,9 +100,7 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
       }
 
       const { error } = await supabase.auth.signInWithOAuth({
-        options: {
-          redirectTo: redirectTo.toString(),
-        },
+        options: getKakaoSyncOAuthOptions(redirectTo.toString()),
         provider: "kakao",
       });
 
@@ -114,14 +114,22 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
     }
   }
 
+  function handleEmailStart() {
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    window.location.href =
+      nextPath === "/" ? "/login/email" : `/login/email?next=${encodeURIComponent(nextPath)}`;
+  }
+
   const serverError = errorCode ? ERROR_MESSAGES[errorCode] : null;
 
   return (
     <div className={styles.page}>
       <div className={styles.card}>
         <AppLink className={styles.logoWrap} href="/">
-          <span className={styles.logoWord}>앵클</span>
-          <span className={styles.logoDot}>.</span>
+          <BrandLogo className={styles.logoImage} priority />
         </AppLink>
         <p className={styles.tagline}>코트에서 만나는 모든 농구</p>
 
@@ -153,24 +161,49 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
             </div>
           </div>
         ) : (
-          <button
-            className={`${styles.kakaoButton} ${
-              isSubmitting || !isSupabaseConfigured() ? styles.kakaoButtonDisabled : ""
-            }`}
-            disabled={isSubmitting || !isSupabaseConfigured()}
-            onClick={handleKakaoLogin}
-            type="button"
-          >
-            <KakaoIcon />
-            <span>
-              {isSubmitting ? "카카오 로그인으로 이동 중..." : "카카오로 3초 만에 시작하기"}
-            </span>
-          </button>
+          <div className={styles.entryActions}>
+            <button
+              className={`${styles.kakaoButton} ${
+                isSubmitting || !isSupabaseConfigured() ? styles.kakaoButtonDisabled : ""
+              }`}
+              disabled={isSubmitting || !isSupabaseConfigured()}
+              onClick={handleKakaoLogin}
+              type="button"
+            >
+              <KakaoIcon />
+              <span>
+                {isSubmitting ? "카카오 로그인으로 이동 중..." : "카카오로 시작하기"}
+              </span>
+            </button>
+
+            <button
+              className={styles.emailStartButton}
+              disabled={!isSupabaseConfigured()}
+              onClick={handleEmailStart}
+              type="button"
+            >
+              이메일로 시작하기
+            </button>
+          </div>
         )}
 
         <p className={styles.terms}>
-          로그인 시 <AppLink className={styles.termsLink} href="/terms">이용약관</AppLink> 및{" "}
-          <AppLink className={styles.termsLink} href="/privacy">
+          로그인 시{" "}
+          <AppLink
+            className={styles.termsLink}
+            href="/terms"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            이용약관
+          </AppLink>{" "}
+          및{" "}
+          <AppLink
+            className={styles.termsLink}
+            href="/privacy"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             개인정보 처리방침
           </AppLink>
           에 동의하게 됩니다.

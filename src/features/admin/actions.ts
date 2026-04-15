@@ -1,12 +1,16 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
+import { buildPlayerLevelValue } from "@/lib/player-levels";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
-  assertCashFoundationSchemaReady,
+  assertAdminPlayerLevelSchemaReady,
   assertCashChargeOperationsSchemaReady,
+  assertCouponSchemaReady,
+  assertCashRefundRequestSchemaReady,
   assertVenueManagementSchemaReady,
 } from "@/lib/supabase/schema";
 import {
@@ -78,6 +82,15 @@ type MatchCountResult = {
   confirmed_count: number;
 };
 
+type CouponTemplateFormValues = {
+  discountAmount: number;
+  isActive: boolean;
+  name: string;
+};
+
+const REQUIRED_COUPON_DELETE_MIGRATION =
+  "20260415153000_allow_admin_delete_coupon_templates.sql";
+
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
 const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
@@ -138,7 +151,7 @@ export async function createAdminMatchAction(formData: FormData) {
 export async function updateAdminMatchAction(matchId: string, formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
-  await assertCashFoundationSchemaReady(supabase);
+  await assertCouponSchemaReady(supabase);
   const values = readUpdateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
@@ -364,6 +377,161 @@ export async function retryPendingCashChargeOrderAction(formData: FormData) {
   }
 
   redirect("/admin/cash");
+}
+
+export async function approveCashRefundRequestAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashRefundRequestSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
+  const requestId = String(formData.get("requestId") ?? "").trim();
+
+  if (!requestId) {
+    throw new Error("Refund request ID is required");
+  }
+
+  const { error } = await admin.rpc("approve_cash_refund_request", {
+    p_note: null,
+    p_request_id: requestId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
+}
+
+export async function rejectCashRefundRequestAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCashRefundRequestSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
+  const requestId = String(formData.get("requestId") ?? "").trim();
+
+  if (!requestId) {
+    throw new Error("Refund request ID is required");
+  }
+
+  const { error } = await admin.rpc("reject_cash_refund_request", {
+    p_note: null,
+    p_request_id: requestId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  redirect("/admin/cash");
+}
+
+export async function updateAdminPlayerLevelAction(formData: FormData) {
+  await requireAdminSupabase();
+  const admin = getSupabaseServiceRoleClient();
+
+  if (!admin) {
+    throw new Error("Service role is not configured");
+  }
+
+  await assertAdminPlayerLevelSchemaReady(admin);
+  const userId = String(formData.get("userId") ?? "").trim();
+  const levelCategory = String(formData.get("levelCategory") ?? "").trim();
+  const levelNumber = String(formData.get("levelNumber") ?? "").trim();
+  const playerLevel = buildPlayerLevelValue(levelCategory, levelNumber);
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  if (!playerLevel) {
+    throw new Error("Player level is required");
+  }
+
+  const { error } = await ((admin.from("profiles" as any) as any)
+    .update({
+      player_level: playerLevel,
+    })
+    .eq("id", userId));
+
+  if (error) {
+    throw new Error(`Failed to update player level: ${error.message}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/matches");
+}
+
+export async function createAdminCouponTemplateAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const values = readCouponTemplateFormValues(formData);
+
+  const { error } = await ((supabase.from("coupon_templates" as any) as any).insert({
+    auto_issue_on_signup: true,
+    discount_amount: values.discountAmount,
+    is_active: values.isActive,
+    name: values.name,
+    template_type: "signup_welcome",
+  }));
+
+  if (error) {
+    throw new Error(`Failed to create coupon template: ${error.message}`);
+  }
+
+  redirect("/admin/coupons");
+}
+
+export async function updateAdminCouponTemplateAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const templateId = String(formData.get("templateId") ?? "").trim();
+  const values = readCouponTemplateFormValues(formData);
+
+  if (!templateId) {
+    throw new Error("Coupon template ID is required");
+  }
+
+  const { error } = await ((supabase.from("coupon_templates" as any) as any)
+    .update({
+      discount_amount: values.discountAmount,
+      is_active: values.isActive,
+      name: values.name,
+    })
+    .eq("id", templateId));
+
+  if (error) {
+    throw new Error(`Failed to update coupon template: ${error.message}`);
+  }
+
+  redirect("/admin/coupons");
+}
+
+export async function deleteAdminCouponTemplateAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const templateId = String(formData.get("templateId") ?? "").trim();
+
+  if (!templateId) {
+    throw new Error("Coupon template ID is required");
+  }
+
+  const { error } = await ((supabase.from("coupon_templates" as any) as any)
+    .delete()
+    .eq("id", templateId));
+
+  if (error) {
+    if (
+      error.code === "42501" ||
+      error.message?.includes("permission denied") ||
+      error.message?.includes("new row violates row-level security policy")
+    ) {
+      throw new Error(
+        `Database schema is outdated. Apply migration ${REQUIRED_COUPON_DELETE_MIGRATION} before deleting coupon templates.`,
+      );
+    }
+
+    throw new Error(`Failed to delete coupon template: ${error.message}`);
+  }
+
+  redirect("/admin/coupons");
 }
 
 async function requireAdminSupabase() {
@@ -661,6 +829,14 @@ function getPositiveInteger(formData: FormData, key: string) {
   }
 
   return value;
+}
+
+function readCouponTemplateFormValues(formData: FormData): CouponTemplateFormValues {
+  return {
+    discountAmount: getPositiveInteger(formData, "discountAmount"),
+    isActive: formData.get("isActive") === "on",
+    name: getRequiredString(formData, "name"),
+  };
 }
 
 function getNonNegativeInteger(formData: FormData, key: string) {

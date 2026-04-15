@@ -10,7 +10,6 @@ export type MatchDetailInfoKey =
 
 export type MatchDetailInfoItem = {
   key: MatchDetailInfoKey;
-  label: string;
   value: string;
 };
 

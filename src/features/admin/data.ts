@@ -10,25 +10,54 @@ import {
   listCashAccounts,
   listRecentCashChargeOrders,
   listRecentCashChargeOrderEvents,
+  listRecentCashRefundRequests,
   listRecentCashTransactions,
 } from "@/lib/cash";
+import {
+  listCouponTemplates,
+  listCouponUsageSummaries,
+} from "@/lib/coupons";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import {
+  assertAdminMatchParticipantsSchemaReady,
   assertCashChargeOperationsSchemaReady,
+  assertCouponSchemaReady,
+  assertCashRefundRequestSchemaReady,
 } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { buildAdminVenueLabel } from "./match-form";
-import type { AdminMatchRecord, AdminVenueOption, AdminVenueRecord } from "./types";
+import type {
+  AdminMatchParticipantRecord,
+  AdminMatchRecord,
+  AdminCouponTemplateRecord,
+  AdminVenueOption,
+  AdminVenueRecord,
+} from "./types";
 
 export async function getAdminMatches() {
   if (!isSupabaseConfigured()) {
     return getMockAdminMatches();
   }
 
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return getMockAdminMatches();
+  }
+
+  await assertAdminMatchParticipantsSchemaReady(supabase);
+
   const entities = await listAdminMatchEntities();
-  return entities.map(mapEntityToAdminRecord);
+  const participantsByMatchId = await getAdminMatchParticipantsByMatchId(
+    supabase,
+    entities.map((entity) => entity.id),
+  );
+
+  return entities.map((entity) =>
+    mapEntityToAdminRecord(entity, participantsByMatchId.get(entity.id) ?? []),
+  );
 }
 
 export async function getAdminMatchById(id: string) {
@@ -36,8 +65,22 @@ export async function getAdminMatchById(id: string) {
     return getMockAdminMatchById(id);
   }
 
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return getMockAdminMatchById(id);
+  }
+
+  await assertAdminMatchParticipantsSchemaReady(supabase);
+
   const entity = await getAdminMatchEntityById(id);
-  return entity ? mapEntityToAdminRecord(entity) : undefined;
+
+  if (!entity) {
+    return undefined;
+  }
+
+  const participantsByMatchId = await getAdminMatchParticipantsByMatchId(supabase, [id]);
+  return mapEntityToAdminRecord(entity, participantsByMatchId.get(id) ?? []);
 }
 
 export async function getAdminVenues() {
@@ -73,6 +116,7 @@ export async function getAdminCashDashboardData() {
       accounts: [],
       chargeOrders: [],
       chargeOrderEvents: [],
+      refundRequests: [],
       transactions: [],
     };
   }
@@ -84,16 +128,19 @@ export async function getAdminCashDashboardData() {
       accounts: [],
       chargeOrders: [],
       chargeOrderEvents: [],
+      refundRequests: [],
       transactions: [],
     };
   }
 
   await assertCashChargeOperationsSchemaReady(supabase);
+  await assertCashRefundRequestSchemaReady(supabase);
 
-  const [accounts, chargeOrders, chargeOrderEvents, transactions] = await Promise.all([
+  const [accounts, chargeOrders, chargeOrderEvents, refundRequests, transactions] = await Promise.all([
     listCashAccounts(supabase),
     listRecentCashChargeOrders(supabase),
     listRecentCashChargeOrderEvents(supabase),
+    listRecentCashRefundRequests(supabase),
     listRecentCashTransactions(supabase),
   ]);
 
@@ -101,11 +148,99 @@ export async function getAdminCashDashboardData() {
     accounts,
     chargeOrders,
     chargeOrderEvents,
+    refundRequests,
     transactions,
   };
 }
 
-function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {
+export async function getAdminCouponDashboardData() {
+  if (!isSupabaseConfigured()) {
+    return {
+      templates: [] as AdminCouponTemplateRecord[],
+    };
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      templates: [] as AdminCouponTemplateRecord[],
+    };
+  }
+
+  await assertCouponSchemaReady(supabase);
+
+  const [templates, usageSummaries] = await Promise.all([
+    listCouponTemplates(supabase),
+    listCouponUsageSummaries(supabase),
+  ]);
+
+  const usageByTemplateId = new Map<
+    string,
+    { availableCount: number; issuedCount: number; usedCount: number }
+  >();
+
+  for (const summary of usageSummaries) {
+    if (!summary.templateId) {
+      continue;
+    }
+
+    const current = usageByTemplateId.get(summary.templateId) ?? {
+      availableCount: 0,
+      issuedCount: 0,
+      usedCount: 0,
+    };
+    current.issuedCount += 1;
+
+    if (summary.status === "available") {
+      current.availableCount += 1;
+    }
+
+    if (summary.status === "used") {
+      current.usedCount += 1;
+    }
+
+    usageByTemplateId.set(summary.templateId, current);
+  }
+
+  return {
+    templates: templates.map((template) => {
+      const usage = usageByTemplateId.get(template.id) ?? {
+        availableCount: 0,
+        issuedCount: 0,
+        usedCount: 0,
+      };
+
+      return {
+        availableCount: usage.availableCount,
+        createdAt: template.createdAt,
+        discountAmount: template.discountAmount,
+        id: template.id,
+        isActive: template.isActive,
+        issuedCount: usage.issuedCount,
+        name: template.name,
+        updatedAt: template.updatedAt,
+        usedCount: usage.usedCount,
+      };
+    }),
+  };
+}
+
+type MatchParticipantRow = {
+  application_id: string;
+  applied_at: string;
+  display_name: string | null;
+  gender: "female" | "male" | null;
+  match_id: string;
+  player_level: string | null;
+  temporary_level: string | null;
+  user_id: string;
+};
+
+function mapEntityToAdminRecord(
+  entity: MatchEntity,
+  participants: AdminMatchParticipantRecord[],
+): AdminMatchRecord {
   return {
     id: entity.id,
     slug: entity.slug,
@@ -132,6 +267,7 @@ function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {
     imageUrls: entity.imageUrls,
     rules: entity.rules,
     safetyNotes: entity.safetyNotes,
+    participants,
     venueInfo: {
       directions: entity.venue.directions,
       parking: entity.venue.parking,
@@ -139,6 +275,52 @@ function mapEntityToAdminRecord(entity: MatchEntity): AdminMatchRecord {
       showerLocker: entity.venue.showerLocker,
     },
   };
+}
+
+async function getAdminMatchParticipantsByMatchId(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  matchIds: string[],
+) {
+  const participantsByMatchId = new Map<string, AdminMatchParticipantRecord[]>();
+
+  if (matchIds.length === 0) {
+    return participantsByMatchId;
+  }
+
+  const { data, error } = await ((supabase.rpc("list_admin_match_participants", {
+    p_match_ids: matchIds,
+  }) as any) as {
+    data: MatchParticipantRow[] | null;
+    error: { message: string } | null;
+  });
+
+  if (error) {
+    throw new Error(`Failed to load admin match participants: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as MatchParticipantRow[]) {
+    const existingParticipants = participantsByMatchId.get(row.match_id) ?? [];
+
+    existingParticipants.push({
+      applicationId: row.application_id,
+      displayName: row.display_name?.trim() || "이름 미등록",
+      gender: row.gender ?? null,
+      playerLevel:
+        row.player_level ??
+        row.temporary_level ??
+        null,
+      playerLevelSource: row.player_level
+        ? "player_level"
+        : row.temporary_level
+          ? "temporary_level"
+          : "unset",
+      userId: row.user_id,
+    });
+
+    participantsByMatchId.set(row.match_id, existingParticipants);
+  }
+
+  return participantsByMatchId;
 }
 
 function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { AppLink } from "@/components/navigation/app-link";
 import {
   BadgeIcon,
@@ -10,7 +11,7 @@ import {
 import styles from "./admin-shell.module.css";
 
 type AdminShellProps = {
-  activeNav: "dashboard" | "matches" | "venues" | "cash" | "create";
+  activeNav: "dashboard" | "matches" | "venues" | "cash" | "coupons" | "create";
   eyebrow: string;
   title: string;
   description?: string;
@@ -44,6 +45,12 @@ const NAV_ITEMS = [
     icon: WalletIcon,
   },
   {
+    id: "coupons",
+    label: "쿠폰 관리",
+    href: "/admin/coupons",
+    icon: BadgeIcon,
+  },
+  {
     id: "create",
     label: "새 매치",
     href: "/admin/matches/new",
@@ -54,6 +61,7 @@ const NAV_ITEMS = [
 export function AdminShell({
   activeNav,
   eyebrow,
+  description,
   title,
   actions,
   children,
@@ -64,8 +72,7 @@ export function AdminShell({
         <aside className={styles.sidebar}>
           <div className={styles.brandBlock}>
             <AppLink className={styles.brand} href="/">
-              <span className={styles.brandWord}>앵클</span>
-              <span className={styles.brandDot}>.</span>
+              <BrandLogo className={styles.brandLogo} priority />
             </AppLink>
             <p className={styles.brandLabel}>ADMIN CONSOLE</p>
           </div>
@@ -102,6 +109,27 @@ export function AdminShell({
             <div className={styles.headerCopy}>
               <p className={styles.eyebrow}>{eyebrow}</p>
               <h1 className={styles.title}>{title}</h1>
+              {description ? (
+                <p className={styles.description}>{description}</p>
+              ) : null}
+            </div>
+
+            <div className={styles.mobileNav}>
+              {NAV_ITEMS.map((item) => {
+                const active = item.id === activeNav;
+                const Icon = item.icon;
+
+                return (
+                  <AppLink
+                    key={item.id}
+                    className={`${styles.mobileNavLink} ${active ? styles.mobileNavActive : ""}`}
+                    href={item.href}
+                  >
+                    <Icon className={styles.mobileNavIcon} />
+                    <span>{item.label}</span>
+                  </AppLink>
+                );
+              })}
             </div>
 
             {actions ? <div className={styles.actions}>{actions}</div> : null}

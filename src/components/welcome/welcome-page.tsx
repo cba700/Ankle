@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { AppLink } from "@/components/navigation/app-link";
 import { WelcomeStepper } from "@/components/welcome/welcome-stepper";
 import type {
@@ -26,8 +27,7 @@ export function WelcomePage({
     <div className={styles.page}>
       <main className={styles.main}>
         <AppLink className={styles.brand} href="/">
-          <span className={styles.brandWord}>앵클</span>
-          <span className={styles.brandDot}>.</span>
+          <BrandLogo className={styles.brandLogo} priority />
         </AppLink>
 
         <WelcomeStepper
