@@ -5,7 +5,7 @@ import styles from "./refund-page.module.css";
 
 export const metadata: Metadata = {
   title: "환불규정",
-  description: "앵클 매치 환불, 강수 취소, 참가자 미달 기준 안내",
+  description: "앵클 매치 환불, 강수 환불, 충전 캐시 환불 기준 안내",
   robots: {
     follow: true,
     index: true,
@@ -20,7 +20,7 @@ export default function RefundPage() {
           <p className={styles.eyebrow}>Refund Policy</p>
           <h1 className={styles.title}>환불규정</h1>
           <p className={styles.description}>
-            매치 취소, 강수 취소, 참가자 미달 기준을 한 곳에서 확인할 수 있습니다.
+            매치 취소, 강수 환불, 충전 캐시 환불 기준을 한 곳에서 확인할 수 있습니다.
           </p>
 
           <nav aria-label="환불규정 바로가기" className={styles.jumpNav}>

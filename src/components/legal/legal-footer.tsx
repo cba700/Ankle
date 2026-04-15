@@ -6,8 +6,6 @@ import styles from "./legal-footer.module.css";
 const LEGAL_LINKS = [
   { href: "/terms", label: "이용약관", newTab: true },
   { href: "/privacy", label: "개인정보처리방침", newTab: true },
-  { href: "/refund", label: "환불규정", newTab: true },
-  { href: "/business-info", label: "사업자정보확인", newTab: false },
 ] as const;
 
 export function LegalFooter() {
@@ -37,7 +35,6 @@ export function LegalFooter() {
           <p className={styles.businessLine}>대표: 남강현</p>
           <p className={styles.businessLine}>메일: anklebasket@naver.com</p>
           <p className={styles.businessLine}>사업자등록번호: 679-74-00694</p>
-          <p className={styles.businessLine}>통신판매업신고: 미기재</p>
         </section>
       </div>
     </footer>

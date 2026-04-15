@@ -13,6 +13,12 @@ import {
   normalizeCashRefundAccountNumber,
 } from "@/lib/cash-refunds";
 import {
+  CASH_REFUND_CUTOFF_NOTICE,
+  CASH_REFUND_ELIGIBILITY_NOTICE,
+  CASH_REFUND_HOLIDAY_NOTICE,
+  CASH_REFUND_SCHEDULE_NOTICE,
+} from "@/lib/refund-policy";
+import {
   ArrowLeftIcon,
   WalletIcon,
 } from "@/components/icons";
@@ -248,7 +254,7 @@ export function MyPageCash({
           <section className={styles.feedbackBox}>
             <strong>환불 신청 접수됨</strong>
             <p className={styles.feedbackDescription}>
-              매주 월요일과 목요일에 순차적으로 확인 후 처리됩니다.
+              {CASH_REFUND_SCHEDULE_NOTICE} {CASH_REFUND_HOLIDAY_NOTICE}
             </p>
             <div className={styles.requestSummaryGrid}>
               <div className={styles.requestSummaryRow}>
@@ -429,7 +435,7 @@ function CashRefundRequestDialog({
               환불 신청
             </h2>
             <p className={styles.refundDialogDescription}>
-              입력한 계좌로 순차 환불을 접수합니다.
+              {CASH_REFUND_ELIGIBILITY_NOTICE}
             </p>
           </div>
           <button
@@ -501,7 +507,7 @@ function CashRefundRequestDialog({
               type="checkbox"
             />
             <span className={styles.refundCheckboxLabel}>
-              캐시 환불은 매주 월/목요일에 순차적으로 처리됩니다.
+              {CASH_REFUND_SCHEDULE_NOTICE} {CASH_REFUND_HOLIDAY_NOTICE} {CASH_REFUND_CUTOFF_NOTICE}
             </span>
           </label>
 
