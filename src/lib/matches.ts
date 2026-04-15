@@ -1,4 +1,5 @@
 import { addDays, formatDateLabel, formatMoney, getCalendarDates, getSeoulTodayStart, toDateKey } from "@/lib/date";
+import { MATCH_REFUND_SUMMARY_ROWS } from "@/lib/refund-policy";
 
 export type MatchFormat = "3vs3" | "5vs5";
 export type MatchStatusKind = "open" | "confirmedSoon" | "closingSoon" | "closed";
@@ -81,12 +82,10 @@ type MatchTemplate = {
   averageLevel: string;
 };
 
-export const REFUND_POLICY = [
-  { point: "매치 시작 24시간 이상 전", detail: "전액 환불" },
-  { point: "매치 시작 6시간 이상 전", detail: "50% 환불" },
-  { point: "매치 시작 6시간 이내", detail: "환불 불가" },
-  { point: "천재지변 또는 운영 취소", detail: "전액 환불" },
-];
+export const REFUND_POLICY = MATCH_REFUND_SUMMARY_ROWS.map((row) => ({
+  point: row.condition,
+  detail: row.policy,
+}));
 
 const LEVEL_WEIGHT_BY_TONE: Record<DistributionTone, number> = {
   basic: 1,
