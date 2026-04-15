@@ -21,6 +21,7 @@ type LoginStatus =
 const ERROR_MESSAGES: Record<string, string> = {
   callback_code_missing: "카카오 로그인 응답이 올바르지 않았습니다. 다시 시도해 주세요.",
   oauth_failed: "카카오 로그인에 실패했습니다. 다시 시도해 주세요.",
+  session_expired: "다른 기기에서 로그인되어 현재 세션이 종료되었습니다. 다시 로그인해 주세요.",
   supabase_not_configured: "Supabase 환경변수가 설정되지 않았습니다.",
 };
 
