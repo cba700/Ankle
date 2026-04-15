@@ -1,5 +1,6 @@
 import {
   createAdminCouponTemplateAction,
+  deleteAdminCouponTemplateAction,
   updateAdminCouponTemplateAction,
 } from "@/features/admin/actions";
 import { AdminOverviewCards } from "@/features/admin/components/admin-overview-cards";
@@ -162,6 +163,16 @@ function CouponTemplateCard({ row }: { row: AdminCouponTemplateRow }) {
           저장
         </button>
       </form>
+
+      <div className={styles.templateActionRow}>
+        <p className={styles.templateHint}>삭제해도 이미 발급된 쿠폰 기록은 유지됩니다.</p>
+        <form action={deleteAdminCouponTemplateAction}>
+          <input name="templateId" type="hidden" value={row.id} />
+          <button className={`${ui.button} ${styles.deleteButton}`} type="submit">
+            삭제
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

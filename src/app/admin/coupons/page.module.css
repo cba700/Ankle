@@ -110,6 +110,21 @@
   margin-top: 14px;
 }
 
+.templateActionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.templateHint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -151,9 +166,22 @@
   accent-color: var(--accent);
 }
 
+.deleteButton {
+  border-color: rgba(191, 61, 53, 0.42);
+  background: #fff6f4;
+  color: #bf3d35;
+}
+
 @media (min-width: 900px) {
   .templateForm {
     grid-template-columns: minmax(220px, 1.4fr) minmax(140px, 0.9fr) auto auto;
     align-items: end;
+  }
+}
+
+@media (max-width: 767px) {
+  .templateActionRow {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

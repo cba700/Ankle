@@ -88,6 +88,9 @@ type CouponTemplateFormValues = {
   name: string;
 };
 
+const REQUIRED_COUPON_DELETE_MIGRATION =
+  "20260415153000_allow_admin_delete_coupon_templates.sql";
+
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
 const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
@@ -496,6 +499,36 @@ export async function updateAdminCouponTemplateAction(formData: FormData) {
 
   if (error) {
     throw new Error(`Failed to update coupon template: ${error.message}`);
+  }
+
+  redirect("/admin/coupons");
+}
+
+export async function deleteAdminCouponTemplateAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const templateId = String(formData.get("templateId") ?? "").trim();
+
+  if (!templateId) {
+    throw new Error("Coupon template ID is required");
+  }
+
+  const { error } = await ((supabase.from("coupon_templates" as any) as any)
+    .delete()
+    .eq("id", templateId));
+
+  if (error) {
+    if (
+      error.code === "42501" ||
+      error.message?.includes("permission denied") ||
+      error.message?.includes("new row violates row-level security policy")
+    ) {
+      throw new Error(
+        `Database schema is outdated. Apply migration ${REQUIRED_COUPON_DELETE_MIGRATION} before deleting coupon templates.`,
+      );
+    }
+
+    throw new Error(`Failed to delete coupon template: ${error.message}`);
   }
 
   redirect("/admin/coupons");
