@@ -42,7 +42,12 @@ export function MatchRefundSection() {
         ) : null}
 
         <div className={styles.refundLinkGrid}>
-          <AppLink className={styles.refundLinkButton} href={REFUND_POLICY_HREF}>
+          <AppLink
+            className={styles.refundLinkButton}
+            href={REFUND_POLICY_HREF}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             환불정책 전체 보기
           </AppLink>
         </div>
