@@ -16,16 +16,28 @@ export type RefundPolicySection = {
   title: string;
 };
 
+export const REFUND_POLICY_HREF = "/refund";
 export const MATCH_REFUND_SECTION_ID = "match-refund";
 export const RAIN_REFUND_SECTION_ID = "rain-refund";
+export const CASH_REFUND_SECTION_ID = "cash-refund";
 
-export const MATCH_REFUND_POLICY_HREF = `/refund#${MATCH_REFUND_SECTION_ID}`;
-export const RAIN_REFUND_POLICY_HREF = `/refund#${RAIN_REFUND_SECTION_ID}`;
+export const MATCH_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${MATCH_REFUND_SECTION_ID}`;
+export const RAIN_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${RAIN_REFUND_SECTION_ID}`;
+export const CASH_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${CASH_REFUND_SECTION_ID}`;
+
+export const CASH_REFUND_ELIGIBILITY_NOTICE =
+  "실제 캐시 잔액에 한해 환불 가능(포인트는 환불 불가)";
+export const CASH_REFUND_SCHEDULE_NOTICE =
+  "환불은 매주 월요일, 목요일 저녁 5 - 6시 사이에 일괄 처리됩니다.";
+export const CASH_REFUND_HOLIDAY_NOTICE =
+  "공휴일은 월요일 대신 화요일 오전, 목요일 대신 금요일 오후에 환불됩니다.";
+export const CASH_REFUND_CUTOFF_NOTICE =
+  "월, 금 17시 이후 환불 신청 시 다음 환불일에 처리됩니다.";
 
 export const MATCH_REFUND_SUMMARY_ROWS: RefundPolicyRow[] = [
   { condition: "매치 2일 전", policy: "무료 취소" },
   { condition: "매치 1일 전", policy: "80% 환불" },
-  { condition: "당일 ~ 매치 시작 2시간 전", policy: "20% 환불" },
+  { condition: "당일 ~ 매치 시작 2시간 전까지", policy: "20% 환불" },
   { condition: "매치 시작 2시간 이내", policy: "환불 불가" },
 ];
 
@@ -33,7 +45,8 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
   {
     id: MATCH_REFUND_SECTION_ID,
     title: "매치 환불",
-    description: "일반 취소, 참가자 미달, 쿠폰 반환, 자동 전액 환불 기준을 확인할 수 있습니다.",
+    description:
+      "소셜 매치 취소, 참가자 미달 무료 취소, 환불 불가 기준과 유의사항을 확인할 수 있습니다.",
     groups: [
       {
         title: "소셜 매치 취소 환불 규정",
@@ -49,8 +62,8 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
       {
         title: "참가자 미달 기준",
         rows: [
-          { condition: "참가자 미달(1)", policy: "3vs3: 2명 이하 / 5vs5: 4명 이하" },
-          { condition: "참가자 미달(2)", policy: "3vs3: 4명 이하 / 5vs5: 6명 이하" },
+          { condition: "참가자 미달(1)", policy: "3v3: 2명 이하 / 5vs5: 4명 이하" },
+          { condition: "참가자 미달(2)", policy: "3v3: 4명 이하 / 5vs5: 6명 이하" },
         ],
       },
       {
@@ -58,11 +71,11 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
         items: [
           "취소 수수료 발생 시 사용된 포인트를 우선 차감 후 차액을 캐시로 지급합니다.",
           "변경은 상단 취소 환불 규정과 동일하게 적용됩니다.",
-          "결제 후 30분 이내에는 하루 1회에 한해 무료 취소가 가능합니다. 단, 매치 시작 2시간 이내일 경우 불가합니다.",
+          "결제 후 30분 이내에는 하루 1회에 한해 무료 취소가 가능합니다. (단, 매치 시작 2시간 이내일 경우 불가)",
           "쿠폰 신청자는 매치 시작 2시간 전까지 취소 시 쿠폰이 반환됩니다.",
           "실 결제금액(쿠폰 제외)을 기준으로 위 규정에 따라 환불됩니다.",
           "매치 전날까지 최소 인원이 모이지 않을 시 카카오톡 혹은 LMS로 안내되며, 자동 전액 환불됩니다.",
-          "매치 시작 2시간 전까지 최소 인원이 모이지 않을 시 카카오톡 혹은 LMS로 안내되며, 자동 전액 환불됩니다. 단, 안내 전 직접 취소하는 경우 상단 일반 환불 규정대로 처리됩니다.",
+          "매치 시작 2시간 전까지 최소 인원이 모이지 않을 시 카카오톡 혹은 LMS로 안내되며, 자동 전액 환불됩니다. (단, 안내 전 직접 취소하는 경우 상단 일반 환불 규정대로 처리됩니다.)",
           "2시간 내 취소자로 최소 인원이 미달되거나, 구장 시설에 긴급한 문제가 생긴 경우 매치 시작 2시간 이내라도 매치를 취소합니다.",
         ],
       },
@@ -82,13 +95,15 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
   {
     id: RAIN_REFUND_SECTION_ID,
     title: "강수 환불",
-    description: "우천 취소, 알림톡 발송 기준, 현장 취소 시 환불 방식을 확인할 수 있습니다.",
+    description:
+      "강수 사전 취소, 강수 예보 안내 알림 기준, 현장 환불 방식을 확인할 수 있습니다.",
     groups: [
       {
         title: "강수 환불 규정",
         items: [
           "우천 등 기상 사유로 매치가 취소되는 경우 전액 환불됩니다.",
-          "환불은 익일 오전 중으로 환불됩니다.",
+          "기상청 날씨누리 기준 시간당 강수량이 3mm 이상으로 예보될 경우, 담당자가 판단하여 매치를 사전에 취소할 수 있습니다.",
+          "매치 시작 4시간 이내 ~ 2시간 전 시간당 1mm 이상 / 기상청 기준, 매치 시작 2시간 내에 시간당 1mm 이상 시 강수 예보 알람을 보내드립니다. 이 경우 현장에 도착하여 참여 의사 및 상황에 맞게 환불을 진행합니다.",
           "기상청 날씨누리에서 제공하는 구장 주소별 예보에 따라, 환불이 가능한 경우 '강수 예보 안내' 알림톡이 발송됩니다.",
         ],
       },
@@ -112,6 +127,29 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
           "별도 공지가 없을 시 매치는 정상 진행됩니다.",
           "다수의 인원이 취소하거나 구장 상태가 좋지 않아 진행이 어렵다면 매치 시작 2시간 이내라도 매치를 취소합니다.",
           "현장에서 강수로 인해 매치가 취소되거나 중단되면 진행하지 못한 시간만큼 포인트로 환불됩니다.",
+        ],
+      },
+    ],
+  },
+  {
+    id: CASH_REFUND_SECTION_ID,
+    title: "충전 캐시 환불",
+    description:
+      "충전 캐시 환불 방법, 환불 가능 조건, 처리 일정과 공휴일 대체 일정을 확인할 수 있습니다.",
+    groups: [
+      {
+        title: "환불 방법",
+        items: [
+          "[마이페이지] → [캐시 내역] → [캐시 환불 클릭]",
+          CASH_REFUND_ELIGIBILITY_NOTICE,
+        ],
+      },
+      {
+        title: "처리 일정",
+        items: [
+          CASH_REFUND_SCHEDULE_NOTICE,
+          CASH_REFUND_HOLIDAY_NOTICE,
+          CASH_REFUND_CUTOFF_NOTICE,
         ],
       },
     ],

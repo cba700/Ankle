@@ -217,6 +217,11 @@
   background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
 }
 
+.refundPolicyBlock {
+  display: grid;
+  gap: 12px;
+}
+
 .refundCardLabel {
   margin-bottom: 12px;
   color: var(--accent-strong);
@@ -310,6 +315,7 @@
   }
 
   .refundSummaryCard,
+  .refundPolicyBlock,
   .refundLinkCard {
     padding: 16px 18px;
     border-radius: 20px;
