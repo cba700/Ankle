@@ -51,7 +51,7 @@ export function MatchDetail({
             <MatchCourtSection facilities={view.facilities} notes={view.courtNotes} />
             <MatchRulesSection howTo={view.howTo} rules={view.rules} />
             <MatchSafetySection items={view.safetyNotes} />
-            <MatchRefundSection refundRows={view.refundRows} />
+            <MatchRefundSection />
           </div>
 
           <aside className={styles.sidebarColumn}>
