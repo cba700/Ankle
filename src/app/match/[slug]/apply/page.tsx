@@ -2,11 +2,12 @@ import { notFound, redirect } from "next/navigation";
 import { MatchApplyPage } from "@/components/match/match-apply-page";
 import { buildMatchDetailViewModel } from "@/components/match/match-detail-view-model";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { getAvailableSignupCouponByUserId } from "@/lib/coupons";
 import { formatMoney } from "@/lib/date";
 import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getPublicMatchByPublicId } from "@/lib/matches-data";
 import {
-  assertCashFoundationSchemaReady,
+  assertCouponSchemaReady,
 } from "@/lib/supabase/schema";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -49,7 +50,7 @@ export default async function MatchApply({
   let cashBalance = 0;
   let existingApplication = null;
 
-  await assertCashFoundationSchemaReady(supabase);
+  await assertCouponSchemaReady(supabase);
   const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
     supabase,
     user.id,
@@ -61,7 +62,7 @@ export default async function MatchApply({
     redirect(requiredSetupHref);
   }
 
-  const [{ data: application }, { data: cashAccount }] = await Promise.all([
+  const [{ data: application }, { data: cashAccount }, availableCoupon] = await Promise.all([
     supabase
       .from("match_applications")
       .select("id")
@@ -74,10 +75,16 @@ export default async function MatchApply({
       .select("balance")
       .eq("user_id", user.id)
       .maybeSingle(),
+    getAvailableSignupCouponByUserId(supabase, user.id),
   ]);
 
   existingApplication = application;
   cashBalance = cashAccount?.balance ?? 0;
+  const couponDiscountAmount =
+    match.price > 0 && availableCoupon
+      ? Math.min(availableCoupon.discountAmountSnapshot, match.price)
+      : 0;
+  const finalChargeAmount = Math.max(match.price - couponDiscountAmount, 0);
 
   return (
     <MatchApplyPage
@@ -85,6 +92,15 @@ export default async function MatchApply({
       alreadyApplied={Boolean(existingApplication)}
       canApply={match.canApply}
       cashBalanceLabel={`${formatMoney(cashBalance)}원`}
+      priceSummary={{
+        couponDiscountAmount,
+        couponDiscountLabel:
+          couponDiscountAmount > 0 ? `${formatMoney(couponDiscountAmount)}원` : null,
+        couponName: couponDiscountAmount > 0 ? availableCoupon?.nameSnapshot ?? null : null,
+        finalChargeAmount,
+        finalChargeLabel: `${formatMoney(finalChargeAmount)}원`,
+        originalPriceLabel: `${formatMoney(match.price)}원`,
+      }}
       view={buildMatchDetailViewModel(match)}
     />
   );

@@ -3,6 +3,13 @@ export type AdminMatchFormat = "3vs3" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
 export type AdminBadgeTone = "accent" | "neutral" | "danger";
+export type AdminShellNav =
+  | "dashboard"
+  | "matches"
+  | "venues"
+  | "cash"
+  | "coupons"
+  | "create";
 
 export type AdminVenueInfo = {
   directions: string;
@@ -158,6 +165,32 @@ export type AdminCashRefundRequestRow = {
   statusLabel: string;
   statusTone: AdminBadgeTone;
   userId: string;
+};
+
+export type AdminCouponTemplateRecord = {
+  availableCount: number;
+  createdAt: string;
+  discountAmount: number;
+  id: string;
+  isActive: boolean;
+  issuedCount: number;
+  name: string;
+  updatedAt: string;
+  usedCount: number;
+};
+
+export type AdminCouponTemplateRow = {
+  availableCountLabel: string;
+  discountAmount: number;
+  discountAmountLabel: string;
+  id: string;
+  isActive: boolean;
+  issuedCountLabel: string;
+  metaLabel: string;
+  name: string;
+  statusLabel: string;
+  statusTone: AdminBadgeTone;
+  usedCountLabel: string;
 };
 
 export type AdminMatchRow = {

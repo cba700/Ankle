@@ -51,6 +51,7 @@ export default async function MyPageCouponsRoute() {
   return (
     <MyPageCoupons
       couponCount={data.couponCount}
+      coupons={data.coupons}
       initialIsAdmin={data.profile.role === "admin"}
     />
   );

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMatchApplicationError } from "@/lib/match-application-errors";
-import { assertCashFoundationSchemaReady } from "@/lib/supabase/schema";
+import { assertCouponSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function DELETE(
@@ -28,7 +28,7 @@ export async function DELETE(
     );
   }
 
-  await assertCashFoundationSchemaReady(supabase);
+  await assertCouponSchemaReady(supabase);
 
   const { data, error } = await supabase.rpc("cancel_match_application", {
     p_match_id: matchId,
