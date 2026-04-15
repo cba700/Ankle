@@ -293,6 +293,19 @@
   gap: 8px;
 }
 
+.fieldHint {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.fieldError {
+  color: var(--red-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .textInput {
   width: 100%;
   min-height: 52px;

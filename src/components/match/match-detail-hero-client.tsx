@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MatchHero } from "./match-hero";
 import { useMatchDetailFeedback } from "./match-detail-feedback";
 
@@ -26,25 +26,35 @@ export function MatchDetailHeroClient({
   const showToast = useMatchDetailFeedback();
   const hasMultipleImages = images.length > 1;
   const [trackIndex, setTrackIndex] = useState(hasMultipleImages ? 1 : 0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(hasMultipleImages);
+  const isAnimatingRef = useRef(false);
 
   useEffect(() => {
+    isAnimatingRef.current = false;
+    setIsAnimating(false);
     setTrackIndex(images.length > 1 ? 1 : 0);
     setIsTransitionEnabled(images.length > 1);
   }, [images.length]);
 
   useEffect(() => {
-    if (images.length <= 1) {
+    if (images.length <= 1 || isAnimating) {
       return;
     }
 
     const timer = window.setTimeout(() => {
+      if (isAnimatingRef.current) {
+        return;
+      }
+
+      isAnimatingRef.current = true;
+      setIsAnimating(true);
       setIsTransitionEnabled(true);
-      setTrackIndex((current) => current + 1);
+      setTrackIndex((current) => Math.min(images.length + 1, current + 1));
     }, 2000);
 
     return () => window.clearTimeout(timer);
-  }, [images.length, trackIndex]);
+  }, [images.length, isAnimating, trackIndex]);
 
   useEffect(() => {
     if (isTransitionEnabled || images.length <= 1) {
@@ -71,27 +81,34 @@ export function MatchDetailHeroClient({
   }
 
   function handlePrevImage() {
-    if (images.length <= 1) {
+    if (images.length <= 1 || isAnimatingRef.current) {
       return;
     }
 
+    isAnimatingRef.current = true;
+    setIsAnimating(true);
     setIsTransitionEnabled(true);
-    setTrackIndex((current) => current - 1);
+    setTrackIndex((current) => Math.max(0, current - 1));
   }
 
   function handleNextImage() {
-    if (images.length <= 1) {
+    if (images.length <= 1 || isAnimatingRef.current) {
       return;
     }
 
+    isAnimatingRef.current = true;
+    setIsAnimating(true);
     setIsTransitionEnabled(true);
-    setTrackIndex((current) => current + 1);
+    setTrackIndex((current) => Math.min(images.length + 1, current + 1));
   }
 
   function handleTrackTransitionEnd() {
     if (images.length <= 1) {
       return;
     }
+
+    isAnimatingRef.current = false;
+    setIsAnimating(false);
 
     if (trackIndex === 0) {
       setIsTransitionEnabled(false);

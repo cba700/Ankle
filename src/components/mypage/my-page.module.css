@@ -694,19 +694,20 @@
   }
 
   .menuRow {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     padding: 14px 16px;
   }
 
   .menuMeta {
-    grid-column: 2;
-    justify-self: start;
-    margin-top: -4px;
+    grid-column: 3;
+    justify-self: end;
+    margin-top: 0;
+    text-align: right;
   }
 
   .menuArrow {
-    grid-column: 3;
-    grid-row: 1 / span 2;
+    grid-column: 4;
+    grid-row: auto;
     align-self: center;
   }
 

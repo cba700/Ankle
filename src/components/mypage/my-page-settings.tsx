@@ -3,6 +3,10 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { MyPageProfile } from "@/lib/mypage";
+import {
+  DISPLAY_NAME_MAX_LENGTH,
+  getDisplayNameValidationMessage,
+} from "@/lib/signup-profile";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import {
   formatTemporaryLevel,
@@ -19,9 +23,12 @@ import baseStyles from "./my-page.module.css";
 import styles from "./my-page-settings.module.css";
 
 type MyPageSettingsProps = {
+  displayNameDraftValue: string;
+  displayNameErrorMessage: string;
   displayNameValue: string;
   displayNameFormAction: (formData: FormData) => void | Promise<void>;
   initialIsAdmin: boolean;
+  initialActiveDialog: DialogKind | null;
   profile: MyPageProfile;
   temporaryLevelFormAction: (formData: FormData) => void | Promise<void>;
 };
@@ -29,14 +36,21 @@ type MyPageSettingsProps = {
 type DialogKind = "displayName" | "temporaryLevel";
 
 export function MyPageSettings({
+  displayNameDraftValue,
+  displayNameErrorMessage,
   displayNameValue,
   displayNameFormAction,
   initialIsAdmin,
+  initialActiveDialog,
   profile,
   temporaryLevelFormAction,
 }: MyPageSettingsProps) {
   const initials = profile.displayName.slice(0, 1).toUpperCase() || "A";
-  const [activeDialog, setActiveDialog] = useState<DialogKind | null>(null);
+  const [activeDialog, setActiveDialog] = useState<DialogKind | null>(initialActiveDialog);
+  const [displayNameDialogState, setDisplayNameDialogState] = useState({
+    errorMessage: displayNameErrorMessage,
+    value: displayNameDraftValue || displayNameValue,
+  });
   const editableRows: Array<{
     dialog: DialogKind;
     key: string;
@@ -62,6 +76,14 @@ export function MyPageSettings({
     { label: "로그인 방식", value: profile.providerLabel },
     { label: "권한", value: getRoleLabel(profile.role) },
   ];
+
+  useEffect(() => {
+    if (!initialActiveDialog && !displayNameErrorMessage) {
+      return;
+    }
+
+    window.history.replaceState(window.history.state, "", "/mypage/settings");
+  }, [displayNameErrorMessage, initialActiveDialog]);
 
   return (
     <>
@@ -126,7 +148,16 @@ export function MyPageSettings({
                   <button
                     aria-haspopup="dialog"
                     className={styles.editButton}
-                    onClick={() => setActiveDialog(row.dialog)}
+                    onClick={() => {
+                      if (row.dialog === "displayName") {
+                        setDisplayNameDialogState({
+                          errorMessage: "",
+                          value: displayNameValue,
+                        });
+                      }
+
+                      setActiveDialog(row.dialog);
+                    }}
                     type="button"
                   >
                     <PencilIcon className={styles.editButtonIcon} />
@@ -185,9 +216,16 @@ export function MyPageSettings({
 
       {activeDialog === "displayName" ? (
         <DisplayNameDialog
-          displayNameValue={displayNameValue}
+          displayNameErrorMessage={displayNameDialogState.errorMessage}
+          displayNameValue={displayNameDialogState.value}
           formAction={displayNameFormAction}
-          onClose={() => setActiveDialog(null)}
+          onClose={() => {
+            setActiveDialog(null);
+            setDisplayNameDialogState((current) => ({
+              ...current,
+              errorMessage: "",
+            }));
+          }}
         />
       ) : null}
 
@@ -203,31 +241,60 @@ export function MyPageSettings({
 }
 
 function DisplayNameDialog({
+  displayNameErrorMessage,
   displayNameValue,
   formAction,
   onClose,
 }: {
+  displayNameErrorMessage: string;
   displayNameValue: string;
   formAction: (formData: FormData) => void | Promise<void>;
   onClose: () => void;
 }) {
+  const [displayName, setDisplayName] = useState(displayNameValue);
+  const [inlineError, setInlineError] = useState<string | null>(
+    displayNameErrorMessage || null,
+  );
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const displayNameError = getDisplayNameValidationMessage(displayName);
+
+    if (displayNameError) {
+      event.preventDefault();
+      setInlineError(displayNameError);
+      return;
+    }
+
+    setInlineError(null);
+  }
+
   return (
     <SettingsDialog
       onClose={onClose}
       subtitle="비워두면 로그인 정보의 이름이 대신 표시됩니다."
       title="표시 이름 변경"
     >
-      <form action={formAction} className={styles.modalForm}>
+      <form action={formAction} className={styles.modalForm} onSubmit={handleSubmit}>
         <label className={styles.field}>
           <span className={styles.fieldLabel}>표시 이름</span>
           <input
             autoFocus
             className={styles.textInput}
-            defaultValue={displayNameValue}
+            maxLength={DISPLAY_NAME_MAX_LENGTH}
             name="displayName"
+            onChange={(event) => {
+              setDisplayName(event.target.value);
+
+              if (inlineError) {
+                setInlineError(getDisplayNameValidationMessage(event.target.value));
+              }
+            }}
             placeholder="이름을 입력하세요"
             type="text"
+            value={displayName}
           />
+          <span className={styles.fieldHint}>한글, 영문, 숫자, 공백만 입력할 수 있으며 2~12자까지 가능합니다.</span>
+          {inlineError ? <span className={styles.fieldError}>{inlineError}</span> : null}
         </label>
 
         <div className={styles.modalActionRow}>
