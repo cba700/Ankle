@@ -179,16 +179,16 @@ export function buildAdminCouponOverviewCards(
   return [
     {
       id: "coupon-active",
-      label: "활성 쿠폰",
+      label: "운영 중인 쿠폰",
       value: activeTemplate ? activeTemplate.name : "없음",
-      helper: activeTemplate ? "신규가입 자동 지급 중" : "현재 자동 지급 쿠폰 없음",
+      helper: activeTemplate ? "신규가입 시 자동 지급 중" : "현재 운영 중인 쿠폰 없음",
       tone: activeTemplate ? "accent" : "neutral",
     },
     {
       id: "coupon-discount",
       label: "현재 할인액",
       value: activeTemplate ? `${formatMoney(activeTemplate.discountAmount)}원` : "-",
-      helper: "활성 템플릿 기준",
+      helper: "운영 중인 쿠폰 기준",
       tone: activeTemplate ? "accent" : "neutral",
     },
     {
@@ -218,7 +218,7 @@ export function buildAdminCouponTemplateRows(
     id: template.id,
     isActive: template.isActive,
     issuedCountLabel: `${template.issuedCount}장`,
-    metaLabel: `${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
+    metaLabel: `신규가입 자동 지급 · ${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
     name: template.name,
     statusLabel: template.isActive ? "활성" : "비활성",
     statusTone: template.isActive ? "accent" : "neutral",
