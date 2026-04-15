@@ -13,6 +13,10 @@ export const REQUIRED_SIGNUP_AGREEMENT_FIELDS = [
   "privacy",
   "terms",
 ] as const;
+export const DISPLAY_NAME_MIN_LENGTH = 2;
+export const DISPLAY_NAME_MAX_LENGTH = 12;
+
+const DISPLAY_NAME_ALLOWED_PATTERN = /^[A-Za-z0-9가-힣 ]+$/;
 
 export type SignupAgreementField = keyof typeof SIGNUP_CONSENT_FIELD_TO_TYPE;
 export type SignupConsentType =
@@ -67,6 +71,35 @@ export function normalizeLegalName(value: unknown) {
   }
 
   return value.trim().replace(/\s+/g, " ");
+}
+
+export function normalizeDisplayName(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim().replace(/\s+/g, " ");
+}
+
+export function getDisplayNameValidationMessage(value: unknown) {
+  const normalizedValue = normalizeDisplayName(value);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (
+    normalizedValue.length < DISPLAY_NAME_MIN_LENGTH ||
+    normalizedValue.length > DISPLAY_NAME_MAX_LENGTH
+  ) {
+    return `표시 이름은 ${DISPLAY_NAME_MIN_LENGTH}자 이상 ${DISPLAY_NAME_MAX_LENGTH}자 이하로 입력해 주세요.`;
+  }
+
+  if (!DISPLAY_NAME_ALLOWED_PATTERN.test(normalizedValue)) {
+    return "표시 이름에는 한글, 영문, 숫자, 공백만 사용할 수 있습니다.";
+  }
+
+  return null;
 }
 
 export function normalizeBirthDate(value: unknown) {

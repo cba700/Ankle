@@ -4,6 +4,10 @@ import {
   buildLoginHref,
   normalizePostAuthNextPath,
 } from "@/lib/auth/redirect";
+import {
+  bindSingleSessionCookie,
+  createSingleSessionBinding,
+} from "@/lib/auth/single-session";
 import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
@@ -44,6 +48,7 @@ export async function GET(request: Request) {
   }
 
   await assertSignupProfileSchemaReady(supabase);
+  const sessionKey = await createSingleSessionBinding(supabase as any, user.id);
   const signupProfileState = await refreshSignupProfileCompletionStatus(
     supabase as any,
     user.id,
@@ -54,13 +59,16 @@ export async function GET(request: Request) {
   );
 
   if (requiredSignupProfileHref) {
-    return NextResponse.redirect(
+    const response = NextResponse.redirect(
       new URL(requiredSignupProfileHref, requestUrl.origin),
       {
         headers: PRIVATE_NO_STORE_HEADERS,
         status: 303,
       },
     );
+
+    bindSingleSessionCookie(response, sessionKey);
+    return response;
   }
 
   const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
@@ -70,11 +78,14 @@ export async function GET(request: Request) {
     { skipPhoneVerification: true },
   );
 
-  return NextResponse.redirect(
+  const response = NextResponse.redirect(
     new URL(requiredSetupHref ?? nextPath, requestUrl.origin),
     {
       headers: PRIVATE_NO_STORE_HEADERS,
       status: 303,
     },
   );
+
+  bindSingleSessionCookie(response, sessionKey);
+  return response;
 }

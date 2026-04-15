@@ -18,7 +18,12 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function MyPageSettingsRoute() {
+export default async function MyPageSettingsRoute({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = await searchParams;
   const { configured, role, user } = await getServerAuthState();
 
   if (!configured || !user) {
@@ -58,14 +63,27 @@ export default async function MyPageSettingsRoute() {
         .eq("id", user.id)
         .maybeSingle()
     : { data: null };
+  const initialActiveDialog =
+    readFirstSearchParam(resolvedSearchParams.edit) === "displayName"
+      ? "displayName"
+      : null;
 
   return (
     <MyPageSettings
+      displayNameDraftValue={readFirstSearchParam(resolvedSearchParams.displayName)}
+      displayNameErrorMessage={readFirstSearchParam(
+        resolvedSearchParams.displayNameError,
+      )}
       displayNameValue={profileRow?.display_name ?? ""}
       displayNameFormAction={updateMyPageDisplayNameAction}
       initialIsAdmin={data.profile.role === "admin"}
+      initialActiveDialog={initialActiveDialog}
       temporaryLevelFormAction={updateMyPageTemporaryLevelAction}
       profile={data.profile}
     />
   );
+}
+
+function readFirstSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
