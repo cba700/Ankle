@@ -52,9 +52,8 @@ type VerifyPhoneVerificationResult = {
 const PHONE_VERIFICATION_CODE_LENGTH = 6;
 const PHONE_VERIFICATION_EXPIRY_SECONDS = 5 * 60;
 const PHONE_VERIFICATION_MAX_ATTEMPTS = 5;
-const PHONE_VERIFICATION_PHONE_LIMIT_PER_HOUR = 5;
-const PHONE_VERIFICATION_IP_LIMIT_PER_DAY = 20;
-const PHONE_VERIFICATION_RESEND_COOLDOWN_SECONDS = 60;
+const PHONE_VERIFICATION_PHONE_LIMIT_PER_HOUR = 10;
+const PHONE_VERIFICATION_RESEND_COOLDOWN_SECONDS = 30;
 const SIGNUP_PHONE_COOKIE_NAME = "ankle-signup-phone-verification";
 const SIGNUP_PHONE_COOKIE_MAX_AGE_SECONDS = 10 * 60;
 
@@ -116,7 +115,7 @@ export async function sendPhoneVerificationCode(
   }
 
   await assertPhoneOwnershipAvailable(admin, normalizedPhone.e164, userId);
-  await assertSendRateLimit(admin, normalizedPhone.e164, requestIp, purpose, userId);
+  await assertSendRateLimit(admin, normalizedPhone.e164, purpose, userId);
 
   const requestId = randomUUID();
   const verificationCode = randomInt(
@@ -431,12 +430,10 @@ export async function assertPhoneOwnershipAvailable(
 async function assertSendRateLimit(
   admin: AdminClient,
   phoneNumberE164: string,
-  requestIp: string | null,
   purpose: PhoneVerificationPurpose,
   userId: string | null,
 ) {
   const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const { count: phoneCount, error: phoneCountError } = await getPhoneVerificationRequestsQuery(
     admin,
@@ -458,30 +455,6 @@ async function assertSendRateLimit(
         retryAfterSeconds: PHONE_VERIFICATION_EXPIRY_SECONDS,
       },
     );
-  }
-
-  if (requestIp) {
-    const { count: ipCount, error: ipCountError } = await getPhoneVerificationRequestsQuery(
-      admin,
-    )
-      .select("id", { count: "exact", head: true })
-      .eq("request_ip", requestIp)
-      .gte("created_at", dayAgo);
-
-    if (ipCountError) {
-      throw new Error(`Failed to count IP verification requests: ${ipCountError.message}`);
-    }
-
-    if ((ipCount ?? 0) >= PHONE_VERIFICATION_IP_LIMIT_PER_DAY) {
-      throw new PhoneVerificationError(
-        "PHONE_VERIFICATION_RATE_LIMITED",
-        "인증 요청이 너무 많습니다. 내일 다시 시도해 주세요.",
-        {
-          httpStatus: 429,
-          retryAfterSeconds: 60 * 60,
-        },
-      );
-    }
   }
 
   let resendQuery = getPhoneVerificationRequestsQuery(admin)
