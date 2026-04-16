@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { startTransition, useEffect, useRef, useState } from "react";
 import transitionStyles from "@/components/navigation/route-transition.module.css";
 import { useSearchParams } from "next/navigation";
@@ -11,13 +12,17 @@ import {
   getHomeStateSearch,
 } from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
-import { HomeFilterBar } from "./home-filter-bar";
 import { HomeMatchList } from "./home-match-list";
 import { useMatchWishlist } from "@/components/wishlist/use-match-wishlist";
 import { HomePageSkeleton } from "./home-page-skeleton";
 import type { HomeFilterState, HomeMatchRow } from "./home-types";
 import { HOME_FILTER_GROUPS } from "./home-view-model";
 import styles from "./home-page.module.css";
+
+const HomeFilterBar = dynamic(
+  () => import("./home-filter-bar").then((module) => module.HomeFilterBar),
+  { ssr: false },
+);
 
 type HomeMatchBrowserProps = {
   dates: CalendarDate[];
