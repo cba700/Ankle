@@ -30,6 +30,7 @@ import type {
   AdminCouponTemplateRow,
   AdminMatchFormValue,
   AdminMatchRecord,
+  AdminMatchRefundExceptionMode,
   AdminMatchRow,
   AdminMatchStatus,
   AdminOverviewCard,
@@ -69,6 +70,44 @@ export function getAdminStatusMeta(status: AdminMatchStatus) {
     tone: "neutral" as const,
     description: "정원 마감 또는 노출 종료 상태",
   };
+}
+
+export function getAdminMatchRefundExceptionMeta(
+  mode: AdminMatchRefundExceptionMode,
+) {
+  switch (mode) {
+    case "participant_shortage_day_before":
+      return {
+        description: "전날 참가자 미달 안내 후 시작 2시간 전까지 무료 취소를 허용합니다.",
+        label: "미달 안내(전날)",
+        tone: "danger" as const,
+      };
+    case "participant_shortage_same_day":
+      return {
+        description: "당일 참가자 미달 안내 후 시작 2시간 전까지 무료 취소를 허용합니다.",
+        label: "미달 안내(당일)",
+        tone: "danger" as const,
+      };
+    case "rain_notice":
+      return {
+        description: "강수 예보 안내가 발송된 상태입니다. 시작 2시간 전까지 전액 환불을 허용합니다.",
+        label: "강수 안내",
+        tone: "danger" as const,
+      };
+    case "rain_change_notice":
+      return {
+        description: "강수 변동 안내 상태입니다. 현장 확인 후 운영자가 개별 환불을 처리합니다.",
+        label: "강수 변동 안내",
+        tone: "danger" as const,
+      };
+    case "none":
+    default:
+      return {
+        description: "현재 별도 예외 환불 안내가 적용되지 않습니다.",
+        label: "기본 환불",
+        tone: "neutral" as const,
+      };
+  }
 }
 
 export function buildAdminOverviewCards(matches: AdminMatchRecord[]): AdminOverviewCard[] {
@@ -331,6 +370,9 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
     const timeLabel = Number.isFinite(durationMinutes)
       ? `${formatSeoulTime(new Date(match.startAt))} 시작 · ${formatMatchDurationLabel(durationMinutes)}`
       : formatSeoulTime(new Date(match.startAt));
+    const refundExceptionMeta = getAdminMatchRefundExceptionMeta(
+      match.refundExceptionMode,
+    );
 
     return {
       id: match.id,
@@ -349,6 +391,11 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
       status: match.status,
       displayStatusLabel: displayStatus.label,
       displayStatusTone: displayStatus.tone,
+      refundExceptionLabel:
+        match.refundExceptionMode === "none" ? null : refundExceptionMeta.label,
+      refundExceptionMode: match.refundExceptionMode,
+      refundExceptionTone:
+        match.refundExceptionMode === "none" ? null : refundExceptionMeta.tone,
       isNearClosing,
       isSoldOut,
       tags: match.tags,
@@ -430,6 +477,7 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
       startTime: "",
       durationMinutes: "",
       status: "",
+      refundExceptionMode: "none",
       format: "",
       capacity: "",
       participantSummary: "신청 0명 · 저장 후 자동 집계",
@@ -462,6 +510,7 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
     startTime: formatSeoulTime(new Date(match.startAt)),
     durationMinutes: getMatchDurationMinutes(match.startAt, match.endAt),
     status: match.status,
+    refundExceptionMode: match.refundExceptionMode,
     format: match.format,
     capacity: String(match.capacity),
     participantSummary: `신청 ${match.currentParticipants}명 · 정원 ${match.capacity}명`,

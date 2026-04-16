@@ -33,6 +33,7 @@ import type {
   AdminMatchParticipantRecord,
   AdminMatchRecord,
   AdminCouponTemplateRecord,
+  AdminMatchRefundExceptionMode,
   AdminVenueOption,
   AdminVenueRecord,
 } from "./types";
@@ -51,6 +52,10 @@ export async function getAdminMatches() {
   await assertAdminMatchParticipantsSchemaReady(supabase);
 
   const entities = await listAdminMatchEntities();
+  const refundExceptionModes = await getMatchRefundExceptionModes(
+    supabase,
+    entities.map((entity) => entity.id),
+  );
   const participantsByMatchId = await getAdminMatchParticipantsByMatchId(
     supabase,
     entities.map((entity) => entity.id),
@@ -65,6 +70,7 @@ export async function getAdminMatches() {
   return entities.map((entity) =>
     mapEntityToAdminRecord(
       entity,
+      refundExceptionModes.get(entity.id) ?? "none",
       (participantsByMatchId.get(entity.id) ?? []).map((participant) => ({
         ...participant,
         noShowNoticeSent: noShowNoticeSentIds.has(participant.applicationId),
@@ -93,6 +99,7 @@ export async function getAdminMatchById(id: string) {
   }
 
   const participantsByMatchId = await getAdminMatchParticipantsByMatchId(supabase, [id]);
+  const refundExceptionModes = await getMatchRefundExceptionModes(supabase, [id]);
   const participants = participantsByMatchId.get(id) ?? [];
   const noShowNoticeSentIds = await listSentApplicationNotificationIds(
     participants.map((participant) => participant.applicationId),
@@ -101,6 +108,7 @@ export async function getAdminMatchById(id: string) {
 
   return mapEntityToAdminRecord(
     entity,
+    refundExceptionModes.get(id) ?? "none",
     participants.map((participant) => ({
       ...participant,
       noShowNoticeSent: noShowNoticeSentIds.has(participant.applicationId),
@@ -264,6 +272,7 @@ type MatchParticipantRow = {
 
 function mapEntityToAdminRecord(
   entity: MatchEntity,
+  refundExceptionMode: AdminMatchRefundExceptionMode,
   participants: AdminMatchParticipantRecord[],
 ): AdminMatchRecord {
   return {
@@ -292,6 +301,7 @@ function mapEntityToAdminRecord(
     imageUrls: entity.imageUrls,
     rules: entity.rules,
     safetyNotes: entity.safetyNotes,
+    refundExceptionMode,
     participants,
     venueInfo: {
       directions: entity.venue.directions,
@@ -301,6 +311,11 @@ function mapEntityToAdminRecord(
     },
   };
 }
+
+type MatchRefundExceptionModeRow = {
+  id: string;
+  refund_exception_mode: AdminMatchRefundExceptionMode | null;
+};
 
 async function getAdminMatchParticipantsByMatchId(
   supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
@@ -347,6 +362,32 @@ async function getAdminMatchParticipantsByMatchId(
   }
 
   return participantsByMatchId;
+}
+
+async function getMatchRefundExceptionModes(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  matchIds: string[],
+) {
+  const modesByMatchId = new Map<string, AdminMatchRefundExceptionMode>();
+
+  if (matchIds.length === 0) {
+    return modesByMatchId;
+  }
+
+  const { data, error } = await supabase
+    .from("matches")
+    .select("id, refund_exception_mode")
+    .in("id", matchIds);
+
+  if (error) {
+    throw new Error(`Failed to load refund exception modes: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as MatchRefundExceptionModeRow[]) {
+    modesByMatchId.set(row.id, row.refund_exception_mode ?? "none");
+  }
+
+  return modesByMatchId;
 }
 
 function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {

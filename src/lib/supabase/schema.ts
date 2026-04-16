@@ -32,6 +32,8 @@ const REQUIRED_COUPON_MIGRATION =
   "20260415123000_support_multiple_signup_coupons.sql";
 const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION =
   "20260416110000_add_notification_dispatches.sql";
+const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION =
+  "20260416153000_add_match_refund_exceptions.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -46,6 +48,7 @@ const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdat
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
 const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
 const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_NOTIFICATION_DISPATCH_MIGRATION} before running notification features.`;
+const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION} before running refund exception features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -467,6 +470,13 @@ async function runAdminMatchParticipantsSchemaCheck(
   ) as any) as { error: { code?: string; message?: string } | null });
 
   handleAdminMatchParticipantsSchemaError(participantRpcCheck.error);
+
+  const refundExceptionModeCheck = await supabase
+    .from("matches")
+    .select("refund_exception_mode")
+    .limit(1);
+
+  handleRefundPolicyRuntimeSchemaError(refundExceptionModeCheck.error);
 }
 
 async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
@@ -493,6 +503,13 @@ async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
 
   handleCouponSchemaCheckError(matchApplicationCouponCheck.error);
 
+  const refundExceptionModeCheck = await supabase
+    .from("matches")
+    .select("refund_exception_mode")
+    .limit(1);
+
+  handleRefundPolicyRuntimeSchemaError(refundExceptionModeCheck.error);
+
   const applyToMatchCheck = await ((supabase.rpc(
     "apply_to_match",
     {
@@ -503,6 +520,18 @@ async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
 
   if (!isExpectedCouponRpcProbeError(applyToMatchCheck.error)) {
     handleCouponSchemaCheckError(applyToMatchCheck.error);
+  }
+
+  const cancelByAdminCheck = await ((supabase.rpc(
+    "cancel_match_application_by_admin",
+    {
+      p_application_id: "00000000-0000-0000-0000-000000000000",
+      p_reason: "admin_cancelled",
+    },
+  ) as any) as { error: { code?: string; message?: string } | null });
+
+  if (!isExpectedAdminCancellationRpcProbeError(cancelByAdminCheck.error)) {
+    handleRefundPolicyRuntimeSchemaError(cancelByAdminCheck.error);
   }
 }
 
@@ -727,6 +756,28 @@ function handleCouponSchemaCheckError(
   throw new Error(`Failed to verify coupon schema: ${error.message}`);
 }
 
+function handleRefundPolicyRuntimeSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation") ||
+    error.message?.includes("Could not find the function")
+  ) {
+    throw new Error(REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify refund exception schema: ${error.message}`);
+}
+
 function handleNotificationDispatchSchemaError(
   error: { code?: string; message?: string } | null,
 ) {
@@ -758,6 +809,21 @@ function isExpectedCouponRpcProbeError(
   const normalized = error.message.toUpperCase();
 
   return normalized.includes("AUTH_REQUIRED") || normalized.includes("MATCH_NOT_FOUND");
+}
+
+function isExpectedAdminCancellationRpcProbeError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error?.message) {
+    return false;
+  }
+
+  const normalized = error.message.toUpperCase();
+
+  return (
+    normalized.includes("ADMIN_REQUIRED") ||
+    normalized.includes("APPLICATION_NOT_FOUND")
+  );
 }
 
 function handleChargeOperationsSchemaError(

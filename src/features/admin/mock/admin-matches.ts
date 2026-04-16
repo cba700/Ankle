@@ -25,6 +25,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
     operatorNote: "비 예보가 있어 17시 최종 오픈 여부 재확인 필요",
     tags: ["입문 환영", "한강 코트", "야간 운영"],
     imageUrls: ["/court-a.svg", "/court-b.svg"],
+    refundExceptionMode: "none",
     rules: [
       "한 경기 10분 기준으로 2시간 로테이션 운영",
       "현장 밸런스를 보고 운영자가 팀을 조정",
@@ -86,6 +87,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
     operatorNote: "모객 카피와 메인 이미지 확정 전이라 임시저장 상태 유지",
     tags: ["5vs5", "실전 템포", "콘텐츠 대기"],
     imageUrls: ["/court-b.svg", "/court-c.svg"],
+    refundExceptionMode: "none",
     rules: [
       "5명 3팀 기준 운영, 2세트 연속 출전 제한",
       "공격 14초 룰 선택 적용 가능",
@@ -128,6 +130,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
     operatorNote: "잔여 1자리, 스토리용 마감 임박 공지 준비",
     tags: ["주말 피크", "입문 환영", "마감 임박"],
     imageUrls: ["/court-c.svg", "/court-d.svg"],
+    refundExceptionMode: "none",
     rules: [
       "초급 참가자 비중이 높아 기본 룰 브리핑 후 시작",
       "동점 시 자유투 1회 또는 서든포인트 적용",
@@ -180,6 +183,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
     operatorNote: "정원 마감, 취소자 발생 여부만 체크",
     tags: ["가벼운 참가비", "마감", "퇴근 후"],
     imageUrls: ["/court-d.svg", "/court-a.svg"],
+    refundExceptionMode: "none",
     rules: [
       "첫 참가자가 많으면 슈팅 체크 시간 운영",
       "분위기와 몰입도를 우선해 팀 조정",
@@ -222,6 +226,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
     operatorNote: "우천 및 코트 컨디션 이슈로 일괄 취소, 문자 공지 완료",
     tags: ["취소", "우천 대응", "환불 확인"],
     imageUrls: ["/court-a.svg", "/court-c.svg"],
+    refundExceptionMode: "none",
     rules: [
       "실전 경기 템포 유지",
       "풀코트 수비는 체력 차이를 고려해 제한",
@@ -264,6 +269,7 @@ const ADMIN_MATCHES: AdminMatchRecord[] = [
     operatorNote: "오전 타깃 소재 테스트용 회차, 신청 추이 관찰 필요",
     tags: ["오전 매치", "신규 실험", "입문 가이드"],
     imageUrls: ["/court-b.svg", "/court-a.svg"],
+    refundExceptionMode: "none",
     rules: [
       "입문자 대상 포지션 가이드 동시 제공",
       "기본 패스 전개 우선",

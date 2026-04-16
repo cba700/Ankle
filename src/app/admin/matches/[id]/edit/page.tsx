@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
-import { updateAdminMatchAction } from "@/features/admin/actions";
+import {
+  setAdminMatchRefundExceptionAction,
+  updateAdminMatchAction,
+} from "@/features/admin/actions";
 import { AdminMatchEditor } from "@/features/admin/components/admin-match-editor";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import { getAdminMatchById, getAdminVenueOptions } from "@/features/admin/data";
@@ -14,6 +17,7 @@ export default async function AdminEditMatchPage({
   const match = await getAdminMatchById(id);
   const venueOptions = await getAdminVenueOptions();
   const formAction = updateAdminMatchAction.bind(null, id);
+  const refundExceptionAction = setAdminMatchRefundExceptionAction.bind(null, id);
 
   if (!match) {
     notFound();
@@ -29,6 +33,7 @@ export default async function AdminEditMatchPage({
       <AdminMatchEditor
         formAction={formAction}
         mode="edit"
+        refundExceptionAction={refundExceptionAction}
         values={buildAdminMatchFormValue(match)}
         venueOptions={venueOptions}
       />

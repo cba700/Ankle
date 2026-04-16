@@ -8,6 +8,10 @@ import {
   refreshMatchReminderNotifications,
   sendAdminMatchCancelledNotification,
   sendNoShowNoticeNotification,
+  sendParticipantShortageNoticeDayBeforeNotification,
+  sendParticipantShortageNoticeSameDayNotification,
+  sendRainChangeNoticeNotification,
+  sendRainNoticeNotification,
 } from "@/lib/notifications";
 import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
 import { buildPlayerLevelValue } from "@/lib/player-levels";
@@ -36,6 +40,7 @@ import {
 import type {
   AdminMatchFormat,
   AdminMatchLevelPreset,
+  AdminMatchRefundExceptionMode,
   AdminMatchStatus,
   AdminVenueEntryMode,
 } from "./types";
@@ -108,6 +113,13 @@ const REQUIRED_COUPON_DELETE_MIGRATION =
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
 const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
+const MATCH_REFUND_EXCEPTION_MODES: AdminMatchRefundExceptionMode[] = [
+  "none",
+  "participant_shortage_day_before",
+  "participant_shortage_same_day",
+  "rain_notice",
+  "rain_change_notice",
+];
 const VENUE_ENTRY_MODES: AdminVenueEntryMode[] = ["managed", "manual"];
 const CREATE_MATCH_INTENTS = ["save_draft", "publish_now"] as const;
 const UPDATE_MATCH_INTENTS = ["save_changes"] as const;
@@ -213,6 +225,9 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
       rules: values.rules,
       safety_notes: values.safetyNotes,
       image_urls: values.imageUrls,
+      ...(values.status === "cancelled"
+        ? { refund_exception_mode: "none" }
+        : {}),
     })
     .eq("id", matchId);
 
@@ -502,6 +517,98 @@ export async function sendAdminNoShowNoticeAction(formData: FormData) {
   }
 
   await sendNoShowNoticeNotification(applicationId);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/matches");
+}
+
+async function sendRefundExceptionNotification(
+  applicationId: string,
+  refundExceptionMode: AdminMatchRefundExceptionMode,
+) {
+  switch (refundExceptionMode) {
+    case "participant_shortage_day_before":
+      await sendParticipantShortageNoticeDayBeforeNotification(applicationId);
+      return;
+    case "participant_shortage_same_day":
+      await sendParticipantShortageNoticeSameDayNotification(applicationId);
+      return;
+    case "rain_notice":
+      await sendRainNoticeNotification(applicationId);
+      return;
+    case "rain_change_notice":
+      await sendRainChangeNoticeNotification(applicationId);
+      return;
+    case "none":
+    default:
+      return;
+  }
+}
+
+export async function setAdminMatchRefundExceptionAction(
+  matchId: string,
+  formData: FormData,
+) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const refundExceptionMode = getRefundExceptionMode(
+    getRequiredString(formData, "refundExceptionMode"),
+  );
+  const confirmedApplicationIds = await listConfirmedApplicationIds(supabase, matchId);
+
+  const { error } = await supabase
+    .from("matches")
+    .update({
+      refund_exception_mode: refundExceptionMode,
+    })
+    .eq("id", matchId);
+
+  if (error) {
+    throw new Error(`Failed to update refund exception mode: ${error.message}`);
+  }
+
+  if (refundExceptionMode !== "none") {
+    await Promise.all(
+      confirmedApplicationIds.map((applicationId) =>
+        sendRefundExceptionNotification(applicationId, refundExceptionMode),
+      ),
+    );
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/matches");
+  revalidatePath(`/admin/matches/${matchId}/edit`);
+  redirect(`/admin/matches/${matchId}/edit`);
+}
+
+export async function issueAdminRainChangeRefundAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertCouponSchemaReady(supabase);
+  const applicationId = String(formData.get("applicationId") ?? "").trim();
+
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+
+  const { data, error } = await supabase.rpc("cancel_match_application_by_admin", {
+    p_application_id: applicationId,
+    p_reason: "admin_rain_change_refund",
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const responsePayload = { ...(data ?? {}) } as {
+    applicationId?: unknown;
+  };
+
+  if (typeof responsePayload.applicationId === "string" && responsePayload.applicationId) {
+    await Promise.all([
+      cancelMatchReminderNotifications(responsePayload.applicationId),
+      sendAdminMatchCancelledNotification(responsePayload.applicationId),
+    ]);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/matches");
@@ -978,6 +1085,14 @@ function getFormat(value: string) {
   }
 
   throw new Error("Invalid match format");
+}
+
+function getRefundExceptionMode(value: string) {
+  if (MATCH_REFUND_EXCEPTION_MODES.includes(value as AdminMatchRefundExceptionMode)) {
+    return value as AdminMatchRefundExceptionMode;
+  }
+
+  throw new Error("Invalid refund exception mode");
 }
 
 function getLevel(value: string) {

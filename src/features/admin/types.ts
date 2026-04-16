@@ -2,6 +2,12 @@ export type AdminMatchStatus = "draft" | "open" | "closed" | "cancelled";
 export type AdminMatchFormat = "3vs3" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
+export type AdminMatchRefundExceptionMode =
+  | "none"
+  | "participant_shortage_day_before"
+  | "participant_shortage_same_day"
+  | "rain_notice"
+  | "rain_change_notice";
 export type AdminBadgeTone = "accent" | "neutral" | "danger";
 export type AdminShellNav =
   | "dashboard"
@@ -97,6 +103,7 @@ export type AdminMatchRecord = {
   imageUrls: string[];
   rules: string[];
   safetyNotes: string[];
+  refundExceptionMode: AdminMatchRefundExceptionMode;
   participants: AdminMatchParticipantRecord[];
   venueInfo: AdminVenueInfo;
 };
@@ -211,6 +218,9 @@ export type AdminMatchRow = {
   status: AdminMatchStatus;
   displayStatusLabel: string;
   displayStatusTone: AdminBadgeTone;
+  refundExceptionLabel: string | null;
+  refundExceptionMode: AdminMatchRefundExceptionMode;
+  refundExceptionTone: AdminBadgeTone | null;
   isNearClosing: boolean;
   isSoldOut: boolean;
   tags: string[];
@@ -241,6 +251,7 @@ export type AdminMatchFormValue = {
   startTime: string;
   durationMinutes: string;
   status: AdminMatchStatus | "";
+  refundExceptionMode: AdminMatchRefundExceptionMode;
   format: AdminMatchFormat | "";
   capacity: string;
   participantSummary: string;

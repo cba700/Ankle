@@ -136,6 +136,14 @@
   gap: 12px;
 }
 
+.participantHeaderMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .participantEyebrow {
   margin: 0;
 }
@@ -175,7 +183,14 @@
 }
 
 .participantActionForm {
-  margin-left: auto;
+  margin: 0;
+}
+
+.participantActionStack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .participantCopy {
@@ -264,5 +279,10 @@
 
   .participantActionForm {
     margin-left: 0;
+  }
+
+  .participantActionStack,
+  .participantHeaderMeta {
+    justify-content: flex-start;
   }
 }

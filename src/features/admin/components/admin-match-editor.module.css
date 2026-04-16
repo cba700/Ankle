@@ -28,6 +28,14 @@
   gap: 12px;
 }
 
+.refundExceptionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .sectionEyebrow {
   margin: 0;
   color: #e05a28;
@@ -95,6 +103,15 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.refundActionGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.refundActionButton {
+  justify-content: center;
 }
 
 .field input,
@@ -183,6 +200,10 @@
 
 @media (min-width: 720px) {
   .fieldGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .refundActionGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

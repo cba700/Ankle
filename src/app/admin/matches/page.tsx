@@ -1,5 +1,6 @@
 import { AppLink } from "@/components/navigation/app-link";
 import {
+  issueAdminRainChangeRefundAction,
   sendAdminNoShowNoticeAction,
   updateAdminPlayerLevelAction,
 } from "@/features/admin/actions";
@@ -25,6 +26,7 @@ export default async function AdminMatchesPage() {
       title="매치 운영 리스트"
     >
       <AdminMatchList
+        onIssueRainChangeRefund={issueAdminRainChangeRefundAction}
         onSendNoShowNotice={sendAdminNoShowNoticeAction}
         onUpdatePlayerLevel={updateAdminPlayerLevelAction}
         rows={rows}

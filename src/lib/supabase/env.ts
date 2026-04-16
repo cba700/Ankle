@@ -29,6 +29,10 @@ type SolapiKakaoTemplateEnv = {
   matchReminderDayBefore: string | null;
   matchReminderSameDay: string | null;
   noShowNotice: string | null;
+  participantShortageNoticeDayBefore: string | null;
+  participantShortageNoticeSameDay: string | null;
+  rainChangeNotice: string | null;
+  rainNotice: string | null;
 };
 
 type SolapiKakaoEnv = SolapiServerEnv & {
@@ -132,6 +136,15 @@ export function getSolapiKakaoEnv(): SolapiKakaoEnv | null {
       matchReminderSameDay:
         process.env.SOLAPI_KAKAO_TEMPLATE_MATCH_REMINDER_SAME_DAY?.trim() ?? null,
       noShowNotice: process.env.SOLAPI_KAKAO_TEMPLATE_NO_SHOW_NOTICE?.trim() ?? null,
+      participantShortageNoticeDayBefore:
+        process.env.SOLAPI_KAKAO_TEMPLATE_PARTICIPANT_SHORTAGE_NOTICE_DAY_BEFORE?.trim() ??
+        null,
+      participantShortageNoticeSameDay:
+        process.env.SOLAPI_KAKAO_TEMPLATE_PARTICIPANT_SHORTAGE_NOTICE_SAME_DAY?.trim() ??
+        null,
+      rainChangeNotice:
+        process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_CHANGE_NOTICE?.trim() ?? null,
+      rainNotice: process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_NOTICE?.trim() ?? null,
     },
   };
 }

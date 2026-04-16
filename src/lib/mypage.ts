@@ -53,6 +53,8 @@ type MatchRow = {
 
 type ApplicationRow = {
   applied_at: string;
+  cancel_reason: string | null;
+  cancelled_at: string | null;
   charged_amount_snapshot: number;
   coupon_discount_amount: number;
   id: string;
@@ -132,6 +134,8 @@ const APPLICATION_SELECT = `
   id,
   status,
   applied_at,
+  cancel_reason,
+  cancelled_at,
   price_snapshot,
   charged_amount_snapshot,
   coupon_discount_amount,
@@ -326,28 +330,25 @@ function getMetaLabel(match: MatchRow | null, appliedAt: string) {
 
 function getCashLabel(application: ApplicationRow) {
   const chargedAmount = application.charged_amount_snapshot;
-
-  if (application.coupon_discount_amount > 0 && application.refunded_amount > 0) {
-    return `쿠폰 ${formatMoney(application.coupon_discount_amount)}원 · 차감 ${formatMoney(chargedAmount)}원 · 환급 ${formatMoney(application.refunded_amount)}원`;
-  }
-
-  if (application.coupon_discount_amount > 0 && application.status !== "confirmed") {
-    return `쿠폰 ${formatMoney(application.coupon_discount_amount)}원 · 차감 ${formatMoney(chargedAmount)}원 · 환급 없음`;
-  }
+  const labels = [`캐시 차감 ${formatMoney(chargedAmount)}원`];
 
   if (application.coupon_discount_amount > 0) {
-    return `쿠폰 ${formatMoney(application.coupon_discount_amount)}원 · 차감 ${formatMoney(chargedAmount)}원`;
-  }
-
-  if (application.refunded_amount > 0) {
-    return `차감 ${formatMoney(chargedAmount)}원 · 환급 ${formatMoney(application.refunded_amount)}원`;
+    labels.unshift(`쿠폰 ${formatMoney(application.coupon_discount_amount)}원 사용`);
   }
 
   if (application.status !== "confirmed") {
-    return `차감 ${formatMoney(chargedAmount)}원 · 환급 없음`;
+    if (application.refunded_amount > 0) {
+      labels.push(`캐시 환급 ${formatMoney(application.refunded_amount)}원`);
+    } else if (chargedAmount > 0) {
+      labels.push("캐시 환급 없음");
+    }
+
+    if (isCouponRestored(application)) {
+      labels.push("쿠폰 복구");
+    }
   }
 
-  return `차감 ${formatMoney(chargedAmount)}원`;
+  return labels.join(" · ");
 }
 
 function formatSchedule(startAt: string) {
@@ -433,7 +434,33 @@ function getCouponMetaLabel(
     return `${usedDateLabel} 사용`;
   }
 
+  if (coupon.restoredAt) {
+    return `${formatCompactDateLabel(new Date(coupon.restoredAt))} 복구`;
+  }
+
   return `${formatCompactDateLabel(new Date(coupon.issuedAt))} 발급`;
+}
+
+function isCouponRestored(application: ApplicationRow) {
+  if (application.coupon_discount_amount <= 0) {
+    return false;
+  }
+
+  if (application.status === "cancelled_by_admin") {
+    return true;
+  }
+
+  if (application.status !== "cancelled_by_user") {
+    return false;
+  }
+
+  const match = normalizeMatch(application.match);
+
+  if (!match?.start_at || !application.cancelled_at) {
+    return false;
+  }
+
+  return new Date(application.cancelled_at).getTime() <= new Date(match.start_at).getTime() - 2 * 60 * 60 * 1000;
 }
 
 function getCouponStatusLabel(status: UserCouponEntity["status"]) {

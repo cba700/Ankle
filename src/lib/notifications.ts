@@ -23,7 +23,11 @@ type NotificationEventType =
   | "match_cancelled_admin"
   | "match_reminder_day_before"
   | "match_reminder_same_day"
-  | "no_show_notice";
+  | "no_show_notice"
+  | "participant_shortage_notice_day_before"
+  | "participant_shortage_notice_same_day"
+  | "rain_notice"
+  | "rain_change_notice";
 
 type NotificationDispatchStatus =
   | "queued"
@@ -40,7 +44,11 @@ type NotificationTemplateKey =
   | "matchConfirmed"
   | "matchReminderDayBefore"
   | "matchReminderSameDay"
-  | "noShowNotice";
+  | "noShowNotice"
+  | "participantShortageNoticeDayBefore"
+  | "participantShortageNoticeSameDay"
+  | "rainNotice"
+  | "rainChangeNotice";
 
 type NotificationDispatchRow = {
   application_id: string | null;
@@ -61,6 +69,8 @@ type MatchRelation = {
 };
 
 type ApplicationNotificationRow = {
+  cancel_reason: string | null;
+  cancelled_at: string | null;
   charged_amount_snapshot: number;
   coupon_discount_amount: number;
   id: string;
@@ -106,6 +116,10 @@ const TEMPLATE_KEY_BY_EVENT: Record<NotificationEventType, NotificationTemplateK
   match_reminder_day_before: "matchReminderDayBefore",
   match_reminder_same_day: "matchReminderSameDay",
   no_show_notice: "noShowNotice",
+  participant_shortage_notice_day_before: "participantShortageNoticeDayBefore",
+  participant_shortage_notice_same_day: "participantShortageNoticeSameDay",
+  rain_notice: "rainNotice",
+  rain_change_notice: "rainChangeNotice",
 };
 
 type NotificationAdminClient = NonNullable<
@@ -188,6 +202,8 @@ export async function sendUserMatchCancelledNotification(applicationId: string) 
       return;
     }
 
+    const couponRestored = isCouponRestored(context);
+
     await sendImmediateKakaoNotification(admin, {
       applicationId,
       chargeOrderId: null,
@@ -195,12 +211,16 @@ export async function sendUserMatchCancelledNotification(applicationId: string) 
       eventType: "match_cancelled_user",
       matchId: context.application.match_id,
       payload: {
+        couponRestored,
         refundedAmount: context.application.refunded_amount,
         status: context.application.status,
       },
       phoneNumberE164: getVerifiedPhoneNumber(context.profile),
       templateVariables: {
         ...buildMatchTemplateVariables(context),
+        "#{쿠폰복구}": couponRestored
+          ? `${formatMoney(context.application.coupon_discount_amount)}원 복구`
+          : "없음",
         "#{환불금액}": `${formatMoney(context.application.refunded_amount)}원`,
       },
       userId: context.application.user_id,
@@ -216,6 +236,8 @@ export async function sendAdminMatchCancelledNotification(applicationId: string)
       return;
     }
 
+    const couponRestored = isCouponRestored(context);
+
     await sendImmediateKakaoNotification(admin, {
       applicationId,
       chargeOrderId: null,
@@ -223,12 +245,16 @@ export async function sendAdminMatchCancelledNotification(applicationId: string)
       eventType: "match_cancelled_admin",
       matchId: context.application.match_id,
       payload: {
+        couponRestored,
         refundedAmount: context.application.refunded_amount,
         status: context.application.status,
       },
       phoneNumberE164: getVerifiedPhoneNumber(context.profile),
       templateVariables: {
         ...buildMatchTemplateVariables(context),
+        "#{쿠폰복구}": couponRestored
+          ? `${formatMoney(context.application.coupon_discount_amount)}원 복구`
+          : "없음",
         "#{환불금액}": `${formatMoney(context.application.refunded_amount)}원`,
       },
       userId: context.application.user_id,
@@ -285,6 +311,38 @@ export async function sendNoShowNoticeNotification(applicationId: string) {
   });
 }
 
+export async function sendParticipantShortageNoticeDayBeforeNotification(
+  applicationId: string,
+) {
+  await sendMatchOperationalNoticeNotification(
+    applicationId,
+    "participant_shortage_notice_day_before",
+    "participant_shortage_notice_day_before",
+  );
+}
+
+export async function sendParticipantShortageNoticeSameDayNotification(
+  applicationId: string,
+) {
+  await sendMatchOperationalNoticeNotification(
+    applicationId,
+    "participant_shortage_notice_same_day",
+    "participant_shortage_notice_same_day",
+  );
+}
+
+export async function sendRainNoticeNotification(applicationId: string) {
+  await sendMatchOperationalNoticeNotification(applicationId, "rain_notice", "rain_notice");
+}
+
+export async function sendRainChangeNoticeNotification(applicationId: string) {
+  await sendMatchOperationalNoticeNotification(
+    applicationId,
+    "rain_change_notice",
+    "rain_change_notice",
+  );
+}
+
 export async function listSentApplicationNotificationIds(
   applicationIds: string[],
   eventType: NotificationEventType,
@@ -337,6 +395,42 @@ async function runNotificationTask(
   } catch (error) {
     console.error(`[notifications] ${taskName} failed`, error);
   }
+}
+
+async function sendMatchOperationalNoticeNotification(
+  applicationId: string,
+  eventType:
+    | "participant_shortage_notice_day_before"
+    | "participant_shortage_notice_same_day"
+    | "rain_notice"
+    | "rain_change_notice",
+  taskName: string,
+) {
+  await runNotificationTask(taskName, async (admin) => {
+    const context = await getApplicationContext(admin, applicationId);
+
+    if (!context || !context.match || context.application.status !== "confirmed") {
+      return;
+    }
+
+    await sendImmediateKakaoNotification(admin, {
+      applicationId,
+      chargeOrderId: null,
+      dedupeKey: `${eventType}:${applicationId}`,
+      eventType,
+      matchId: context.application.match_id,
+      payload: {
+        status: context.application.status,
+      },
+      phoneNumberE164: getVerifiedPhoneNumber(context.profile),
+      templateVariables: {
+        ...buildMatchTemplateVariables(context),
+        "#{환불기준}": getOperationalNoticeRefundCopy(eventType),
+      },
+      userId: context.application.user_id,
+      allowRetry: true,
+    });
+  });
 }
 
 async function sendImmediateKakaoNotification(
@@ -654,7 +748,7 @@ async function getApplicationContext(
   const { data, error } = await admin
     .from("match_applications")
     .select(
-      `id, user_id, match_id, status, refunded_amount, charged_amount_snapshot, coupon_discount_amount, price_snapshot, match:matches!match_applications_match_id_fkey (
+      `id, user_id, match_id, status, cancel_reason, cancelled_at, refunded_amount, charged_amount_snapshot, coupon_discount_amount, price_snapshot, match:matches!match_applications_match_id_fkey (
         id,
         title,
         venue_name,
@@ -1037,6 +1131,47 @@ function getMatchTimeLabel(startAt: string | null, endAt: string | null) {
 
 function getDisplayName(profile: ProfileNotificationRow | null) {
   return profile?.display_name?.trim() || "회원";
+}
+
+function getOperationalNoticeRefundCopy(
+  eventType:
+    | "participant_shortage_notice_day_before"
+    | "participant_shortage_notice_same_day"
+    | "rain_notice"
+    | "rain_change_notice",
+) {
+  switch (eventType) {
+    case "participant_shortage_notice_day_before":
+    case "participant_shortage_notice_same_day":
+    case "rain_notice":
+      return "매치 시작 2시간 전까지 취소 시 전액 환불";
+    case "rain_change_notice":
+    default:
+      return "현장 확인 후 운영자가 개별 환불 처리";
+  }
+}
+
+function isCouponRestored(context: NotificationApplicationContext) {
+  if (context.application.coupon_discount_amount <= 0) {
+    return false;
+  }
+
+  if (context.application.status === "cancelled_by_admin") {
+    return true;
+  }
+
+  if (context.application.status !== "cancelled_by_user") {
+    return false;
+  }
+
+  const startAt = context.match?.start_at;
+  const cancelledAt = context.application.cancelled_at;
+
+  if (!startAt || !cancelledAt) {
+    return false;
+  }
+
+  return new Date(cancelledAt).getTime() <= new Date(startAt).getTime() - 2 * 60 * 60 * 1000;
 }
 
 function getVerifiedPhoneNumber(profile: ProfileNotificationRow | null) {
