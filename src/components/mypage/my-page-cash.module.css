@@ -4,7 +4,7 @@
 }
 
 .main {
-  padding: 24px 0 40px;
+  padding: 18px 0 40px;
   display: grid;
   gap: 16px;
 }
@@ -78,13 +78,6 @@
   letter-spacing: -0.05em;
 }
 
-.heroDescription {
-  margin: 12px 0 0;
-  color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.65;
-}
-
 .heroActions {
   display: grid;
   gap: 10px;
@@ -136,8 +129,7 @@
   letter-spacing: -0.02em;
 }
 
-.feedbackBox p,
-.sectionDescription {
+.feedbackBox p {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
@@ -180,10 +172,6 @@
   min-width: 0;
 }
 
-.sectionDescription {
-  margin-top: 12px;
-}
-
 .tabList {
   margin-top: 18px;
   display: flex;
@@ -195,130 +183,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
-  padding: 0 18px;
+  min-height: 40px;
+  padding: 0 16px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 999px;
   background: #fff;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   touch-action: manipulation;
 }
 
 .tabButtonActive {
-  border-color: #171717;
+  border-color: transparent;
   background: #171717;
   color: #fff;
   box-shadow: 0 14px 26px rgba(17, 17, 17, 0.14);
-}
-
-.activityList {
-  margin-top: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.activityCard {
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.03);
-}
-
-.activityContent {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: center;
-}
-
-.activityCopy {
-  min-width: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.activityHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.activityTitle {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.activityState {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.activityStateAccent {
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--accent-strong);
-}
-
-.activityStateDanger {
-  background: rgba(191, 61, 53, 0.12);
-  color: var(--red-text);
-}
-
-.activityStateMuted {
-  background: var(--gray-soft);
-  color: var(--text-secondary);
-}
-
-.activityMeta,
-.activityBalance {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.activityMeta {
-  color: var(--text-secondary);
-}
-
-.activityBalance {
-  color: var(--text-tertiary);
-}
-
-.activityAmount {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 108px;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.activityAmountAccent {
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--accent-strong);
-}
-
-.activityAmountDanger {
-  background: rgba(191, 61, 53, 0.12);
-  color: var(--red-text);
-}
-
-.activityAmountMuted {
-  background: var(--gray-soft);
-  color: var(--text-secondary);
 }
 
 .refundDialogRoot {
@@ -523,7 +403,7 @@
 
 @media (max-width: 767px) {
   .main {
-    padding: 16px 0 36px;
+    padding: 12px 0 36px;
     gap: 12px;
   }
 
