@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { MatchSearch } from "@/components/navigation/match-search";
+import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
 import { buildVerifyPhoneHref, buildWelcomeHref } from "@/lib/auth/redirect";
 import {
   buildCashChargePackageLabel,
   type CashChargePackage,
   CASH_CHARGE_PACKAGES,
 } from "@/lib/payments/toss";
+import baseStyles from "@/components/mypage/my-page.module.css";
 import styles from "./cash-charge-page.module.css";
 
 type ChargeOrderSummary = {
@@ -25,6 +29,7 @@ type CashChargePageProps = {
   cashBalanceLabel: string;
   customerKey: string;
   displayName: string;
+  initialIsAdmin: boolean;
   nextPath: string | null;
   recentOrders: ChargeOrderSummary[];
 };
@@ -118,6 +123,7 @@ export function CashChargePage({
   cashBalanceLabel,
   customerKey,
   displayName,
+  initialIsAdmin,
   nextPath,
 }: CashChargePageProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -219,8 +225,25 @@ export function CashChargePage({
 
   return (
     <div className={styles.page}>
-      <div className="pageShell">
-        <main className={styles.main}>
+      <header className={baseStyles.header}>
+        <div className={baseStyles.headerInner}>
+          <AppLink className={baseStyles.brand} href="/">
+            <BrandLogo className={baseStyles.brandLogo} priority />
+          </AppLink>
+
+          <div className={baseStyles.headerActions}>
+            <MatchSearch />
+            <UserHeaderMenu
+              currentSection="mypage"
+              initialIsAdmin={initialIsAdmin}
+              initialSignedIn
+              layout="icon-only"
+            />
+          </div>
+        </div>
+      </header>
+
+      <main className={`pageShell ${styles.main}`}>
           <AppLink className={styles.backLink} href="/mypage">
             <ArrowLeftIcon />
             마이페이지로 돌아가기
@@ -242,9 +265,9 @@ export function CashChargePage({
                     onClick={() => setSelectedAmount(amount)}
                     type="button"
                   >
-                    <strong className={styles.packageAmount}>
+                    <span className={styles.packageAmount}>
                       {buildCashChargePackageLabel(amount)}
-                    </strong>
+                    </span>
                   </button>
                 );
               })}
@@ -269,14 +292,13 @@ export function CashChargePage({
                     onClick={() => setSelectedPaymentMethod(method.key)}
                     type="button"
                   >
-                    <strong className={styles.paymentMethodLabel}>{method.label}</strong>
+                    <span className={styles.paymentMethodLabel}>{method.label}</span>
                   </button>
                 );
               })}
             </div>
           </section>
-        </main>
-      </div>
+      </main>
 
       <div className={styles.actionWrap}>
         <div className={styles.actionBar}>

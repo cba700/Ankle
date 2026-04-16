@@ -33,7 +33,7 @@ export default async function CashChargeRoute({
   const chargePath = normalizedNextPath
     ? `/cash/charge?next=${encodeURIComponent(normalizedNextPath)}`
     : "/cash/charge";
-  const { configured, user } = await getServerUserState();
+  const { configured, role, user } = await getServerUserState();
 
   if (!configured || !user) {
     redirect(
@@ -72,6 +72,7 @@ export default async function CashChargeRoute({
       cashBalanceLabel={`${formatMoney(cashAccount?.balance ?? 0)}원`}
       customerKey={user.id}
       displayName={getDisplayName(user)}
+      initialIsAdmin={role === "admin"}
       nextPath={normalizedNextPath}
       recentOrders={recentOrders.map((order) => ({
         amountLabel: `${formatMoney(order.amount)}원`,
