@@ -12,7 +12,7 @@ export function HomeHeader({ isAdmin }: HomeHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <AppLink className={styles.brand} href="/">
+        <AppLink className={styles.brand} href="/" showTransition={false}>
           <BrandLogo className={styles.brandLogo} priority />
         </AppLink>
 

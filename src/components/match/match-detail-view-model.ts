@@ -55,6 +55,8 @@ const DETAIL_OVERRIDES: Record<string, MatchDetailOverride> = {
 export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewModel {
   const override = DETAIL_OVERRIDES[match.id] ?? {};
   const numericId = Number.parseInt(match.id.split("-")[1] ?? "1", 10) || 1;
+  const hasLevelDistributionData = match.levelDistribution.some((item) => item.value > 0);
+  const levelSummary = hasLevelDistributionData ? match.averageLevel : "";
 
   return {
     id: match.id,
@@ -74,8 +76,8 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
     images: match.imageUrls,
     infoItems: buildInfoItems(match),
     levelDistribution: match.levelDistribution,
-    averageLevel: match.averageLevel,
-    levelHint: match.averageLevel,
+    averageLevel: levelSummary,
+    levelHint: levelSummary,
     facilities: buildFacilities(match, override),
     courtNotes: override.courtNotes ?? buildCourtNotes(match),
     rules: match.rules,
