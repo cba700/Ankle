@@ -229,10 +229,6 @@ export function MyPageCash({
             </span>
             <p className={styles.heroEyebrow}>나의 캐시</p>
             <h1 className={styles.heroTitle}>{cashBalanceLabel}</h1>
-            <p className={styles.heroDescription}>
-              충전, 매치 신청 차감, 환급처럼 실제 잔액이 움직인 최근 거래만 필터별로 확인할 수
-              있습니다.
-            </p>
           </div>
 
           <div className={styles.heroActions}>
@@ -293,8 +289,6 @@ export function MyPageCash({
             </div>
             <span className={baseStyles.sectionCount}>{filteredTransactions.length}건</span>
           </div>
-
-          <p className={styles.sectionDescription}>{getCashHistoryDescription(activeTab)}</p>
 
           <div className={styles.tabList}>
             {CASH_HISTORY_TABS.map((tab) => {
@@ -560,20 +554,6 @@ function matchesCashHistoryTab(
   }
 
   return transaction.type === "match_debit";
-}
-
-function getCashHistoryDescription(tab: CashHistoryTab) {
-  switch (tab) {
-    case "charge":
-      return "토스 결제 승인 후 실제로 적립된 충전 거래만 보여줍니다.";
-    case "refund":
-      return "매치 환급, 충전 환불, 환불 신청 반려로 복구된 캐시를 모아 보여줍니다.";
-    case "usage":
-      return "매치 신청으로 캐시가 차감된 거래만 표시합니다. 환급된 건은 환불 탭에서 확인하세요.";
-    case "all":
-    default:
-      return "운영 보정을 포함해 실제 잔액이 움직인 최근 거래를 모두 보여줍니다.";
-  }
 }
 
 function getCashHistoryEmptyTitle(tab: CashHistoryTab) {

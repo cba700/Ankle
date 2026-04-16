@@ -67,21 +67,30 @@ export function MyPageApplications({
 }: MyPageApplicationsProps) {
   const applicationsByDate = groupApplicationsByDate(applications);
   const markedDateKeys = new Set(applicationsByDate.keys());
+  const initialMonthStart = getInitialMonthStart(applications);
   const [currentMonthStart, setCurrentMonthStart] = useState(() =>
-    getInitialMonthStart(applications),
+    initialMonthStart,
   );
-  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(() =>
+    getLatestDateKeyForMonth(applications, initialMonthStart),
+  );
   const calendarDays = buildCalendarDays(currentMonthStart, markedDateKeys);
+  const currentMonthDefaultDateKey = getLatestDateKeyForMonth(applications, currentMonthStart);
+  const currentMonthHasApplications = Boolean(currentMonthDefaultDateKey);
+  const currentMonthLabel = SEOUL_MONTH_FORMATTER.format(currentMonthStart);
   const selectedApplications = selectedDateKey
     ? applicationsByDate.get(selectedDateKey) ?? []
     : [];
   const selectedDateLabel = selectedDateKey
     ? SEOUL_FULL_DATE_FORMATTER.format(parseDateKey(selectedDateKey))
     : null;
+  const selectedResultCount = selectedDateKey ? selectedApplications.length : 0;
 
   function handleMoveMonth(direction: "prev" | "next") {
-    setCurrentMonthStart((current) => addCalendarMonths(current, direction === "prev" ? -1 : 1));
-    setSelectedDateKey(null);
+    const nextMonthStart = addCalendarMonths(currentMonthStart, direction === "prev" ? -1 : 1);
+
+    setCurrentMonthStart(nextMonthStart);
+    setSelectedDateKey(getLatestDateKeyForMonth(applications, nextMonthStart));
   }
 
   function handleSelectDate(day: CalendarDay) {
@@ -123,21 +132,13 @@ export function MyPageApplications({
               <CalendarIcon className={styles.heroBadgeIcon} />
               신청 캘린더
             </span>
-            <h1 className={styles.heroTitle}>신청한 날짜별로 매치 이력을 확인하세요.</h1>
-            <p className={styles.heroDescription}>
-              달력의 점은 신청을 완료했던 날짜를 뜻합니다. 날짜를 누르면 그날 신청한 매치를
-              오른쪽에서 한눈에 볼 수 있습니다.
-            </p>
+            <h1 className={styles.heroTitle}>날짜별 매치 신청 내역</h1>
           </div>
 
           <div className={styles.heroStats}>
             <div className={styles.heroStat}>
               <span className={styles.heroStatLabel}>전체 신청</span>
               <strong className={styles.heroStatValue}>{applications.length}건</strong>
-            </div>
-            <div className={styles.heroStat}>
-              <span className={styles.heroStatLabel}>표시 날짜</span>
-              <strong className={styles.heroStatValue}>{markedDateKeys.size}일</strong>
             </div>
           </div>
         </section>
@@ -172,10 +173,12 @@ export function MyPageApplications({
 
             <div className={styles.calendarLegend}>
               <span className={styles.legendItem}>
-                <span className={styles.legendDot} />
+                <span className={styles.legendMarker}>
+                  <span className={styles.legendDot} />
+                </span>
                 신청 있음
               </span>
-              <span className={styles.legendItem}>날짜 선택 후 오른쪽에서 상세 확인</span>
+              <span className={styles.legendItem}>주황색 날짜를 누르면 결과가 바로 표시됩니다</span>
             </div>
 
             <div className={styles.weekdayRow}>
@@ -198,9 +201,9 @@ export function MyPageApplications({
                     aria-pressed={isSelected}
                     className={`${styles.dayButton} ${
                       day.isCurrentMonth ? styles.dayButtonCurrentMonth : styles.dayButtonOutsideMonth
-                    } ${isSelected ? styles.dayButtonSelected : ""} ${
+                    } ${day.hasApplications ? styles.dayButtonMarked : ""} ${
                       day.isToday ? styles.dayButtonToday : ""
-                    }`}
+                    } ${isSelected ? styles.dayButtonSelected : ""}`}
                     key={day.dateKey}
                     onClick={() => handleSelectDate(day)}
                     type="button"
@@ -216,35 +219,26 @@ export function MyPageApplications({
           <section className={`${baseStyles.applicationSection} ${styles.detailSection}`}>
             <div className={baseStyles.sectionHeading}>
               <div>
-                <p className={baseStyles.sectionEyebrow}>선택한 날짜</p>
-                <h2 className={baseStyles.sectionTitle}>
-                  {selectedDateLabel ?? "달력에서 날짜를 선택해 주세요"}
-                </h2>
+                <p className={baseStyles.sectionEyebrow}>
+                  {selectedDateKey ? "선택한 날짜" : "현재 보고 있는 달"}
+                </p>
+                <h2 className={baseStyles.sectionTitle}>{selectedDateLabel ?? currentMonthLabel}</h2>
               </div>
-              <span className={baseStyles.sectionCount}>
-                {selectedDateKey ? `${selectedApplications.length}건` : `${applications.length}건`}
-              </span>
+              <span className={baseStyles.sectionCount}>{selectedResultCount}건</span>
             </div>
 
             {applications.length === 0 ? (
-              <div className={baseStyles.emptyState}>
+              <div className={`${baseStyles.emptyState} ${styles.resultEmptyState}`}>
+                <span aria-hidden="true" className={styles.resultEmptyIconWrap}>
+                  <CalendarIcon className={styles.resultEmptyIcon} />
+                </span>
                 <strong>아직 신청한 매치가 없습니다.</strong>
                 <p>메인 화면에서 원하는 매치를 찾아 첫 신청을 시작해 보세요.</p>
                 <AppLink className={baseStyles.homeLink} href="/">
                   홈에서 매치 보기
                 </AppLink>
               </div>
-            ) : !selectedDateKey ? (
-              <div className={baseStyles.emptyState}>
-                <strong>보고 싶은 날짜를 달력에서 선택하세요.</strong>
-                <p>점이 있는 날짜를 누르면 그날 신청한 매치와 상태를 바로 확인할 수 있습니다.</p>
-              </div>
-            ) : selectedApplications.length === 0 ? (
-              <div className={baseStyles.emptyState}>
-                <strong>선택한 날짜에 신청한 매치가 없습니다.</strong>
-                <p>다른 날짜를 선택하면 해당 날짜의 신청 내역을 확인할 수 있습니다.</p>
-              </div>
-            ) : (
+            ) : selectedApplications.length > 0 ? (
               <div className={baseStyles.applicationList}>
                 {selectedApplications.map((application) => {
                   const content = (
@@ -261,17 +255,23 @@ export function MyPageApplications({
                         >
                           {application.statusLabel}
                         </span>
-                        {application.href ? (
-                          <span className={baseStyles.detailLink}>
-                            상세 보기
-                            <ArrowRightIcon className={baseStyles.detailArrow} />
-                          </span>
-                        ) : null}
                       </div>
-                      <strong className={baseStyles.applicationTitle}>{application.title}</strong>
-                      <p className={baseStyles.applicationVenue}>{application.venueName}</p>
-                      <p className={baseStyles.applicationMeta}>{application.metaLabel}</p>
-                      <p className={baseStyles.applicationCash}>{application.cashLabel}</p>
+                      <strong className={`${baseStyles.applicationTitle} ${styles.applicationTitle}`}>
+                        {application.title}
+                      </strong>
+                      <p className={`${baseStyles.applicationVenue} ${styles.applicationVenue}`}>
+                        {application.venueName}
+                      </p>
+                      <p className={`${baseStyles.applicationMeta} ${styles.applicationMeta}`}>
+                        {application.metaLabel}
+                      </p>
+                      <p
+                        className={`${baseStyles.applicationCash} ${styles.applicationCash} ${
+                          isCashChargeOnly(application.cashLabel) ? styles.applicationCashDanger : ""
+                        }`}
+                      >
+                        {application.cashLabel}
+                      </p>
                     </>
                   );
 
@@ -292,6 +292,30 @@ export function MyPageApplications({
                     </div>
                   );
                 })}
+              </div>
+            ) : selectedDateKey ? (
+              <div className={`${baseStyles.emptyState} ${styles.resultEmptyState}`}>
+                <span aria-hidden="true" className={styles.resultEmptyIconWrap}>
+                  <CalendarIcon className={styles.resultEmptyIcon} />
+                </span>
+                <strong>선택한 날짜에 신청한 매치가 없습니다.</strong>
+                <p>주황색으로 표시된 날짜를 누르면 신청한 매치와 상태를 바로 확인할 수 있습니다.</p>
+              </div>
+            ) : currentMonthHasApplications ? (
+              <div className={`${baseStyles.emptyState} ${styles.resultEmptyState}`}>
+                <span aria-hidden="true" className={styles.resultEmptyIconWrap}>
+                  <CalendarIcon className={styles.resultEmptyIcon} />
+                </span>
+                <strong>보고 싶은 날짜를 달력에서 선택하세요.</strong>
+                <p>주황색으로 표시된 날짜를 누르면 신청한 매치와 상태가 바로 표시됩니다.</p>
+              </div>
+            ) : (
+              <div className={`${baseStyles.emptyState} ${styles.resultEmptyState}`}>
+                <span aria-hidden="true" className={styles.resultEmptyIconWrap}>
+                  <CalendarIcon className={styles.resultEmptyIcon} />
+                </span>
+                <strong>{currentMonthLabel}에는 신청한 매치가 없습니다.</strong>
+                <p>다른 달로 이동하거나 주황색으로 표시된 날짜를 선택해 보세요.</p>
               </div>
             )}
           </section>
@@ -328,6 +352,21 @@ function getInitialMonthStart(applications: MyPageApplication[]) {
   return getMonthStart(getSeoulTodayStart());
 }
 
+function getLatestDateKeyForMonth(
+  applications: MyPageApplication[],
+  monthStart: Date,
+) {
+  const yearMonthKey = getYearMonthKey(monthStart);
+
+  for (const application of applications) {
+    if (application.appliedDateKey.startsWith(yearMonthKey)) {
+      return application.appliedDateKey;
+    }
+  }
+
+  return null;
+}
+
 function buildCalendarDays(monthStart: Date, markedDateKeys: Set<string>): CalendarDay[] {
   const normalizedMonthStart = getMonthStart(monthStart);
   const firstWeekdayIndex =
@@ -335,8 +374,11 @@ function buildCalendarDays(monthStart: Date, markedDateKeys: Set<string>): Calen
   const firstCellDate = addDays(normalizedMonthStart, -firstWeekdayIndex);
   const currentMonthKey = getYearMonthKey(normalizedMonthStart);
   const todayKey = toDateKey(getSeoulTodayStart());
+  const lastDateOfMonth = addDays(addCalendarMonths(normalizedMonthStart, 1), -1);
+  const daysInMonth = Number.parseInt(toDateKey(lastDateOfMonth).slice(-2), 10);
+  const totalCells = Math.ceil((firstWeekdayIndex + daysInMonth) / 7) * 7;
 
-  return Array.from({ length: 42 }, (_, index) => {
+  return Array.from({ length: totalCells }, (_, index) => {
     const date = addDays(firstCellDate, index);
     const dateKey = toDateKey(date);
 
@@ -402,4 +444,8 @@ function createSeoulDate(year: number, month: number, day: number) {
 
 function parseDateKey(dateKey: string) {
   return new Date(`${dateKey}T00:00:00+09:00`);
+}
+
+function isCashChargeOnly(cashLabel: string) {
+  return cashLabel.includes("캐시 차감") && !cashLabel.includes("캐시 환급");
 }
