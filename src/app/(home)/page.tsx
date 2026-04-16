@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { HomePage } from "@/components/home/home-page";
-import { getFirstSearchParam, parseHomeFilterIds } from "@/components/home/home-route-state";
-import { buildHomeMatchRows } from "@/components/home/home-view-model";
+import {
+  getFirstSearchParam,
+  parseHomeMultiValueParam,
+  parseHomeToggleParam,
+  HOME_GENDER_FILTER_VALUES,
+  HOME_LEVEL_FILTER_VALUES,
+} from "@/components/home/home-route-state";
+import { buildHomeMatchRows, SEOUL_DISTRICTS } from "@/components/home/home-view-model";
 import { getDisplayDates } from "@/lib/matches";
 import { getPublicMatches } from "@/lib/matches-data";
 import {
@@ -40,7 +46,10 @@ export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{
-    filters?: string | string[];
+    districts?: string | string[];
+    genders?: string | string[];
+    hideClosed?: string | string[];
+    levels?: string | string[];
   }>;
 }) {
   const matches = await getPublicMatches();
@@ -48,14 +57,27 @@ export default async function Page({
   const dates = getDisplayDates();
   const resolvedSearchParams = await searchParams;
   const initialSelectedDateKey = dates[0]?.key ?? "";
-  const initialActiveFilterIds = parseHomeFilterIds(
-    getFirstSearchParam(resolvedSearchParams.filters),
-    ["hideClosed", "region", "gender", "level", "shade"],
-  );
+  const initialFilterState = {
+    districts: parseHomeMultiValueParam(
+      getFirstSearchParam(resolvedSearchParams.districts),
+      SEOUL_DISTRICTS,
+    ),
+    genders: parseHomeMultiValueParam(
+      getFirstSearchParam(resolvedSearchParams.genders),
+      HOME_GENDER_FILTER_VALUES,
+    ),
+    hideClosed: parseHomeToggleParam(
+      getFirstSearchParam(resolvedSearchParams.hideClosed),
+    ),
+    levels: parseHomeMultiValueParam(
+      getFirstSearchParam(resolvedSearchParams.levels),
+      HOME_LEVEL_FILTER_VALUES,
+    ),
+  };
 
   return (
     <HomePage
-      initialActiveFilterIds={initialActiveFilterIds}
+      initialFilterState={initialFilterState}
       initialSelectedDateKey={initialSelectedDateKey}
       isAdmin={false}
       dates={dates}

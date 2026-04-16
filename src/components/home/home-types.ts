@@ -11,27 +11,46 @@ export type HomeQuickMenuItem = {
   icon: HomeQuickMenuIcon;
 };
 
-export type HomeFilterKind = "toggle" | "menu";
-
-export type HomeFilterItem = {
+export type HomeFilterOption = {
   id: string;
   label: string;
-  kind: HomeFilterKind;
+};
+
+export type HomeFilterGroupId = "districts" | "genders" | "levels";
+
+export type HomeFilterGroup = {
+  id: HomeFilterGroupId;
+  label: string;
+  options: HomeFilterOption[];
+};
+
+export type HomeGenderFilterKey = "male" | "female" | "mixed";
+
+export type HomeLevelFilterKey = "basic" | "middle" | "high" | "star";
+
+export type HomeFilterState = {
+  districts: string[];
+  genders: HomeGenderFilterKey[];
+  hideClosed: boolean;
+  levels: HomeLevelFilterKey[];
 };
 
 export type HomeMatchStatusTone = "neutral" | "accent" | "danger" | "open";
 
 export type HomeMatchRow = {
+  district: string;
   id: string;
+  genderKey: HomeGenderFilterKey | null;
+  isNew: boolean;
+  isClosed: boolean;
+  levelKey: HomeLevelFilterKey | null;
+  meta: string;
   publicId: string;
   dateKey: string;
-  time: string;
+  isUrgent: boolean;
   statusLabel: string;
   statusTone: HomeMatchStatusTone;
-  isUrgent: boolean;
-  isClosed: boolean;
-  venueName: string;
+  time: string;
   title: string;
-  meta: string;
-  isNew: boolean;
+  venueName: string;
 };

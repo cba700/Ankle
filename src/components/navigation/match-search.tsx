@@ -8,12 +8,17 @@ import {
   filterPublicMatchSearchItems,
   normalizeSearchQuery,
 } from "@/lib/match-search";
-import { getHomeStateSearch, parseHomeFilterIds } from "@/components/home/home-route-state";
+import {
+  getHomeStateSearch,
+  parseHomeMultiValueParam,
+  parseHomeToggleParam,
+  HOME_GENDER_FILTER_VALUES,
+  HOME_LEVEL_FILTER_VALUES,
+} from "@/components/home/home-route-state";
+import { SEOUL_DISTRICTS } from "@/components/home/home-view-model";
 import { ArrowLeftIcon, SearchIcon } from "@/components/icons";
 import { AppLink } from "./app-link";
 import styles from "./match-search.module.css";
-
-const HOME_FILTER_IDS = ["hideClosed", "region", "gender", "level", "shade"] as const;
 
 type MatchSearchResponse =
   | {
@@ -178,9 +183,20 @@ export function MatchSearch({
 
   function syncHomeSearchQuery(nextQuery: string) {
     const nextSearch = getHomeStateSearch({
-      filterIds: parseHomeFilterIds(
-        searchParams.get("filters") ?? undefined,
-        HOME_FILTER_IDS,
+      districts: parseHomeMultiValueParam(
+        searchParams.get("districts") ?? undefined,
+        SEOUL_DISTRICTS,
+      ),
+      genders: parseHomeMultiValueParam(
+        searchParams.get("genders") ?? undefined,
+        HOME_GENDER_FILTER_VALUES,
+      ),
+      hideClosed: parseHomeToggleParam(
+        searchParams.get("hideClosed") ?? undefined,
+      ),
+      levels: parseHomeMultiValueParam(
+        searchParams.get("levels") ?? undefined,
+        HOME_LEVEL_FILTER_VALUES,
       ),
       query: nextQuery,
     });
@@ -198,9 +214,20 @@ export function MatchSearch({
 
   function buildResultHref(publicId: string) {
     const detailStateSearch = getHomeStateSearch({
-      filterIds: parseHomeFilterIds(
-        isHomePage ? searchParams.get("filters") ?? undefined : undefined,
-        HOME_FILTER_IDS,
+      districts: parseHomeMultiValueParam(
+        isHomePage ? searchParams.get("districts") ?? undefined : undefined,
+        SEOUL_DISTRICTS,
+      ),
+      genders: parseHomeMultiValueParam(
+        isHomePage ? searchParams.get("genders") ?? undefined : undefined,
+        HOME_GENDER_FILTER_VALUES,
+      ),
+      hideClosed: parseHomeToggleParam(
+        isHomePage ? searchParams.get("hideClosed") ?? undefined : undefined,
+      ),
+      levels: parseHomeMultiValueParam(
+        isHomePage ? searchParams.get("levels") ?? undefined : undefined,
+        HOME_LEVEL_FILTER_VALUES,
       ),
       query,
     });
