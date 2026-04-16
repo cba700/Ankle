@@ -119,18 +119,20 @@ export function HomeMatchBrowser({
 
   return (
     <section className={styles.browserPanel}>
-      <div className={styles.datePickerSticky}>
-        <HomeDatePicker
-          dates={dates}
-          onSelect={handleSelectDate}
-          selectedDateKey={activeDateKey}
-        />
+      <div className={styles.controlsSticky}>
+        <div className={styles.controlsStack}>
+          <HomeDatePicker
+            dates={dates}
+            onSelect={handleSelectDate}
+            selectedDateKey={activeDateKey}
+          />
+          <HomeFilterBar
+            activeFilterIds={activeFilterIds}
+            items={HOME_FILTERS}
+            onToggle={toggleFilter}
+          />
+        </div>
       </div>
-      <HomeFilterBar
-        activeFilterIds={activeFilterIds}
-        items={HOME_FILTERS}
-        onToggle={toggleFilter}
-      />
       {selectedDate ? (
         <h2 className={styles.dateHeading}>
           {selectedDate.month}월 {selectedDate.day}일 {selectedDate.weekdayLong} 매치
