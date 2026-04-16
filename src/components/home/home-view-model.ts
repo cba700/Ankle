@@ -54,7 +54,7 @@ export const HOME_FILTER_GROUPS: HomeFilterGroup[] = [
     options: [
       { id: "male", label: "남" },
       { id: "female", label: "여" },
-      { id: "mixed", label: "남여모두" },
+      { id: "mixed", label: "남녀 모두" },
     ],
   },
   {
