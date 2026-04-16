@@ -22,7 +22,8 @@ export function CashChargeFailPage({
 }: CashChargeFailPageProps) {
   const router = useRouter();
   const startedRef = useRef(false);
-  const isUserCancelled = code === "PAY_PROCESS_CANCELED";
+  const shouldHideFailureUi =
+    code === "PAY_PROCESS_CANCELED" || code === "PAYMENT_WINDOW_OPEN_FAILED";
 
   useEffect(() => {
     if (startedRef.current) {
@@ -47,13 +48,13 @@ export function CashChargeFailPage({
         }).catch(() => null)
       : Promise.resolve(null);
 
-    if (isUserCancelled) {
+    if (shouldHideFailureUi) {
       void syncFailure;
       router.replace(redirectPath);
     }
-  }, [code, isUserCancelled, message, orderId, redirectPath, router]);
+  }, [code, message, orderId, redirectPath, router, shouldHideFailureUi]);
 
-  if (isUserCancelled) {
+  if (shouldHideFailureUi) {
     return null;
   }
 
@@ -93,9 +94,5 @@ export function CashChargeFailPage({
 }
 
 function getFailMessage(code: string | null) {
-  if (code === "PAYMENT_WINDOW_OPEN_FAILED") {
-    return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
-  }
-
   return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
 }

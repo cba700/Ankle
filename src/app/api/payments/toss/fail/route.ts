@@ -106,7 +106,7 @@ function getFailureMessage(code: string) {
     case "PAY_PROCESS_CANCELED":
       return "결제가 취소되었습니다.";
     case "PAYMENT_WINDOW_OPEN_FAILED":
-      return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
     default:
       return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
   }
