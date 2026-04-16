@@ -1,7 +1,21 @@
 .section {
+  display: grid;
+  gap: 12px;
   max-width: 100%;
   min-width: 0;
-  overflow: hidden;
+}
+
+.group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.groupTitle {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .row {
@@ -25,7 +39,6 @@
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid rgba(201, 193, 183, 0.72);
@@ -33,18 +46,12 @@
   background: #fff;
   color: var(--text-secondary);
   font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .chipActive {
-  border-color: rgba(255, 107, 0, 0.28);
-  background: rgba(255, 107, 0, 0.08);
+  border-color: rgba(243, 109, 33, 0.42);
   color: var(--accent-strong);
-  font-weight: 700;
-}
-
-.chevron {
-  width: 14px;
-  height: 14px;
 }

@@ -21,8 +21,8 @@ export function HomeMatchList({
   if (rows.length === 0) {
     return (
       <section className={styles.emptyState}>
-        <strong>등록된 매치가 없습니다</strong>
-        <p>다른 날짜를 선택하거나 마감 가리기 필터를 해제해 보세요.</p>
+        <strong>조건에 맞는 매치가 없습니다</strong>
+        <p>다른 날짜를 선택하거나 적용한 필터를 조정해 보세요.</p>
       </section>
     );
   }

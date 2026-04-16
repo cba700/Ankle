@@ -1,9 +1,26 @@
 import { normalizeSearchQuery } from "@/lib/match-search";
+import type {
+  HomeFilterState,
+  HomeGenderFilterKey,
+  HomeLevelFilterKey,
+} from "./home-types";
 
 export const HOME_RESET_TO_TODAY_EVENT = "ankle:home-reset-to-today";
 
-type HomeStateInput = {
-  filterIds?: string[];
+export const HOME_GENDER_FILTER_VALUES: readonly HomeGenderFilterKey[] = [
+  "male",
+  "female",
+  "mixed",
+];
+
+export const HOME_LEVEL_FILTER_VALUES: readonly HomeLevelFilterKey[] = [
+  "basic",
+  "middle",
+  "high",
+  "star",
+];
+
+type HomeStateInput = HomeFilterState & {
   query?: string;
 };
 
@@ -17,24 +34,34 @@ export function getFirstSearchParam(
   return value;
 }
 
-export function parseHomeFilterIds(
+export function parseHomeToggleParam(value: string | undefined) {
+  return value === "1";
+}
+
+export function parseHomeMultiValueParam<T extends string>(
   value: string | undefined,
-  allowedFilterIds: readonly string[],
+  allowedValues: readonly T[],
 ) {
   if (!value) {
-    return [];
+    return [] as T[];
   }
 
-  const allowedIds = new Set(allowedFilterIds);
+  const allowedSet = new Set<string>(allowedValues);
 
   return value
     .split(",")
     .map((item) => item.trim())
-    .filter((item, index, items) => item && allowedIds.has(item) && items.indexOf(item) === index);
+    .filter(
+      (item, index, items) =>
+        item && allowedSet.has(item) && items.indexOf(item) === index,
+    ) as T[];
 }
 
 export function getHomeStateSearch({
-  filterIds = [],
+  districts,
+  genders,
+  hideClosed,
+  levels,
   query,
 }: HomeStateInput) {
   const searchParams = new URLSearchParams();
@@ -44,8 +71,20 @@ export function getHomeStateSearch({
     searchParams.set("q", normalizedQuery);
   }
 
-  if (filterIds.length > 0) {
-    searchParams.set("filters", filterIds.join(","));
+  if (hideClosed) {
+    searchParams.set("hideClosed", "1");
+  }
+
+  if (districts.length > 0) {
+    searchParams.set("districts", districts.join(","));
+  }
+
+  if (genders.length > 0) {
+    searchParams.set("genders", genders.join(","));
+  }
+
+  if (levels.length > 0) {
+    searchParams.set("levels", levels.join(","));
   }
 
   const search = searchParams.toString();
