@@ -59,18 +59,33 @@ export async function getProfileOnboardingState(
   }
 
   const row = data as ProfileOnboardingRow | null;
+  const onboardingRequired = isProfileOnboardingRequired(row);
+  const phoneVerificationRequired = row
+    ? row.phone_verification_required ?? !row.phone_verified_at
+    : true;
 
   return {
     onboardingCompletedAt: row?.onboarding_completed_at ?? null,
-    onboardingRequired: row?.onboarding_required ?? false,
+    onboardingRequired,
     phoneNumber: row?.phone_number_e164 ?? null,
-    phoneVerificationRequired:
-      row?.phone_verification_required ?? !(row?.phone_verified_at ?? null),
+    phoneVerificationRequired,
     phoneVerifiedAt: row?.phone_verified_at ?? null,
     preferredTimeSlots: ((row?.preferred_time_slots ?? []) as PreferredTimeSlot[]),
     preferredWeekdays: ((row?.preferred_weekdays ?? []) as PreferredWeekday[]),
     temporaryLevel: (row?.temporary_level as TemporaryLevel | null) ?? null,
   };
+}
+
+function isProfileOnboardingRequired(row: ProfileOnboardingRow | null) {
+  if (!row) {
+    return true;
+  }
+
+  if (row.onboarding_required) {
+    return true;
+  }
+
+  return !row.temporary_level || !row.onboarding_completed_at;
 }
 
 export async function updateProfileOnboardingPreferences({
