@@ -30,6 +30,14 @@ const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
   "20260414234500_add_admin_match_participants_rpc.sql";
 const REQUIRED_COUPON_MIGRATION =
   "20260415123000_support_multiple_signup_coupons.sql";
+const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION =
+  "20260416153000_add_match_refund_exceptions.sql";
+const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION =
+  "20260416153000_add_match_refund_exceptions.sql";
+const REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION =
+  "20260416110000_add_account_withdrawal.sql";
+const REQUIRED_MATCH_WEATHER_MIGRATION =
+  "20260416143000_add_match_weather_and_notification_events.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -43,6 +51,10 @@ const REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE = `Database schema is outdated. 
 const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION} before running admin player level features.`;
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
 const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
+const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_NOTIFICATION_DISPATCH_MIGRATION} before running notification features.`;
+const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION} before running refund exception features.`;
+const REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION} before running account withdrawal features.`;
+const REQUIRED_MATCH_WEATHER_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MATCH_WEATHER_MIGRATION} before running venue weather and match weather features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -55,6 +67,8 @@ let signupProfileSchemaCheckPromise: Promise<void> | null = null;
 let adminPlayerLevelSchemaCheckPromise: Promise<void> | null = null;
 let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
 let couponSchemaCheckPromise: Promise<void> | null = null;
+let notificationDispatchSchemaCheckPromise: Promise<void> | null = null;
+let accountWithdrawalSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -66,7 +80,7 @@ export async function assertVenueManagementSchemaReady(
   }
 
   if (!schemaCheckPromise) {
-    schemaCheckPromise = runPublicIdSchemaCheck(client).catch((error) => {
+    schemaCheckPromise = runVenueManagementSchemaCheck(client).catch((error) => {
       schemaCheckPromise = null;
       throw error;
     });
@@ -277,6 +291,48 @@ export async function assertCouponSchemaReady(
   return couponSchemaCheckPromise;
 }
 
+export async function assertAccountWithdrawalSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!accountWithdrawalSchemaCheckPromise) {
+    accountWithdrawalSchemaCheckPromise = runAccountWithdrawalSchemaCheck(
+      client,
+    ).catch((error) => {
+      accountWithdrawalSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return accountWithdrawalSchemaCheckPromise;
+}
+
+export async function assertNotificationDispatchSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!notificationDispatchSchemaCheckPromise) {
+    notificationDispatchSchemaCheckPromise = runNotificationDispatchSchemaCheck(
+      client,
+    ).catch((error) => {
+      notificationDispatchSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return notificationDispatchSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -295,6 +351,24 @@ async function runSchemaCheck(supabase: SupabaseServerClient) {
   const closeStartedMatchesCheck = await supabase.rpc("close_started_matches");
 
   handleSchemaCheckError(closeStartedMatchesCheck.error);
+}
+
+async function runVenueManagementSchemaCheck(supabase: SupabaseServerClient) {
+  await runPublicIdSchemaCheck(supabase);
+
+  const venueWeatherCheck = await supabase
+    .from("venues")
+    .select("weather_grid_nx, weather_grid_ny")
+    .limit(1);
+
+  handleMatchWeatherSchemaError(venueWeatherCheck.error);
+
+  const matchWeatherSnapshotCheck = await supabase
+    .from("matches")
+    .select("weather_grid_nx, weather_grid_ny")
+    .limit(1);
+
+  handleMatchWeatherSchemaError(matchWeatherSnapshotCheck.error);
 }
 
 async function runCashSchemaCheck(supabase: SupabaseServerClient) {
@@ -442,6 +516,13 @@ async function runAdminMatchParticipantsSchemaCheck(
   ) as any) as { error: { code?: string; message?: string } | null });
 
   handleAdminMatchParticipantsSchemaError(participantRpcCheck.error);
+
+  const refundExceptionModeCheck = await supabase
+    .from("matches")
+    .select("refund_exception_mode")
+    .limit(1);
+
+  handleRefundPolicyRuntimeSchemaError(refundExceptionModeCheck.error);
 }
 
 async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
@@ -468,6 +549,13 @@ async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
 
   handleCouponSchemaCheckError(matchApplicationCouponCheck.error);
 
+  const refundExceptionModeCheck = await supabase
+    .from("matches")
+    .select("refund_exception_mode")
+    .limit(1);
+
+  handleRefundPolicyRuntimeSchemaError(refundExceptionModeCheck.error);
+
   const applyToMatchCheck = await ((supabase.rpc(
     "apply_to_match",
     {
@@ -479,6 +567,62 @@ async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
   if (!isExpectedCouponRpcProbeError(applyToMatchCheck.error)) {
     handleCouponSchemaCheckError(applyToMatchCheck.error);
   }
+
+  const cancelByAdminCheck = await ((supabase.rpc(
+    "cancel_match_application_by_admin",
+    {
+      p_application_id: "00000000-0000-0000-0000-000000000000",
+      p_reason: "admin_cancelled",
+    },
+  ) as any) as { error: { code?: string; message?: string } | null });
+
+  if (!isExpectedAdminCancellationRpcProbeError(cancelByAdminCheck.error)) {
+    handleRefundPolicyRuntimeSchemaError(cancelByAdminCheck.error);
+  }
+}
+
+async function runNotificationDispatchSchemaCheck(supabase: SupabaseServerClient) {
+  await runChargeOperationsSchemaCheck(supabase);
+  await runProfileOnboardingSchemaCheck(supabase);
+
+  const notificationDispatchCheck = await supabase
+    .from("notification_dispatches")
+    .select("dedupe_key, provider_group_id, scheduled_for")
+    .limit(1);
+
+  handleNotificationDispatchSchemaError(notificationDispatchCheck.error);
+
+  const matchWeatherStateCheck = await supabase
+    .from("match_weather_states")
+    .select("match_id, rain_alert_sent_at, last_precipitation_mm")
+    .limit(1);
+
+  handleNotificationDispatchSchemaError(matchWeatherStateCheck.error);
+}
+
+async function runAccountWithdrawalSchemaCheck(supabase: SupabaseServerClient) {
+  await runCouponSchemaCheck(supabase);
+
+  const profileWithdrawalCheck = await supabase
+    .from("profiles")
+    .select("account_status, withdrawal_requested_at, withdrawn_at")
+    .limit(1);
+
+  handleAccountWithdrawalSchemaCheckError(profileWithdrawalCheck.error);
+
+  const withdrawalRequestCheck = await supabase
+    .from("account_withdrawal_requests")
+    .select("refund_request_id, requested_at, status")
+    .limit(1);
+
+  handleAccountWithdrawalSchemaCheckError(withdrawalRequestCheck.error);
+
+  const withdrawalRejoinBlockCheck = await supabase
+    .from("withdrawal_rejoin_blocks")
+    .select("phone_number_e164, blocked_until")
+    .limit(1);
+
+  handleAccountWithdrawalSchemaCheckError(withdrawalRejoinBlockCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -690,6 +834,92 @@ function handleCouponSchemaCheckError(
   throw new Error(`Failed to verify coupon schema: ${error.message}`);
 }
 
+function handleAccountWithdrawalSchemaCheckError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation") ||
+    error.message?.includes("Could not find the function")
+  ) {
+    throw new Error(REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify account withdrawal schema: ${error.message}`);
+}
+
+function handleRefundPolicyRuntimeSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation") ||
+    error.message?.includes("Could not find the function")
+  ) {
+    throw new Error(REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify refund exception schema: ${error.message}`);
+}
+
+function handleNotificationDispatchSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify notification schema: ${error.message}`);
+}
+
+function handleMatchWeatherSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_MATCH_WEATHER_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify match weather schema: ${error.message}`);
+}
+
 function isExpectedCouponRpcProbeError(
   error: { code?: string; message?: string } | null,
 ) {
@@ -700,6 +930,21 @@ function isExpectedCouponRpcProbeError(
   const normalized = error.message.toUpperCase();
 
   return normalized.includes("AUTH_REQUIRED") || normalized.includes("MATCH_NOT_FOUND");
+}
+
+function isExpectedAdminCancellationRpcProbeError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error?.message) {
+    return false;
+  }
+
+  const normalized = error.message.toUpperCase();
+
+  return (
+    normalized.includes("ADMIN_REQUIRED") ||
+    normalized.includes("APPLICATION_NOT_FOUND")
+  );
 }
 
 function handleChargeOperationsSchemaError(

@@ -12,7 +12,7 @@
   padding: 12px 18px 12px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
+  background: #fff;
   box-shadow: 0 14px 34px rgba(17, 17, 17, 0.14);
 }
 

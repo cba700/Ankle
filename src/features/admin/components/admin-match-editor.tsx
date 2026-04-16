@@ -9,8 +9,15 @@ import {
   formatMatchDurationLabel,
   MATCH_DURATION_OPTIONS,
 } from "../match-form";
-import type { AdminMatchFormValue, AdminVenueOption } from "../types";
-import { applyVenueOptionToMatchFormValue } from "../view-model";
+import type {
+  AdminMatchFormValue,
+  AdminMatchRefundExceptionMode,
+  AdminVenueOption,
+} from "../types";
+import {
+  applyVenueOptionToMatchFormValue,
+  getAdminMatchRefundExceptionMeta,
+} from "../view-model";
 import { AdminStatusBadge } from "./admin-status-badge";
 import ui from "./admin-ui.module.css";
 import styles from "./admin-match-editor.module.css";
@@ -21,6 +28,7 @@ type AdminMatchEditorProps = {
   venueOptions: AdminVenueOption[];
   formAction: (formData: FormData) => void | Promise<void>;
   formId?: string;
+  refundExceptionAction?: (formData: FormData) => void | Promise<void>;
 };
 
 const GENDER_OPTIONS = ["남녀 모두", "남성만", "여성만"];
@@ -30,6 +38,16 @@ const LEVEL_OPTIONS = [
   { value: "middle", label: "중급 위주" },
   { value: "high", label: "상급 위주" },
 ] as const;
+const REFUND_EXCEPTION_ACTIONS: Array<{
+  label: string;
+  mode: AdminMatchRefundExceptionMode;
+}> = [
+  { label: "예외 종료", mode: "none" },
+  { label: "미달 안내(전날)", mode: "participant_shortage_day_before" },
+  { label: "미달 안내(당일)", mode: "participant_shortage_same_day" },
+  { label: "강수 안내", mode: "rain_notice" },
+  { label: "강수 변동 안내", mode: "rain_change_notice" },
+];
 
 export function AdminMatchEditor({
   mode,
@@ -37,6 +55,7 @@ export function AdminMatchEditor({
   venueOptions,
   formAction,
   formId,
+  refundExceptionAction,
 }: AdminMatchEditorProps) {
   const [formValues, setFormValues] = useState(values);
 
@@ -46,6 +65,9 @@ export function AdminMatchEditor({
     format: formValues.format,
     startTime: formValues.startTime,
   });
+  const refundExceptionMeta = getAdminMatchRefundExceptionMeta(
+    formValues.refundExceptionMode,
+  );
   const durationOptions = getDurationOptions(formValues.durationMinutes);
   const genderOptions = getOptionsWithCurrent(GENDER_OPTIONS, formValues.genderCondition);
 
@@ -194,6 +216,30 @@ export function AdminMatchEditor({
                 required
                 type="text"
                 value={formValues.address}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>기상청 격자 X(nx)</span>
+              <input
+                inputMode="numeric"
+                name="weatherGridNx"
+                onChange={handleFieldChange}
+                placeholder="예: 60"
+                type="text"
+                value={formValues.weatherGridNx}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>기상청 격자 Y(ny)</span>
+              <input
+                inputMode="numeric"
+                name="weatherGridNy"
+                onChange={handleFieldChange}
+                placeholder="예: 127"
+                type="text"
+                value={formValues.weatherGridNy}
               />
             </label>
           </div>
@@ -373,6 +419,37 @@ export function AdminMatchEditor({
 
         {mode === "edit" ? (
           <>
+            <section className={`${ui.sectionCard} ${styles.section}`}>
+              <div className={styles.refundExceptionHeader}>
+                <p className={styles.sectionEyebrow}>환불 예외 운영</p>
+                <AdminStatusBadge
+                  label={refundExceptionMeta.label}
+                  tone={refundExceptionMeta.tone}
+                />
+              </div>
+
+              <p className={styles.helperText}>{refundExceptionMeta.description}</p>
+
+              <div className={styles.refundActionGrid}>
+                {REFUND_EXCEPTION_ACTIONS.map((action) => (
+                  <button
+                    className={`${ui.button} ${ui.buttonSmall} ${
+                      action.mode === formValues.refundExceptionMode ? ui.buttonBrand : ""
+                    } ${styles.refundActionButton}`}
+                    disabled={!refundExceptionAction}
+                    formAction={refundExceptionAction}
+                    formNoValidate
+                    key={action.mode}
+                    name="refundExceptionMode"
+                    type="submit"
+                    value={action.mode}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
             <section className={`${ui.sectionCard} ${styles.section}`}>
               <div className={styles.sectionHeader}>
                 <p className={styles.sectionEyebrow}>운영 카피</p>

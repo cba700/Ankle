@@ -308,7 +308,7 @@ export function MatchApplyPage({
                 </div>
                 <div className={styles.noticeBox}>
                   <p>{view.notice}</p>
-                  <p>{view.levelHint}</p>
+                  {view.levelHint ? <p>{view.levelHint}</p> : null}
                 </div>
               </section>
 

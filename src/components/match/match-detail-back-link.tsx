@@ -15,7 +15,6 @@ type MatchDetailBackLinkProps = {
 export function MatchDetailBackLink({ className }: MatchDetailBackLinkProps) {
   const searchParams = useSearchParams();
   const backHref = getHomeStateHref({
-    dateKey: searchParams.get("date") ?? undefined,
     filterIds: parseHomeFilterIds(
       searchParams.get("filters") ?? undefined,
       ["hideClosed", "region", "gender", "level", "shade"],

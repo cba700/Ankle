@@ -13,6 +13,8 @@ export type VenueEntity = {
   parking: string;
   smoking: string;
   showerLocker: string;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   defaultImageUrls: string[];
   defaultRules: string[];
   defaultSafetyNotes: string[];
@@ -30,6 +32,8 @@ type VenueRow = {
   parking: string;
   smoking: string;
   shower_locker: string;
+  weather_grid_nx: number | null;
+  weather_grid_ny: number | null;
   default_image_urls: string[] | null;
   default_rules: string[] | null;
   default_safety_notes: string[] | null;
@@ -50,6 +54,8 @@ const VENUE_SELECT = `
   parking,
   smoking,
   shower_locker,
+  weather_grid_nx,
+  weather_grid_ny,
   default_image_urls,
   default_rules,
   default_safety_notes,
@@ -102,6 +108,8 @@ async function listVenueEntities(id?: string) {
     parking: row.parking,
     smoking: row.smoking,
     showerLocker: row.shower_locker,
+    weatherGridNx: row.weather_grid_nx,
+    weatherGridNy: row.weather_grid_ny,
     defaultImageUrls: row.default_image_urls ?? [],
     defaultRules: row.default_rules ?? [],
     defaultSafetyNotes: row.default_safety_notes ?? [],

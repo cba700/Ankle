@@ -2,6 +2,12 @@ export type AdminMatchStatus = "draft" | "open" | "closed" | "cancelled";
 export type AdminMatchFormat = "3vs3" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
+export type AdminMatchRefundExceptionMode =
+  | "none"
+  | "participant_shortage_day_before"
+  | "participant_shortage_same_day"
+  | "rain_notice"
+  | "rain_change_notice";
 export type AdminBadgeTone = "accent" | "neutral" | "danger";
 export type AdminShellNav =
   | "dashboard"
@@ -26,6 +32,8 @@ export type AdminVenueRecord = {
   address: string;
   isActive: boolean;
   matchCount: number;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   venueInfo: AdminVenueInfo;
   defaultImageUrls: string[];
   defaultRules: string[];
@@ -39,6 +47,8 @@ export type AdminVenueOption = {
   name: string;
   district: string;
   address: string;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   venueInfo: AdminVenueInfo;
   defaultImageUrls: string[];
   defaultRules: string[];
@@ -65,6 +75,8 @@ export type AdminVenueFormValue = {
   parking: string;
   smoking: string;
   showerLocker: string;
+  weatherGridNx: string;
+  weatherGridNy: string;
   defaultImageUrls: string[];
   defaultRulesText: string;
   defaultSafetyNotesText: string;
@@ -90,6 +102,8 @@ export type AdminMatchRecord = {
   levelCondition: string;
   levelRange: string;
   preparation: string;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   summary: string;
   operatorNote: string;
   publicNotice: string;
@@ -97,6 +111,7 @@ export type AdminMatchRecord = {
   imageUrls: string[];
   rules: string[];
   safetyNotes: string[];
+  refundExceptionMode: AdminMatchRefundExceptionMode;
   participants: AdminMatchParticipantRecord[];
   venueInfo: AdminVenueInfo;
 };
@@ -105,6 +120,7 @@ export type AdminMatchParticipantRecord = {
   applicationId: string;
   displayName: string;
   gender: "female" | "male" | null;
+  noShowNoticeSent: boolean;
   playerLevel: string | null;
   playerLevelSource: "player_level" | "temporary_level" | "unset";
   userId: string;
@@ -210,6 +226,9 @@ export type AdminMatchRow = {
   status: AdminMatchStatus;
   displayStatusLabel: string;
   displayStatusTone: AdminBadgeTone;
+  refundExceptionLabel: string | null;
+  refundExceptionMode: AdminMatchRefundExceptionMode;
+  refundExceptionTone: AdminBadgeTone | null;
   isNearClosing: boolean;
   isSoldOut: boolean;
   tags: string[];
@@ -223,6 +242,7 @@ export type AdminMatchParticipantRow = {
   applicationId: string;
   displayName: string;
   genderLabel: string;
+  noShowNoticeSent: boolean;
   playerLevelLabel: string;
   resolvedPlayerLevel: string | null;
   userId: string;
@@ -239,6 +259,7 @@ export type AdminMatchFormValue = {
   startTime: string;
   durationMinutes: string;
   status: AdminMatchStatus | "";
+  refundExceptionMode: AdminMatchRefundExceptionMode;
   format: AdminMatchFormat | "";
   capacity: string;
   participantSummary: string;
@@ -246,6 +267,8 @@ export type AdminMatchFormValue = {
   genderCondition: string;
   level: AdminMatchLevelPreset | "";
   preparation: string;
+  weatherGridNx: string;
+  weatherGridNy: string;
   summary: string;
   publicNotice: string;
   operatorNote: string;

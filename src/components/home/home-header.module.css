@@ -1,8 +1,5 @@
 .header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: rgba(255, 255, 255, 0.94);
+  background: #fff;
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(201, 193, 183, 0.56);
 }
@@ -48,7 +45,7 @@
   padding: 0 12px;
   border: 1px solid rgba(201, 193, 183, 0.74);
   border-radius: 999px;
-  background: #faf8f4;
+  background: #fff;
 }
 
 .searchIcon {

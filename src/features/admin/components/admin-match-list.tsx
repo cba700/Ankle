@@ -13,6 +13,8 @@ import ui from "./admin-ui.module.css";
 import styles from "./admin-match-list.module.css";
 
 type AdminMatchListProps = {
+  onIssueRainChangeRefund?: (formData: FormData) => void | Promise<void>;
+  onSendNoShowNotice?: (formData: FormData) => void | Promise<void>;
   onUpdatePlayerLevel?: (formData: FormData) => void | Promise<void>;
   rows: AdminMatchRow[];
   variant: "dashboard" | "matches";
@@ -22,6 +24,8 @@ type AdminMatchListProps = {
 type MatchFilter = "all" | "open" | "today" | "draft" | "nearClosing" | "closed" | "cancelled";
 
 export function AdminMatchList({
+  onIssueRainChangeRefund,
+  onSendNoShowNotice,
   onUpdatePlayerLevel,
   rows,
   variant,
@@ -242,6 +246,15 @@ export function AdminMatchList({
                                     <strong className={styles.summaryValue}>{row.participantPreviewLabel}</strong>
                                     <span className={ui.tertiary}>{row.participantLabel}</span>
                                   </article>
+                                  {row.refundExceptionLabel ? (
+                                    <article className={styles.summaryCard}>
+                                      <span className={styles.summaryLabel}>환불 예외</span>
+                                      <strong className={styles.summaryValue}>{row.refundExceptionLabel}</strong>
+                                      <span className={ui.tertiary}>
+                                        현재 예외 취소 안내가 적용 중입니다.
+                                      </span>
+                                    </article>
+                                  ) : null}
                                 </div>
 
                                 <div className={styles.participantBlock}>
@@ -250,7 +263,15 @@ export function AdminMatchList({
                                       <p className={styles.participantEyebrow}>참가자 관리</p>
                                       <h3 className={styles.participantTitle}>확정 참가자 목록</h3>
                                     </div>
-                                    <span className={styles.participantMeta}>{row.participants.length}명</span>
+                                    <div className={styles.participantHeaderMeta}>
+                                      {row.refundExceptionLabel && row.refundExceptionTone ? (
+                                        <AdminStatusBadge
+                                          label={row.refundExceptionLabel}
+                                          tone={row.refundExceptionTone}
+                                        />
+                                      ) : null}
+                                      <span className={styles.participantMeta}>{row.participants.length}명</span>
+                                    </div>
                                   </div>
 
                                   {row.participants.length === 0 ? (
@@ -274,6 +295,45 @@ export function AdminMatchList({
                                                 <span className={ui.tertiary}>
                                                   {participant.genderLabel} · 현재 {participant.playerLevelLabel}
                                                 </span>
+                                              </div>
+
+                                              <div className={styles.participantActionStack}>
+                                                <form
+                                                  action={onSendNoShowNotice}
+                                                  className={styles.participantActionForm}
+                                                >
+                                                  <input
+                                                    name="applicationId"
+                                                    type="hidden"
+                                                    value={participant.applicationId}
+                                                  />
+                                                  <button
+                                                    className={`${ui.button} ${ui.buttonSmall}`}
+                                                    disabled={!onSendNoShowNotice || participant.noShowNoticeSent}
+                                                    type="submit"
+                                                  >
+                                                    {participant.noShowNoticeSent ? "노쇼 안내 완료" : "노쇼 안내"}
+                                                  </button>
+                                                </form>
+                                                {row.refundExceptionMode === "rain_change_notice" ? (
+                                                  <form
+                                                    action={onIssueRainChangeRefund}
+                                                    className={styles.participantActionForm}
+                                                  >
+                                                    <input
+                                                      name="applicationId"
+                                                      type="hidden"
+                                                      value={participant.applicationId}
+                                                    />
+                                                    <button
+                                                      className={`${ui.button} ${ui.buttonSmall}`}
+                                                      disabled={!onIssueRainChangeRefund}
+                                                      type="submit"
+                                                    >
+                                                      현장 강수 환불
+                                                    </button>
+                                                  </form>
+                                                ) : null}
                                               </div>
                                             </div>
 

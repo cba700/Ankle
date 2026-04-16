@@ -1,5 +1,6 @@
 import "server-only";
 
+import { sendCashChargedNotification } from "@/lib/notifications";
 import {
   confirmTossPayment,
   getTossErrorCode,
@@ -589,13 +590,22 @@ async function applyApprovedChargeOrder(
   await clearChargeOrderErrors(admin, chargeOrder.id);
 
   const approvedPayload = (data ?? {}) as Record<string, unknown>;
+  const remainingCash = getRemainingCash(approvedPayload);
+
+  await sendCashChargedNotification({
+    amount: chargeOrder.amount,
+    chargeOrderId: chargeOrder.id,
+    orderId,
+    remainingCash,
+    userId: chargeOrder.user_id,
+  });
 
   return {
     chargedAmount: chargeOrder.amount,
     method,
     ok: true,
     orderId,
-    remainingCash: getRemainingCash(approvedPayload),
+    remainingCash,
     retryable: false,
     source,
     status: "paid",

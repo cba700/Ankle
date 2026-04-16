@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { MatchSearch } from "@/components/navigation/match-search";
+import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
 import { buildVerifyPhoneHref, buildWelcomeHref } from "@/lib/auth/redirect";
 import {
   buildCashChargePackageLabel,
   type CashChargePackage,
   CASH_CHARGE_PACKAGES,
 } from "@/lib/payments/toss";
+import baseStyles from "@/components/mypage/my-page.module.css";
 import styles from "./cash-charge-page.module.css";
 
 type ChargeOrderSummary = {
@@ -25,6 +29,7 @@ type CashChargePageProps = {
   cashBalanceLabel: string;
   customerKey: string;
   displayName: string;
+  initialIsAdmin: boolean;
   nextPath: string | null;
   recentOrders: ChargeOrderSummary[];
 };
@@ -73,6 +78,13 @@ type TossPaymentsFactory = (clientKey: string) => {
   };
 };
 
+type PaymentFailureReport = {
+  code: string;
+  orderId: string;
+  rawMessage?: string;
+  source: "sdk_launch";
+};
+
 const PAYMENT_METHODS: Array<{
   description: string;
   key: ChargePaymentMethod;
@@ -118,6 +130,7 @@ export function CashChargePage({
   cashBalanceLabel,
   customerKey,
   displayName,
+  initialIsAdmin,
   nextPath,
 }: CashChargePageProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -144,6 +157,7 @@ export function CashChargePage({
 
     setFeedbackMessage(null);
     setIsSubmitting(true);
+    let createdOrderId: string | null = null;
 
     try {
       const response = await fetch("/api/cash/charge-orders", {
@@ -183,6 +197,7 @@ export function CashChargePage({
         return;
       }
 
+      createdOrderId = payload.orderId;
       const TossPayments = await loadTossPayments();
       const payment = TossPayments(tossClientKey).payment({
         customerKey,
@@ -211,7 +226,27 @@ export function CashChargePage({
 
       await payment.requestPayment(requestPaymentParams);
     } catch (error) {
-      setFeedbackMessage(getSdkErrorMessage(error));
+      const failureCode = getSdkFailureCode(error);
+
+      if (createdOrderId) {
+        void reportChargeFailure({
+          code: failureCode,
+          orderId: createdOrderId,
+          rawMessage: getRawErrorMessage(error) ?? undefined,
+          source: "sdk_launch",
+        });
+      }
+
+      if (failureCode === "PAY_PROCESS_CANCELED") {
+        window.location.replace(currentChargePath);
+        return;
+      }
+
+      if (createdOrderId) {
+        return;
+      }
+
+      setFeedbackMessage(getSdkErrorMessage());
     } finally {
       setIsSubmitting(false);
     }
@@ -219,8 +254,25 @@ export function CashChargePage({
 
   return (
     <div className={styles.page}>
-      <div className="pageShell">
-        <main className={styles.main}>
+      <header className={baseStyles.header}>
+        <div className={baseStyles.headerInner}>
+          <AppLink className={baseStyles.brand} href="/">
+            <BrandLogo className={baseStyles.brandLogo} priority />
+          </AppLink>
+
+          <div className={baseStyles.headerActions}>
+            <MatchSearch />
+            <UserHeaderMenu
+              currentSection="mypage"
+              initialIsAdmin={initialIsAdmin}
+              initialSignedIn
+              layout="icon-only"
+            />
+          </div>
+        </div>
+      </header>
+
+      <main className={`pageShell ${styles.main}`}>
           <AppLink className={styles.backLink} href="/mypage">
             <ArrowLeftIcon />
             마이페이지로 돌아가기
@@ -242,9 +294,9 @@ export function CashChargePage({
                     onClick={() => setSelectedAmount(amount)}
                     type="button"
                   >
-                    <strong className={styles.packageAmount}>
+                    <span className={styles.packageAmount}>
                       {buildCashChargePackageLabel(amount)}
-                    </strong>
+                    </span>
                   </button>
                 );
               })}
@@ -269,14 +321,13 @@ export function CashChargePage({
                     onClick={() => setSelectedPaymentMethod(method.key)}
                     type="button"
                   >
-                    <strong className={styles.paymentMethodLabel}>{method.label}</strong>
+                    <span className={styles.paymentMethodLabel}>{method.label}</span>
                   </button>
                 );
               })}
             </div>
           </section>
-        </main>
-      </div>
+      </main>
 
       <div className={styles.actionWrap}>
         <div className={styles.actionBar}>
@@ -314,12 +365,40 @@ function getChargeErrorMessage(code?: string) {
   }
 }
 
-function getSdkErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message.trim()) {
-    return `결제창을 열지 못했습니다. ${error.message}`;
+function getSdkErrorMessage() {
+  return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function getSdkFailureCode(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string" &&
+    error.code.trim()
+  ) {
+    return error.code.trim();
   }
 
-  return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  return "PAYMENT_WINDOW_OPEN_FAILED";
+}
+
+function getRawErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string" &&
+    error.message.trim()
+  ) {
+    return error.message.trim();
+  }
+
+  return null;
 }
 
 function buildRequestPaymentParams(
@@ -390,4 +469,29 @@ function loadTossPayments() {
   });
 
   return tossPaymentsPromise;
+}
+
+async function reportChargeFailure({
+  code,
+  orderId,
+  rawMessage,
+  source,
+}: PaymentFailureReport) {
+  try {
+    await fetch("/api/payments/toss/fail", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      keepalive: true,
+      body: JSON.stringify({
+        code,
+        orderId,
+        rawMessage,
+        source,
+      }),
+    });
+  } catch {
+    // Best-effort failure logging should not block charge retries.
+  }
 }

@@ -10,6 +10,8 @@ type FailBody = {
   code?: unknown;
   message?: unknown;
   orderId?: unknown;
+  rawMessage?: unknown;
+  source?: unknown;
 };
 
 type ChargeOrderLookup = {
@@ -65,22 +67,59 @@ export async function POST(request: Request) {
     typeof body?.code === "string" && body.code.trim()
       ? body.code.trim()
       : "PAYMENT_FAILED";
-  const errorMessage =
-    typeof body?.message === "string" && body.message.trim()
-      ? body.message.trim()
-      : "결제 요청이 완료되지 않았습니다.";
+  const errorMessage = getFailureMessage(errorCode);
+  const rawErrorMessage = getRawFailureMessage(body);
+  const source =
+    body?.source === "sdk_launch" || body?.source === "redirect_fail"
+      ? body.source
+      : "redirect_fail";
+  const nextStatus = errorCode === "PAY_PROCESS_CANCELED" ? "cancelled" : "failed";
+
+  if (nextStatus === "failed") {
+    console.error("Cash charge flow failed before confirmation", {
+      code: errorCode,
+      orderId: typedOrder.order_id,
+      rawMessage: rawErrorMessage,
+      source,
+      userId: user.id,
+    });
+  }
 
   await admin
     .from("cash_charge_orders")
     .update({
+      cancel_reason: nextStatus === "cancelled" ? "user_cancelled" : null,
       failure_code: errorCode,
       failure_message: errorMessage,
       last_error_code: errorCode,
       last_error_message: errorMessage,
-      status: "failed",
+      status: nextStatus,
       updated_at: new Date().toISOString(),
     })
     .eq("id", typedOrder.id);
 
   return NextResponse.json({ ok: true }, { headers: PRIVATE_NO_STORE_HEADERS });
+}
+
+function getFailureMessage(code: string) {
+  switch (code) {
+    case "PAY_PROCESS_CANCELED":
+      return "결제가 취소되었습니다.";
+    case "PAYMENT_WINDOW_OPEN_FAILED":
+      return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+    default:
+      return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+}
+
+function getRawFailureMessage(body: FailBody | null) {
+  if (typeof body?.rawMessage === "string" && body.rawMessage.trim()) {
+    return body.rawMessage.trim();
+  }
+
+  if (typeof body?.message === "string" && body.message.trim()) {
+    return body.message.trim();
+  }
+
+  return null;
 }

@@ -19,6 +19,10 @@ type LoginStatus =
   | { email: string; status: "signedIn" };
 
 const ERROR_MESSAGES: Record<string, string> = {
+  account_withdrawal_pending:
+    "회원 탈퇴가 접수되어 현재 계정 접근이 제한되었습니다.",
+  account_withdrawn:
+    "탈퇴 처리된 계정입니다. 30일 이후 다시 로그인해 주세요.",
   callback_code_missing: "카카오 로그인 응답이 올바르지 않았습니다. 다시 시도해 주세요.",
   oauth_failed: "카카오 로그인에 실패했습니다. 다시 시도해 주세요.",
   session_expired: "다른 기기에서 로그인되어 현재 세션이 종료되었습니다. 다시 로그인해 주세요.",
@@ -52,6 +56,21 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
         }
 
         if (!user) {
+          setLoginStatus({ status: "signedOut" });
+          return;
+        }
+
+        const { data: profile } = await activeSupabase
+          .from("profiles")
+          .select("account_status")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (profile?.account_status !== "active") {
           setLoginStatus({ status: "signedOut" });
           return;
         }

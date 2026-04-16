@@ -7,6 +7,9 @@ import {
   getAdminVenues as getMockAdminVenues,
 } from "@/features/admin/mock/admin-venues";
 import {
+  listWithdrawalRequestLinksByRefundRequestIds,
+} from "@/lib/account-withdrawal";
+import {
   listCashAccounts,
   listRecentCashChargeOrders,
   listRecentCashChargeOrderEvents,
@@ -18,7 +21,9 @@ import {
   listCouponUsageSummaries,
 } from "@/lib/coupons";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
+import { listSentApplicationNotificationIds } from "@/lib/notifications";
 import {
+  assertAccountWithdrawalSchemaReady,
   assertAdminMatchParticipantsSchemaReady,
   assertCashChargeOperationsSchemaReady,
   assertCouponSchemaReady,
@@ -32,6 +37,7 @@ import type {
   AdminMatchParticipantRecord,
   AdminMatchRecord,
   AdminCouponTemplateRecord,
+  AdminMatchRefundExceptionMode,
   AdminVenueOption,
   AdminVenueRecord,
 } from "./types";
@@ -50,13 +56,30 @@ export async function getAdminMatches() {
   await assertAdminMatchParticipantsSchemaReady(supabase);
 
   const entities = await listAdminMatchEntities();
+  const refundExceptionModes = await getMatchRefundExceptionModes(
+    supabase,
+    entities.map((entity) => entity.id),
+  );
   const participantsByMatchId = await getAdminMatchParticipantsByMatchId(
     supabase,
     entities.map((entity) => entity.id),
   );
+  const noShowNoticeSentIds = await listSentApplicationNotificationIds(
+    Array.from(participantsByMatchId.values()).flatMap((participants) =>
+      participants.map((participant) => participant.applicationId),
+    ),
+    "no_show_notice",
+  );
 
   return entities.map((entity) =>
-    mapEntityToAdminRecord(entity, participantsByMatchId.get(entity.id) ?? []),
+    mapEntityToAdminRecord(
+      entity,
+      refundExceptionModes.get(entity.id) ?? "none",
+      (participantsByMatchId.get(entity.id) ?? []).map((participant) => ({
+        ...participant,
+        noShowNoticeSent: noShowNoticeSentIds.has(participant.applicationId),
+      })),
+    ),
   );
 }
 
@@ -80,7 +103,21 @@ export async function getAdminMatchById(id: string) {
   }
 
   const participantsByMatchId = await getAdminMatchParticipantsByMatchId(supabase, [id]);
-  return mapEntityToAdminRecord(entity, participantsByMatchId.get(id) ?? []);
+  const refundExceptionModes = await getMatchRefundExceptionModes(supabase, [id]);
+  const participants = participantsByMatchId.get(id) ?? [];
+  const noShowNoticeSentIds = await listSentApplicationNotificationIds(
+    participants.map((participant) => participant.applicationId),
+    "no_show_notice",
+  );
+
+  return mapEntityToAdminRecord(
+    entity,
+    refundExceptionModes.get(id) ?? "none",
+    participants.map((participant) => ({
+      ...participant,
+      noShowNoticeSent: noShowNoticeSentIds.has(participant.applicationId),
+    })),
+  );
 }
 
 export async function getAdminVenues() {
@@ -116,6 +153,7 @@ export async function getAdminCashDashboardData() {
       accounts: [],
       chargeOrders: [],
       chargeOrderEvents: [],
+      linkedWithdrawalRefundRequestIds: [],
       refundRequests: [],
       transactions: [],
     };
@@ -128,6 +166,7 @@ export async function getAdminCashDashboardData() {
       accounts: [],
       chargeOrders: [],
       chargeOrderEvents: [],
+      linkedWithdrawalRefundRequestIds: [],
       refundRequests: [],
       transactions: [],
     };
@@ -135,6 +174,7 @@ export async function getAdminCashDashboardData() {
 
   await assertCashChargeOperationsSchemaReady(supabase);
   await assertCashRefundRequestSchemaReady(supabase);
+  await assertAccountWithdrawalSchemaReady(supabase);
 
   const [accounts, chargeOrders, chargeOrderEvents, refundRequests, transactions] = await Promise.all([
     listCashAccounts(supabase),
@@ -143,11 +183,20 @@ export async function getAdminCashDashboardData() {
     listRecentCashRefundRequests(supabase),
     listRecentCashTransactions(supabase),
   ]);
+  const linkedWithdrawalRefundRequestIds = Array.from(
+    (
+      await listWithdrawalRequestLinksByRefundRequestIds(
+        supabase,
+        refundRequests.map((request) => request.id),
+      )
+    ).keys(),
+  );
 
   return {
     accounts,
     chargeOrders,
     chargeOrderEvents,
+    linkedWithdrawalRefundRequestIds,
     refundRequests,
     transactions,
   };
@@ -239,6 +288,7 @@ type MatchParticipantRow = {
 
 function mapEntityToAdminRecord(
   entity: MatchEntity,
+  refundExceptionMode: AdminMatchRefundExceptionMode,
   participants: AdminMatchParticipantRecord[],
 ): AdminMatchRecord {
   return {
@@ -260,6 +310,8 @@ function mapEntityToAdminRecord(
     levelCondition: entity.levelCondition,
     levelRange: entity.levelRange,
     preparation: entity.preparation,
+    weatherGridNx: entity.weatherGridNx,
+    weatherGridNy: entity.weatherGridNy,
     summary: entity.summary,
     operatorNote: entity.operatorNote,
     publicNotice: entity.publicNotice,
@@ -267,6 +319,7 @@ function mapEntityToAdminRecord(
     imageUrls: entity.imageUrls,
     rules: entity.rules,
     safetyNotes: entity.safetyNotes,
+    refundExceptionMode,
     participants,
     venueInfo: {
       directions: entity.venue.directions,
@@ -276,6 +329,11 @@ function mapEntityToAdminRecord(
     },
   };
 }
+
+type MatchRefundExceptionModeRow = {
+  id: string;
+  refund_exception_mode: AdminMatchRefundExceptionMode | null;
+};
 
 async function getAdminMatchParticipantsByMatchId(
   supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
@@ -305,6 +363,7 @@ async function getAdminMatchParticipantsByMatchId(
       applicationId: row.application_id,
       displayName: row.display_name?.trim() || "이름 미등록",
       gender: row.gender ?? null,
+      noShowNoticeSent: false,
       playerLevel:
         row.player_level ??
         row.temporary_level ??
@@ -323,6 +382,32 @@ async function getAdminMatchParticipantsByMatchId(
   return participantsByMatchId;
 }
 
+async function getMatchRefundExceptionModes(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  matchIds: string[],
+) {
+  const modesByMatchId = new Map<string, AdminMatchRefundExceptionMode>();
+
+  if (matchIds.length === 0) {
+    return modesByMatchId;
+  }
+
+  const { data, error } = await supabase
+    .from("matches")
+    .select("id, refund_exception_mode")
+    .in("id", matchIds);
+
+  if (error) {
+    throw new Error(`Failed to load refund exception modes: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as MatchRefundExceptionModeRow[]) {
+    modesByMatchId.set(row.id, row.refund_exception_mode ?? "none");
+  }
+
+  return modesByMatchId;
+}
+
 function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
   return {
     id: entity.id,
@@ -332,6 +417,8 @@ function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
     address: entity.address,
     isActive: entity.isActive,
     matchCount: entity.matchCount,
+    weatherGridNx: entity.weatherGridNx,
+    weatherGridNy: entity.weatherGridNy,
     venueInfo: {
       directions: entity.directions,
       parking: entity.parking,
@@ -352,6 +439,8 @@ function mapVenueEntityToOption(entity: VenueEntity): AdminVenueOption {
     name: entity.name,
     district: entity.district,
     address: entity.address,
+    weatherGridNx: entity.weatherGridNx,
+    weatherGridNy: entity.weatherGridNy,
     venueInfo: {
       directions: entity.directions,
       parking: entity.parking,

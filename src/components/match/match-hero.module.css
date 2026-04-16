@@ -45,39 +45,10 @@
 
 .placeholder {
   position: relative;
-  display: grid;
-  place-items: center;
   min-height: 420px;
   padding: 32px;
   background: linear-gradient(135deg, #151515 0%, #2d1405 55%, #1a1a1a 100%);
   color: #fff;
-}
-
-.placeholderCopy {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.placeholderEyebrow {
-  color: #ff9b58;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.placeholderCopy strong {
-  font-size: clamp(24px, 4vw, 38px);
-  letter-spacing: -0.05em;
-}
-
-.placeholderCopy span:last-child {
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
 }
 
 .courtLines {
@@ -123,7 +94,7 @@
   padding: 0 14px;
   border: 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 700;
@@ -135,14 +106,14 @@
   height: 16px;
 }
 
-.heroCopy {
+.statusWrap {
   position: absolute;
   left: 24px;
-  right: 170px;
   bottom: 24px;
   z-index: 2;
-  display: grid;
-  gap: 10px;
+  display: inline-flex;
+  align-items: flex-end;
+  max-width: calc(100% - 132px);
 }
 
 .statusPill {
@@ -175,21 +146,6 @@
 .statusOpen {
   background: rgba(22, 170, 113, 0.22);
   color: #fff;
-}
-
-.title {
-  margin: 0;
-  color: #fff;
-  font-size: clamp(32px, 5vw, 44px);
-  line-height: 1.06;
-  letter-spacing: -0.05em;
-}
-
-.subTitle {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 15px;
-  line-height: 1.6;
 }
 
 .bottomBar {
@@ -253,19 +209,10 @@
     padding: 0 12px;
   }
 
-  .heroCopy {
-    right: 16px;
-    bottom: 72px;
+  .statusWrap {
     left: 16px;
-    gap: 8px;
-  }
-
-  .title {
-    font-size: 28px;
-  }
-
-  .subTitle {
-    font-size: 13px;
+    bottom: 68px;
+    max-width: calc(100% - 104px);
   }
 
   .bottomBar {

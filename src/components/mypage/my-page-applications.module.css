@@ -18,7 +18,7 @@
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #fff;
   font-size: 13px;
   font-weight: 700;
 }
@@ -34,7 +34,7 @@
 .calendarCard {
   border: 1px solid rgba(201, 193, 183, 0.78);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.94);
+  background: #fff;
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
 }
 
@@ -92,7 +92,7 @@
   padding: 18px;
   border: 1px solid rgba(243, 109, 33, 0.14);
   border-radius: 18px;
-  background: linear-gradient(180deg, #fff9f4 0%, #fff 100%);
+  background: #fff;
 }
 
 .heroStatLabel,
@@ -223,7 +223,7 @@
 }
 
 .dayButtonOutsideMonth {
-  background: #faf8f4;
+  background: #fff;
   color: var(--text-tertiary);
   opacity: 0.52;
 }

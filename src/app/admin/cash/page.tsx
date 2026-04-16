@@ -23,6 +23,9 @@ import styles from "./page.module.css";
 
 export default async function AdminCashPage() {
   const data = await getAdminCashDashboardData();
+  const withdrawalLinkedRefundRequestIds = new Set(
+    data.linkedWithdrawalRefundRequestIds,
+  );
   const overviewCards = buildAdminCashOverviewCards(data);
   const accountRows = buildAdminCashAccountRows(data.accounts);
   const transactionRows = buildAdminCashTransactionRows(data.transactions);
@@ -78,6 +81,7 @@ export default async function AdminCashPage() {
                 <thead>
                   <tr>
                     <th className={ui.tableHeadCell}>신청 시각</th>
+                    <th className={ui.tableHeadCell}>구분</th>
                     <th className={ui.tableHeadCell}>사용자</th>
                     <th className={ui.tableHeadCell}>금액</th>
                     <th className={ui.tableHeadCell}>은행</th>
@@ -90,7 +94,7 @@ export default async function AdminCashPage() {
                 <tbody>
                   {refundRequestRows.length === 0 ? (
                     <tr>
-                      <td className={ui.tableCell} colSpan={8}>
+                      <td className={ui.tableCell} colSpan={9}>
                         표시할 환불 신청이 없습니다.
                       </td>
                     </tr>
@@ -98,6 +102,11 @@ export default async function AdminCashPage() {
                     refundRequestRows.map((row, index) => (
                       <tr key={row.id} className={ui.tableRow}>
                         <td className={ui.tableCell}>{row.metaLabel}</td>
+                        <td className={ui.tableCell}>
+                          {withdrawalLinkedRefundRequestIds.has(row.id)
+                            ? "회원 탈퇴"
+                            : "일반 환불"}
+                        </td>
                         <td className={ui.tableCell}>
                           <span className={styles.code}>{row.userId}</span>
                         </td>
@@ -119,7 +128,9 @@ export default async function AdminCashPage() {
                                   className={`${ui.button} ${ui.buttonBrand} ${ui.buttonSmall}`}
                                   type="submit"
                                 >
-                                  승인
+                                  {withdrawalLinkedRefundRequestIds.has(row.id)
+                                    ? "승인 후 탈퇴 완료"
+                                    : "승인"}
                                 </button>
                               </form>
                               <form action={rejectCashRefundRequestAction}>
@@ -128,7 +139,9 @@ export default async function AdminCashPage() {
                                   className={`${ui.button} ${ui.buttonSmall}`}
                                   type="submit"
                                 >
-                                  반려
+                                  {withdrawalLinkedRefundRequestIds.has(row.id)
+                                    ? "반려 후 탈퇴 취소"
+                                    : "반려"}
                                 </button>
                               </form>
                             </div>

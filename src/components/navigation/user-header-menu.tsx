@@ -63,7 +63,7 @@ export function UserHeaderMenu({
 
         const { data: profile } = await activeSupabase
           .from("profiles")
-          .select("role")
+          .select("role, account_status")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -72,8 +72,9 @@ export function UserHeaderMenu({
         }
 
         setMenuState({
-          isAdmin: profile?.role === "admin",
-          isSignedIn: true,
+          isAdmin:
+            profile?.account_status === "active" && profile?.role === "admin",
+          isSignedIn: profile?.account_status === "active",
         });
       } catch {
         if (!isMounted) {

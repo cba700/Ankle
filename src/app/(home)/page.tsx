@@ -40,7 +40,6 @@ export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{
-    date?: string | string[];
     filters?: string | string[];
   }>;
 }) {
@@ -48,10 +47,7 @@ export default async function Page({
   const rows = buildHomeMatchRows(matches);
   const dates = getDisplayDates();
   const resolvedSearchParams = await searchParams;
-  const requestedDateKey = getFirstSearchParam(resolvedSearchParams.date);
-  const initialSelectedDateKey = dates.some((date) => date.key === requestedDateKey)
-    ? requestedDateKey ?? ""
-    : dates[0]?.key ?? "";
+  const initialSelectedDateKey = dates[0]?.key ?? "";
   const initialActiveFilterIds = parseHomeFilterIds(
     getFirstSearchParam(resolvedSearchParams.filters),
     ["hideClosed", "region", "gender", "level", "shade"],

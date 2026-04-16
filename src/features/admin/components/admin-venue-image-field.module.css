@@ -55,7 +55,7 @@
   padding: 12px;
   border: 1px solid rgba(201, 193, 183, 0.72);
   border-radius: 22px;
-  background: rgba(247, 245, 241, 0.72);
+  background: #fff;
 }
 
 .thumbWrap {
@@ -63,7 +63,7 @@
   overflow: hidden;
   aspect-ratio: 4 / 3;
   border-radius: 16px;
-  background: rgba(230, 225, 216, 0.84);
+  background: #fff;
 }
 
 .thumb {

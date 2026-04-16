@@ -33,7 +33,7 @@ export default async function CashChargeRoute({
   const chargePath = normalizedNextPath
     ? `/cash/charge?next=${encodeURIComponent(normalizedNextPath)}`
     : "/cash/charge";
-  const { configured, user } = await getServerUserState();
+  const { configured, role, user } = await getServerUserState();
 
   if (!configured || !user) {
     redirect(
@@ -72,6 +72,7 @@ export default async function CashChargeRoute({
       cashBalanceLabel={`${formatMoney(cashAccount?.balance ?? 0)}원`}
       customerKey={user.id}
       displayName={getDisplayName(user)}
+      initialIsAdmin={role === "admin"}
       nextPath={normalizedNextPath}
       recentOrders={recentOrders.map((order) => ({
         amountLabel: `${formatMoney(order.amount)}원`,
@@ -104,14 +105,6 @@ function getOrderMeta(order: Awaited<ReturnType<typeof listCashChargeOrdersByUse
     return "적립 완료";
   }
 
-  if (order.lastErrorMessage) {
-    return order.lastErrorMessage;
-  }
-
-  if (order.failureMessage) {
-    return order.failureMessage;
-  }
-
   if (order.status === "pending") {
     return "승인 대기";
   }
@@ -121,10 +114,10 @@ function getOrderMeta(order: Awaited<ReturnType<typeof listCashChargeOrdersByUse
   }
 
   if (order.status === "cancelled") {
-    return "주문 취소";
+    return "사용자 취소";
   }
 
-  return "결제 실패";
+  return getOrderFailureMeta(order.lastErrorCode ?? order.failureCode);
 }
 
 function getOrderStatusLabel(
@@ -157,6 +150,14 @@ function getOrderStatusTone(
   }
 
   return "neutral" as const;
+}
+
+function getOrderFailureMeta(code: string | null) {
+  if (code === "PAY_PROCESS_CANCELED") {
+    return "사용자 취소";
+  }
+
+  return "결제 실패";
 }
 
 function normalizeInternalNextPath(path: string | null) {

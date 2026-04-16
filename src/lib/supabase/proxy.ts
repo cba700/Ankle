@@ -1,5 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  getAccountStatusLoginErrorCode,
+  normalizeAccountStatus,
+} from "@/lib/account-withdrawal";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import {
   clearSingleSessionCookie,
@@ -59,7 +63,7 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("active_session_key")
+      .select("active_session_key, account_status")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -68,7 +72,49 @@ export async function updateSession(request: NextRequest) {
         profile && typeof profile.active_session_key === "string"
           ? profile.active_session_key
           : null;
+      const accountStatus = normalizeAccountStatus(profile?.account_status);
       const requestSessionKey = getSingleSessionCookieValue(request);
+
+      if (accountStatus !== "active") {
+        await supabase.auth.signOut();
+
+        if (request.nextUrl.pathname.startsWith("/api/")) {
+          const inactiveResponse = NextResponse.json(
+            {
+              code:
+                accountStatus === "withdrawn"
+                  ? "ACCOUNT_WITHDRAWN"
+                  : "ACCOUNT_WITHDRAWAL_PENDING",
+              message:
+                accountStatus === "withdrawn"
+                  ? "탈퇴 처리된 계정입니다. 30일 이후 다시 로그인해 주세요."
+                  : "회원 탈퇴가 접수되어 현재 계정 접근이 제한되었습니다.",
+            },
+            {
+              headers: PRIVATE_NO_STORE_HEADERS,
+              status: 403,
+            },
+          );
+
+          copyResponseCookies(response, inactiveResponse);
+          clearSingleSessionCookie(inactiveResponse);
+          return inactiveResponse;
+        }
+
+        const redirectResponse = NextResponse.redirect(
+          new URL(
+            buildLoginHref(
+              requestPath,
+              getAccountStatusLoginErrorCode(accountStatus),
+            ),
+            request.url,
+          ),
+        );
+
+        copyResponseCookies(response, redirectResponse);
+        clearSingleSessionCookie(redirectResponse);
+        return redirectResponse;
+      }
 
       if (activeSessionKey && activeSessionKey !== requestSessionKey) {
         await supabase.auth.signOut();

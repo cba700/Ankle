@@ -57,7 +57,7 @@ const TRUSTEE_ROWS: DataRow[] = [
     value: "결제 처리 및 결제 정보 관리 · 위탁 계약 종료 시까지",
   },
   {
-    label: "[문자발송업체명 기재]",
+    label: "솔라피",
     value: "알림문자(SMS/카카오) 발송 · 위탁 계약 종료 시까지",
   },
 ];
@@ -192,12 +192,6 @@ export default function PrivacyPage() {
           있습니다.
         </p>
         <DataGrid rows={TRUSTEE_ROWS} />
-        <div className={styles.note}>
-          <p>
-            실제 계약 업체 확정 후 업체명을 기재하세요. 수탁업체가 추가되면 이 방침을
-            업데이트해야 합니다.
-          </p>
-        </div>
         <p>
           회사는 위탁계약 체결 시 「개인정보 보호법」 제26조에 따라 위탁업무 수행 목적 외
           개인정보 처리 금지, 기술적·관리적 보호조치, 재위탁 제한, 수탁자에 대한 관리·감독,

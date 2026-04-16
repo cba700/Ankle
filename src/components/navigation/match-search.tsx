@@ -178,7 +178,6 @@ export function MatchSearch({
 
   function syncHomeSearchQuery(nextQuery: string) {
     const nextSearch = getHomeStateSearch({
-      dateKey: searchParams.get("date") ?? undefined,
       filterIds: parseHomeFilterIds(
         searchParams.get("filters") ?? undefined,
         HOME_FILTER_IDS,
@@ -199,7 +198,6 @@ export function MatchSearch({
 
   function buildResultHref(publicId: string) {
     const detailStateSearch = getHomeStateSearch({
-      dateKey: isHomePage ? searchParams.get("date") ?? undefined : undefined,
       filterIds: parseHomeFilterIds(
         isHomePage ? searchParams.get("filters") ?? undefined : undefined,
         HOME_FILTER_IDS,

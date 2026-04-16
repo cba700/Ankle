@@ -35,11 +35,13 @@ export function MatchLevelSection({ distribution }: MatchLevelSectionProps) {
         ))}
       </div>
 
-      <div className={styles.levelInfoBox}>
-        <p className={styles.levelInfoText}>
-          예상 평균 레벨은 <strong>{averageLevel}</strong> 입니다.
-        </p>
-      </div>
+      {total > 0 ? (
+        <div className={styles.levelInfoBox}>
+          <p className={styles.levelInfoText}>
+            예상 평균 레벨은 <strong>{averageLevel}</strong> 입니다.
+          </p>
+        </div>
+      ) : null}
     </MatchSection>
   );
 }

@@ -6,22 +6,16 @@ import { useMatchDetailFeedback } from "./match-detail-feedback";
 
 type MatchDetailHeroClientProps = {
   courtName: string;
-  dateText: string;
   images: string[];
   statusLabel: string;
   statusTone: "neutral" | "accent" | "danger" | "open";
-  time: string;
-  title: string;
 };
 
 export function MatchDetailHeroClient({
   courtName,
-  dateText,
   images,
   statusLabel,
   statusTone,
-  time,
-  title,
 }: MatchDetailHeroClientProps) {
   const showToast = useMatchDetailFeedback();
   const hasMultipleImages = images.length > 1;
@@ -125,7 +119,6 @@ export function MatchDetailHeroClient({
   return (
     <MatchHero
       courtName={courtName}
-      dateText={dateText}
       imageIndex={imageIndex}
       images={images}
       isTransitionEnabled={isTransitionEnabled}
@@ -136,8 +129,6 @@ export function MatchDetailHeroClient({
       statusLabel={statusLabel}
       statusTone={statusTone}
       trackIndex={trackIndex}
-      time={time}
-      title={title}
     />
   );
 }

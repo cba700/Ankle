@@ -102,7 +102,7 @@
 
 .applyButtonDisabled {
   border: 1px solid rgba(201, 193, 183, 0.72);
-  background: #f5f2ed;
+  background: #fff;
   color: #8a8177;
   cursor: not-allowed;
 }

@@ -1,7 +1,8 @@
 import { normalizeSearchQuery } from "@/lib/match-search";
 
+export const HOME_RESET_TO_TODAY_EVENT = "ankle:home-reset-to-today";
+
 type HomeStateInput = {
-  dateKey?: string;
   filterIds?: string[];
   query?: string;
 };
@@ -33,7 +34,6 @@ export function parseHomeFilterIds(
 }
 
 export function getHomeStateSearch({
-  dateKey,
   filterIds = [],
   query,
 }: HomeStateInput) {
@@ -42,10 +42,6 @@ export function getHomeStateSearch({
 
   if (normalizedQuery) {
     searchParams.set("q", normalizedQuery);
-  }
-
-  if (dateKey) {
-    searchParams.set("date", dateKey);
   }
 
   if (filterIds.length > 0) {

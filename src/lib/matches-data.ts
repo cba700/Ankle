@@ -11,8 +11,21 @@ import {
 } from "@/lib/matches";
 import { getPublicMatchEntityByPublicId, listPublicMatchEntities, type MatchEntity } from "@/lib/match-store";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabasePublicServerClient } from "@/lib/supabase/server";
 
 const DEFAULT_IMAGE_URLS = ["/court-a.svg", "/court-b.svg", "/court-c.svg", "/court-d.svg"];
+
+type PublicMatchLevelDistributionRow = {
+  label: DistributionEntry["label"];
+  value: number | null;
+};
+
+const EMPTY_LEVEL_DISTRIBUTION: DistributionEntry[] = [
+  { label: "Basic", value: 0, tone: "basic" },
+  { label: "Middle", value: 0, tone: "middle" },
+  { label: "High", value: 0, tone: "high" },
+  { label: "Star", value: 0, tone: "star" },
+];
 
 export async function getPublicMatches() {
   if (!isSupabaseConfigured()) {
@@ -21,7 +34,7 @@ export async function getPublicMatches() {
 
   try {
     const entities = await listPublicMatchEntities();
-    return entities.map(mapEntityToMatchRecord);
+    return entities.map((entity) => mapEntityToMatchRecord(entity));
   } catch {
     return getMockMatches();
   }
@@ -36,7 +49,13 @@ export async function getPublicMatchByPublicId(publicId: string) {
 
   try {
     const entity = await getPublicMatchEntityByPublicId(normalizedPublicId);
-    return entity ? mapEntityToMatchRecord(entity) : null;
+
+    if (!entity) {
+      return null;
+    }
+
+    const levelDistribution = await getPublicMatchLevelDistribution(entity.id);
+    return mapEntityToMatchRecord(entity, { levelDistribution });
   } catch {
     return getMockMatchByPublicId(normalizedPublicId) ?? null;
   }
@@ -54,15 +73,24 @@ function normalizePublicId(publicId: string) {
   }
 }
 
-function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
+function mapEntityToMatchRecord(
+  entity: MatchEntity,
+  {
+    levelDistribution = buildEmptyLevelDistribution(),
+  }: {
+    levelDistribution?: DistributionEntry[];
+  } = {},
+): MatchRecord {
   const date = new Date(entity.startAt);
   const isStarted = date.getTime() <= Date.now();
   const dateKey = toDateKey(date);
-  const levelDistribution = getLevelDistribution(entity);
   const currentParticipants = entity.confirmedCount;
   const remainingSlots = Math.max(entity.capacity - currentParticipants, 0);
   const isSoldOut = remainingSlots === 0;
   const canApply = entity.status === "open" && !isStarted && !isSoldOut;
+  const averageLevel = hasLevelDistributionData(levelDistribution)
+    ? getAverageLevelText(levelDistribution)
+    : "";
 
   return {
     id: entity.id,
@@ -102,7 +130,7 @@ function mapEntityToMatchRecord(entity: MatchEntity): MatchRecord {
     rules: entity.rules,
     safetyNotes: entity.safetyNotes,
     levelDistribution,
-    averageLevel: getAverageLevelText(levelDistribution),
+    averageLevel,
   };
 }
 
@@ -161,29 +189,47 @@ function getPublicStatus(
   return { kind: "open", label: "모집 중" };
 }
 
-function getLevelDistribution(entity: MatchEntity): DistributionEntry[] {
-  if (entity.levelCondition.includes("중급") || entity.levelRange.includes("상급")) {
-    return [
-      { label: "Basic", value: 8, tone: "basic" },
-      { label: "Middle", value: 34, tone: "middle" },
-      { label: "High", value: 38, tone: "high" },
-      { label: "Star", value: 20, tone: "star" },
-    ];
+async function getPublicMatchLevelDistribution(matchId: string) {
+  const supabase = getSupabasePublicServerClient();
+
+  if (!supabase) {
+    return buildEmptyLevelDistribution();
   }
 
-  if (entity.levelCondition.includes("초급") || entity.levelRange.includes("초급")) {
-    return [
-      { label: "Basic", value: 69, tone: "basic" },
-      { label: "Middle", value: 17, tone: "middle" },
-      { label: "High", value: 10, tone: "high" },
-      { label: "Star", value: 4, tone: "star" },
-    ];
+  const { data, error } = await (((supabase as any).rpc(
+    "get_public_match_level_distribution",
+    {
+      p_match_id: matchId,
+    },
+  ) as any) as {
+    data: PublicMatchLevelDistributionRow[] | null;
+    error: { message: string } | null;
+  });
+
+  if (error) {
+    return buildEmptyLevelDistribution();
   }
 
-  return [
-    { label: "Basic", value: 26, tone: "basic" },
-    { label: "Middle", value: 44, tone: "middle" },
-    { label: "High", value: 20, tone: "high" },
-    { label: "Star", value: 10, tone: "star" },
-  ];
+  return mapPublicMatchLevelDistributionRows(data);
+}
+
+function mapPublicMatchLevelDistributionRows(
+  rows: PublicMatchLevelDistributionRow[] | null | undefined,
+) {
+  const valuesByLabel = new Map<DistributionEntry["label"], number>(
+    (rows ?? []).map((row) => [row.label, Math.max(row.value ?? 0, 0)]),
+  );
+
+  return EMPTY_LEVEL_DISTRIBUTION.map((item) => ({
+    ...item,
+    value: valuesByLabel.get(item.label) ?? 0,
+  }));
+}
+
+function buildEmptyLevelDistribution() {
+  return EMPTY_LEVEL_DISTRIBUTION.map((item) => ({ ...item }));
+}
+
+function hasLevelDistributionData(distribution: DistributionEntry[]) {
+  return distribution.some((item) => item.value > 0);
 }
