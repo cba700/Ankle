@@ -285,6 +285,8 @@ function mapEntityToAdminRecord(
     levelCondition: entity.levelCondition,
     levelRange: entity.levelRange,
     preparation: entity.preparation,
+    weatherGridNx: entity.weatherGridNx,
+    weatherGridNy: entity.weatherGridNy,
     summary: entity.summary,
     operatorNote: entity.operatorNote,
     publicNotice: entity.publicNotice,
@@ -358,6 +360,8 @@ function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
     address: entity.address,
     isActive: entity.isActive,
     matchCount: entity.matchCount,
+    weatherGridNx: entity.weatherGridNx,
+    weatherGridNy: entity.weatherGridNy,
     venueInfo: {
       directions: entity.directions,
       parking: entity.parking,
@@ -378,6 +382,8 @@ function mapVenueEntityToOption(entity: VenueEntity): AdminVenueOption {
     name: entity.name,
     district: entity.district,
     address: entity.address,
+    weatherGridNx: entity.weatherGridNx,
+    weatherGridNy: entity.weatherGridNy,
     venueInfo: {
       directions: entity.directions,
       parking: entity.parking,

@@ -196,6 +196,30 @@ export function AdminMatchEditor({
                 value={formValues.address}
               />
             </label>
+
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>기상청 격자 X(nx)</span>
+              <input
+                inputMode="numeric"
+                name="weatherGridNx"
+                onChange={handleFieldChange}
+                placeholder="예: 60"
+                type="text"
+                value={formValues.weatherGridNx}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>기상청 격자 Y(ny)</span>
+              <input
+                inputMode="numeric"
+                name="weatherGridNy"
+                onChange={handleFieldChange}
+                placeholder="예: 127"
+                type="text"
+                value={formValues.weatherGridNy}
+              />
+            </label>
           </div>
         </section>
 

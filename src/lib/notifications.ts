@@ -18,12 +18,17 @@ import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 
 type NotificationEventType =
   | "cash_charged"
+  | "cash_refund_processed"
+  | "match_applied"
   | "match_confirmed"
   | "match_cancelled_user"
   | "match_cancelled_admin"
   | "match_reminder_day_before"
   | "match_reminder_same_day"
-  | "no_show_notice";
+  | "no_show_notice"
+  | "rain_alert"
+  | "rain_alert_changed"
+  | "rain_match_cancelled";
 
 type NotificationDispatchStatus =
   | "queued"
@@ -35,12 +40,17 @@ type NotificationDispatchStatus =
 
 type NotificationTemplateKey =
   | "cashCharged"
+  | "cashRefundProcessed"
+  | "matchApplied"
   | "matchCancelledAdmin"
   | "matchCancelledUser"
   | "matchConfirmed"
   | "matchReminderDayBefore"
   | "matchReminderSameDay"
-  | "noShowNotice";
+  | "noShowNotice"
+  | "rainAlert"
+  | "rainAlertChanged"
+  | "rainMatchCancelled";
 
 type NotificationDispatchRow = {
   application_id: string | null;
@@ -54,6 +64,7 @@ type NotificationDispatchRow = {
 type MatchRelation = {
   address: string | null;
   end_at: string | null;
+  format: string | null;
   id: string;
   start_at: string | null;
   title: string | null;
@@ -79,6 +90,12 @@ type ChargeOrderNotificationRow = {
   user_id: string;
 };
 
+type CashRefundRequestNotificationRow = {
+  id: string;
+  requested_amount: number;
+  user_id: string;
+};
+
 type ProfileNotificationRow = {
   display_name: string | null;
   phone_number_e164: string | null;
@@ -100,12 +117,17 @@ const REMINDER_EVENT_BY_KIND: Record<ReminderKind, NotificationEventType> = {
 
 const TEMPLATE_KEY_BY_EVENT: Record<NotificationEventType, NotificationTemplateKey> = {
   cash_charged: "cashCharged",
+  cash_refund_processed: "cashRefundProcessed",
+  match_applied: "matchApplied",
   match_cancelled_admin: "matchCancelledAdmin",
   match_cancelled_user: "matchCancelledUser",
   match_confirmed: "matchConfirmed",
   match_reminder_day_before: "matchReminderDayBefore",
   match_reminder_same_day: "matchReminderSameDay",
   no_show_notice: "noShowNotice",
+  rain_alert: "rainAlert",
+  rain_alert_changed: "rainAlertChanged",
+  rain_match_cancelled: "rainMatchCancelled",
 };
 
 type NotificationAdminClient = NonNullable<
@@ -150,8 +172,37 @@ export async function sendCashChargedNotification({
   });
 }
 
-export async function sendMatchConfirmedNotification(applicationId: string) {
-  await runNotificationTask("match_confirmed", async (admin) => {
+export async function sendCashRefundProcessedNotification(refundRequestId: string) {
+  await runNotificationTask("cash_refund_processed", async (admin) => {
+    const refundRequest = await getCashRefundRequestById(admin, refundRequestId);
+
+    if (!refundRequest?.user_id) {
+      return;
+    }
+
+    const profile = await getProfileByUserId(admin, refundRequest.user_id);
+
+    await sendImmediateKakaoNotification(admin, {
+      applicationId: null,
+      chargeOrderId: null,
+      dedupeKey: `cash_refund_processed:${refundRequest.id}`,
+      eventType: "cash_refund_processed",
+      matchId: null,
+      payload: {
+        requestedAmount: refundRequest.requested_amount,
+      },
+      phoneNumberE164: getVerifiedPhoneNumber(profile),
+      templateVariables: {
+        "#{회원명}": getDisplayName(profile),
+        "#{환불금액}": `${formatMoney(refundRequest.requested_amount)}원`,
+      },
+      userId: refundRequest.user_id,
+    });
+  });
+}
+
+export async function sendMatchAppliedNotification(applicationId: string) {
+  await runNotificationTask("match_applied", async (admin) => {
     const context = await getApplicationContext(admin, applicationId);
 
     if (!context || !context.match) {
@@ -161,8 +212,8 @@ export async function sendMatchConfirmedNotification(applicationId: string) {
     await sendImmediateKakaoNotification(admin, {
       applicationId,
       chargeOrderId: null,
-      dedupeKey: `match_confirmed:${applicationId}`,
-      eventType: "match_confirmed",
+      dedupeKey: `match_applied:${applicationId}`,
+      eventType: "match_applied",
       matchId: context.application.match_id,
       payload: {
         chargedAmount: context.application.charged_amount_snapshot,
@@ -177,6 +228,48 @@ export async function sendMatchConfirmedNotification(applicationId: string) {
       },
       userId: context.application.user_id,
     });
+  });
+}
+
+export async function sendMatchConfirmedNotificationsForThreshold(applicationId: string) {
+  await runNotificationTask("match_confirmed", async (admin) => {
+    const triggerContext = await getApplicationContext(admin, applicationId);
+
+    if (!triggerContext?.match || triggerContext.application.status !== "confirmed") {
+      return;
+    }
+
+    const matchFormat = normalizeMatchFormat(triggerContext.match.format);
+
+    if (!matchFormat) {
+      return;
+    }
+
+    const confirmedCount = await getConfirmedParticipantCount(
+      admin,
+      triggerContext.application.match_id,
+    );
+
+    if (confirmedCount !== getMatchConfirmedThreshold(matchFormat)) {
+      return;
+    }
+
+    const applicationIds = await listConfirmedApplicationIdsByMatchId(
+      admin,
+      triggerContext.application.match_id,
+    );
+
+    const contexts = await Promise.all(
+      applicationIds.map((confirmedApplicationId) =>
+        getApplicationContext(admin, confirmedApplicationId),
+      ),
+    );
+
+    await Promise.all(
+      contexts.map((context) =>
+        context?.match ? sendMatchConfirmedNotificationToContext(admin, context) : Promise.resolve()
+      ),
+    );
   });
 }
 
@@ -232,6 +325,42 @@ export async function sendAdminMatchCancelledNotification(applicationId: string)
         "#{환불금액}": `${formatMoney(context.application.refunded_amount)}원`,
       },
       userId: context.application.user_id,
+    });
+  });
+}
+
+export async function sendRainAlertNotifications(matchId: string, precipitationMm: number) {
+  await runNotificationTask("rain_alert", async (admin) => {
+    await sendRainNotificationsForMatch(admin, {
+      eventType: "rain_alert",
+      matchId,
+      precipitationMm,
+    });
+  });
+}
+
+export async function sendRainAlertChangedNotifications(
+  matchId: string,
+  precipitationMm: number,
+) {
+  await runNotificationTask("rain_alert_changed", async (admin) => {
+    await sendRainNotificationsForMatch(admin, {
+      eventType: "rain_alert_changed",
+      matchId,
+      precipitationMm,
+    });
+  });
+}
+
+export async function sendRainMatchCancelledNotifications(
+  matchId: string,
+  precipitationMm: number,
+) {
+  await runNotificationTask("rain_match_cancelled", async (admin) => {
+    await sendRainNotificationsForMatch(admin, {
+      eventType: "rain_match_cancelled",
+      matchId,
+      precipitationMm,
     });
   });
 }
@@ -647,6 +776,100 @@ async function cancelReminderDispatch(
   });
 }
 
+async function sendMatchConfirmedNotificationToContext(
+  admin: NotificationAdminClient,
+  context: NotificationApplicationContext,
+) {
+  await sendImmediateKakaoNotification(admin, {
+    applicationId: context.application.id,
+    chargeOrderId: null,
+    dedupeKey: `match_confirmed_threshold:${context.application.id}`,
+    eventType: "match_confirmed",
+    matchId: context.application.match_id,
+    payload: {
+      matchTitle: context.match?.title,
+    },
+    phoneNumberE164: getVerifiedPhoneNumber(context.profile),
+    templateVariables: buildMatchTemplateVariables(context),
+    userId: context.application.user_id,
+  });
+}
+
+async function sendRainNotificationsForMatch(
+  admin: NotificationAdminClient,
+  {
+    eventType,
+    matchId,
+    precipitationMm,
+  }: {
+    eventType: "rain_alert" | "rain_alert_changed" | "rain_match_cancelled";
+    matchId: string;
+    precipitationMm: number;
+  },
+) {
+  const applicationIds = await listApplicationIdsByMatchId(admin, matchId, [
+    eventType === "rain_match_cancelled" ? "cancelled_by_admin" : "confirmed",
+  ]);
+
+  if (applicationIds.length === 0) {
+    return;
+  }
+
+  const contexts = await Promise.all(
+    applicationIds.map((applicationId) => getApplicationContext(admin, applicationId)),
+  );
+
+  await Promise.all(
+    contexts.map((context) =>
+      context?.match
+        ? sendRainNotificationToContext(admin, context, {
+            eventType,
+            precipitationMm,
+          })
+        : Promise.resolve()
+    ),
+  );
+}
+
+async function sendRainNotificationToContext(
+  admin: NotificationAdminClient,
+  context: NotificationApplicationContext,
+  {
+    eventType,
+    precipitationMm,
+  }: {
+    eventType: "rain_alert" | "rain_alert_changed" | "rain_match_cancelled";
+    precipitationMm: number;
+  },
+) {
+  const payload = {
+    precipitationMm,
+    refundedAmount:
+      eventType === "rain_match_cancelled" ? context.application.refunded_amount : undefined,
+  };
+
+  const templateVariables: Record<string, string> = buildRainTemplateVariables(
+    context,
+    precipitationMm,
+  );
+
+  if (eventType === "rain_match_cancelled") {
+    templateVariables["#{환불금액}"] = `${formatMoney(context.application.refunded_amount)}원`;
+  }
+
+  await sendImmediateKakaoNotification(admin, {
+    applicationId: context.application.id,
+    chargeOrderId: null,
+    dedupeKey: `${eventType}:${context.application.id}`,
+    eventType,
+    matchId: context.application.match_id,
+    payload,
+    phoneNumberE164: getVerifiedPhoneNumber(context.profile),
+    templateVariables,
+    userId: context.application.user_id,
+  });
+}
+
 async function getApplicationContext(
   admin: NotificationAdminClient,
   applicationId: string,
@@ -656,6 +879,7 @@ async function getApplicationContext(
     .select(
       `id, user_id, match_id, status, refunded_amount, charged_amount_snapshot, coupon_discount_amount, price_snapshot, match:matches!match_applications_match_id_fkey (
         id,
+        format,
         title,
         venue_name,
         address,
@@ -681,6 +905,65 @@ async function getApplicationContext(
     match: normalizeMatchRelation(application.match),
     profile: await getProfileByUserId(admin, application.user_id),
   } satisfies NotificationApplicationContext;
+}
+
+async function getCashRefundRequestById(
+  admin: NotificationAdminClient,
+  refundRequestId: string,
+) {
+  const { data, error } = await admin
+    .from("cash_refund_requests")
+    .select("id, requested_amount, user_id")
+    .eq("id", refundRequestId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load refund notification context: ${error.message}`);
+  }
+
+  return (data ?? null) as CashRefundRequestNotificationRow | null;
+}
+
+async function listConfirmedApplicationIdsByMatchId(
+  admin: NotificationAdminClient,
+  matchId: string,
+) {
+  return listApplicationIdsByMatchId(admin, matchId, ["confirmed"]);
+}
+
+async function listApplicationIdsByMatchId(
+  admin: NotificationAdminClient,
+  matchId: string,
+  statuses: string[],
+) {
+  const { data, error } = await admin
+    .from("match_applications")
+    .select("id")
+    .eq("match_id", matchId)
+    .in("status", statuses);
+
+  if (error) {
+    throw new Error(`Failed to load confirmed applications for notifications: ${error.message}`);
+  }
+
+  return ((data ?? []) as { id: string }[]).map((row) => row.id);
+}
+
+async function getConfirmedParticipantCount(
+  admin: NotificationAdminClient,
+  matchId: string,
+) {
+  const { data, error } = await admin
+    .from("match_application_counts")
+    .select("confirmed_count")
+    .eq("match_id", matchId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load confirmed participant count: ${error.message}`);
+  }
+
+  return ((data ?? null) as { confirmed_count: number } | null)?.confirmed_count ?? 0;
 }
 
 async function getProfileByUserId(
@@ -974,6 +1257,16 @@ function buildMatchTemplateVariables(context: NotificationApplicationContext) {
   };
 }
 
+function buildRainTemplateVariables(
+  context: NotificationApplicationContext,
+  precipitationMm: number,
+) {
+  return {
+    ...buildMatchTemplateVariables(context),
+    "#{예보강수량}": formatPrecipitationAmount(precipitationMm),
+  };
+}
+
 function getReminderScheduleAt(startAt: string | null, reminderKind: ReminderKind) {
   if (!startAt) {
     return null;
@@ -1035,6 +1328,10 @@ function getMatchTimeLabel(startAt: string | null, endAt: string | null) {
   return `${startTimeLabel} - ${formatSeoulTime(endDate)}`;
 }
 
+function getMatchConfirmedThreshold(format: "3vs3" | "5vs5") {
+  return format === "3vs3" ? 3 : 7;
+}
+
 function getDisplayName(profile: ProfileNotificationRow | null) {
   return profile?.display_name?.trim() || "회원";
 }
@@ -1071,4 +1368,16 @@ function normalizeMatchRelation(match: MatchRelation | MatchRelation[] | null) {
   }
 
   return Array.isArray(match) ? (match[0] ?? null) : match;
+}
+
+function normalizeMatchFormat(format: string | null) {
+  if (format === "3vs3" || format === "5vs5") {
+    return format;
+  }
+
+  return null;
+}
+
+function formatPrecipitationAmount(precipitationMm: number) {
+  return `${Number.isInteger(precipitationMm) ? precipitationMm : precipitationMm.toFixed(1)}mm`;
 }

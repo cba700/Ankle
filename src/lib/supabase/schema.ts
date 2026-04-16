@@ -31,7 +31,9 @@ const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
 const REQUIRED_COUPON_MIGRATION =
   "20260415123000_support_multiple_signup_coupons.sql";
 const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION =
-  "20260416110000_add_notification_dispatches.sql";
+  "20260416143000_add_match_weather_and_notification_events.sql";
+const REQUIRED_MATCH_WEATHER_MIGRATION =
+  "20260416143000_add_match_weather_and_notification_events.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -46,6 +48,7 @@ const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdat
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
 const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
 const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_NOTIFICATION_DISPATCH_MIGRATION} before running notification features.`;
+const REQUIRED_MATCH_WEATHER_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MATCH_WEATHER_MIGRATION} before running venue weather and match weather features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -70,7 +73,7 @@ export async function assertVenueManagementSchemaReady(
   }
 
   if (!schemaCheckPromise) {
-    schemaCheckPromise = runPublicIdSchemaCheck(client).catch((error) => {
+    schemaCheckPromise = runVenueManagementSchemaCheck(client).catch((error) => {
       schemaCheckPromise = null;
       throw error;
     });
@@ -322,6 +325,24 @@ async function runSchemaCheck(supabase: SupabaseServerClient) {
   handleSchemaCheckError(closeStartedMatchesCheck.error);
 }
 
+async function runVenueManagementSchemaCheck(supabase: SupabaseServerClient) {
+  await runPublicIdSchemaCheck(supabase);
+
+  const venueWeatherCheck = await supabase
+    .from("venues")
+    .select("weather_grid_nx, weather_grid_ny")
+    .limit(1);
+
+  handleMatchWeatherSchemaError(venueWeatherCheck.error);
+
+  const matchWeatherSnapshotCheck = await supabase
+    .from("matches")
+    .select("weather_grid_nx, weather_grid_ny")
+    .limit(1);
+
+  handleMatchWeatherSchemaError(matchWeatherSnapshotCheck.error);
+}
+
 async function runCashSchemaCheck(supabase: SupabaseServerClient) {
   await runPublicIdSchemaCheck(supabase);
 
@@ -516,6 +537,13 @@ async function runNotificationDispatchSchemaCheck(supabase: SupabaseServerClient
     .limit(1);
 
   handleNotificationDispatchSchemaError(notificationDispatchCheck.error);
+
+  const matchWeatherStateCheck = await supabase
+    .from("match_weather_states")
+    .select("match_id, rain_alert_sent_at, last_precipitation_mm")
+    .limit(1);
+
+  handleNotificationDispatchSchemaError(matchWeatherStateCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -746,6 +774,27 @@ function handleNotificationDispatchSchemaError(
   }
 
   throw new Error(`Failed to verify notification schema: ${error.message}`);
+}
+
+function handleMatchWeatherSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_MATCH_WEATHER_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify match weather schema: ${error.message}`);
 }
 
 function isExpectedCouponRpcProbeError(

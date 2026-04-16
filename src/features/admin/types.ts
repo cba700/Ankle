@@ -26,6 +26,8 @@ export type AdminVenueRecord = {
   address: string;
   isActive: boolean;
   matchCount: number;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   venueInfo: AdminVenueInfo;
   defaultImageUrls: string[];
   defaultRules: string[];
@@ -39,6 +41,8 @@ export type AdminVenueOption = {
   name: string;
   district: string;
   address: string;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   venueInfo: AdminVenueInfo;
   defaultImageUrls: string[];
   defaultRules: string[];
@@ -65,6 +69,8 @@ export type AdminVenueFormValue = {
   parking: string;
   smoking: string;
   showerLocker: string;
+  weatherGridNx: string;
+  weatherGridNy: string;
   defaultImageUrls: string[];
   defaultRulesText: string;
   defaultSafetyNotesText: string;
@@ -90,6 +96,8 @@ export type AdminMatchRecord = {
   levelCondition: string;
   levelRange: string;
   preparation: string;
+  weatherGridNx: number | null;
+  weatherGridNy: number | null;
   summary: string;
   operatorNote: string;
   publicNotice: string;
@@ -248,6 +256,8 @@ export type AdminMatchFormValue = {
   genderCondition: string;
   level: AdminMatchLevelPreset | "";
   preparation: string;
+  weatherGridNx: string;
+  weatherGridNy: string;
   summary: string;
   publicNotice: string;
   operatorNote: string;
