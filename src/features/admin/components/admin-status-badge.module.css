@@ -4,6 +4,7 @@
   justify-content: center;
   min-height: 24px;
   padding: 4px 10px;
+  border: 1px solid transparent;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
@@ -16,7 +17,8 @@
 }
 
 .neutral {
-  background: #f1f1f1;
+  border-color: var(--line);
+  background: #fff;
   color: var(--text-secondary);
 }
 
