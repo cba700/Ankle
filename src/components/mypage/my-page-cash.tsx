@@ -190,7 +190,7 @@ export function MyPageCash({
     setRefundErrorMessage(null);
   }
 
-  const refundButtonLabel = pendingRefundRequest
+  const refundActionLabel = pendingRefundRequest
     ? "처리 대기 중"
     : cashBalanceAmount > 0
       ? "캐시 환불"
@@ -229,21 +229,23 @@ export function MyPageCash({
             </span>
             <p className={styles.heroEyebrow}>사용 가능 금액</p>
             <h1 className={styles.heroTitle}>{cashBalanceLabel}</h1>
-            <p className={styles.heroDescription}>지금 바로 매치 참가와 환급에 사용할 수 있어요.</p>
           </div>
 
           <div className={styles.heroActions}>
             <AppLink className={styles.primaryButton} href="/cash/charge">
-              충전하기
+              캐시 충전
             </AppLink>
-            <button
-              className={styles.secondaryButton}
-              disabled={!canOpenRefundRequest}
-              onClick={handleOpenRefundRequest}
-              type="button"
-            >
-              {refundButtonLabel}
-            </button>
+            {canOpenRefundRequest ? (
+              <button
+                className={styles.refundLinkButton}
+                onClick={handleOpenRefundRequest}
+                type="button"
+              >
+                {refundActionLabel}
+              </button>
+            ) : (
+              <span className={styles.refundLinkText}>{refundActionLabel}</span>
+            )}
           </div>
         </section>
 
@@ -285,13 +287,10 @@ export function MyPageCash({
         <section className={`${baseStyles.applicationSection} ${styles.detailSection}`}>
           <div className={baseStyles.sectionHeading}>
             <div>
-              <p className={baseStyles.sectionEyebrow}>사용자의 활동 기준</p>
               <h2 className={baseStyles.sectionTitle}>캐시 활동 내역</h2>
             </div>
             <span className={baseStyles.sectionCount}>{filteredTransactions.length}건</span>
           </div>
-
-          <p className={styles.sectionDescription}>{getCashHistoryDescription(activeTab)}</p>
 
           <div className={styles.tabList}>
             {CASH_HISTORY_TABS.map((tab) => {
@@ -323,42 +322,63 @@ export function MyPageCash({
             </div>
           ) : (
             <div className={styles.activityList}>
-              {filteredTransactions.map((transaction) => (
-                <article className={styles.activityCard} key={transaction.id}>
-                  <div className={styles.activityContent}>
+              {filteredTransactions.map((transaction) => {
+                const categoryTone = getCashTransactionCategoryTone(transaction);
+                const stateTone = getCashTransactionStateTone(transaction);
+                const amountTone = getCashTransactionAmountTone(transaction);
+
+                return (
+                  <article className={styles.activityCard} key={transaction.id}>
                     <div className={styles.activityCopy}>
                       <div className={styles.activityHeader}>
-                        <strong className={styles.activityTitle}>{transaction.title}</strong>
+                        <div className={styles.activityBadgeRow}>
+                          <span
+                            className={`${styles.activityBadge} ${styles.activityCategory} ${
+                              categoryTone === "charge"
+                                ? styles.activityCategoryCharge
+                                : categoryTone === "refund"
+                                  ? styles.activityCategoryRefund
+                                  : categoryTone === "ops"
+                                    ? styles.activityCategoryOps
+                                    : styles.activityCategoryUsage
+                            }`}
+                          >
+                            {getCashTransactionCategoryLabel(transaction)}
+                          </span>
+                          <span
+                            className={`${styles.activityBadge} ${styles.activityState} ${
+                              stateTone === "positive"
+                                ? styles.activityStatePositive
+                                : stateTone === "negative"
+                                  ? styles.activityStateNegative
+                                  : stateTone === "pending"
+                                    ? styles.activityStatePending
+                                    : styles.activityStateNeutral
+                            }`}
+                          >
+                            {getCashTransactionStateLabel(transaction)}
+                          </span>
+                        </div>
+
                         <span
-                          className={`${styles.activityState} ${
-                            transaction.tone === "danger"
-                              ? styles.activityStateDanger
-                              : transaction.tone === "muted"
-                                ? styles.activityStateMuted
-                                : styles.activityStateAccent
+                          className={`${styles.activityAmount} ${
+                            amountTone === "positive"
+                              ? styles.activityAmountPositive
+                              : amountTone === "negative"
+                                ? styles.activityAmountNegative
+                                : styles.activityAmountNeutral
                           }`}
                         >
-                          {getCashTransactionStateLabel(transaction)}
+                          {transaction.amountLabel}
                         </span>
                       </div>
+                      <strong className={styles.activityTitle}>{transaction.title}</strong>
                       <p className={styles.activityMeta}>{transaction.metaLabel}</p>
                       <p className={styles.activityBalance}>{transaction.balanceLabel}</p>
                     </div>
-
-                    <span
-                      className={`${styles.activityAmount} ${
-                        transaction.tone === "danger"
-                          ? styles.activityAmountDanger
-                          : transaction.tone === "muted"
-                            ? styles.activityAmountMuted
-                            : styles.activityAmountAccent
-                      }`}
-                    >
-                      {transaction.amountLabel}
-                    </span>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
@@ -567,26 +587,13 @@ function matchesCashHistoryTab(
   if (tab === "refund") {
     return (
       transaction.type === "match_refund" ||
+      transaction.type === "refund_hold" ||
       transaction.type === "charge_refund" ||
       transaction.type === "refund_release"
     );
   }
 
   return transaction.type === "match_debit";
-}
-
-function getCashHistoryDescription(tab: CashHistoryTab) {
-  switch (tab) {
-    case "charge":
-      return "충전이 완료되어 바로 사용할 수 있게 된 캐시만 보여드려요.";
-    case "refund":
-      return "참가 취소, 충전 환불, 환불 취소로 다시 돌아온 캐시를 모아 보여드려요.";
-    case "usage":
-      return "매치 참가로 캐시가 차감된 활동만 보여드려요.";
-    case "all":
-    default:
-      return "최근에 어떤 활동으로 캐시가 늘고 줄었는지 한눈에 확인할 수 있어요.";
-  }
 }
 
 function getCashHistoryEmptyTitle(tab: CashHistoryTab) {
@@ -620,8 +627,9 @@ function getCashHistoryEmptyDescription(tab: CashHistoryTab) {
 function getCashTransactionStateLabel(transaction: MyPageCashTransaction) {
   switch (transaction.type) {
     case "charge":
-      return "충전";
+      return "적립";
     case "charge_refund":
+      return "완료";
     case "match_refund":
       return "환급";
     case "refund_hold":
@@ -634,4 +642,67 @@ function getCashTransactionStateLabel(transaction: MyPageCashTransaction) {
     default:
       return "차감";
   }
+}
+
+function getCashTransactionCategoryLabel(transaction: MyPageCashTransaction) {
+  switch (transaction.type) {
+    case "charge":
+      return "충전";
+    case "charge_refund":
+    case "refund_hold":
+    case "refund_release":
+      return "환불";
+    case "adjustment":
+      return "운영";
+    case "match_refund":
+    case "match_debit":
+    default:
+      return "참가";
+  }
+}
+
+function getCashTransactionCategoryTone(transaction: MyPageCashTransaction) {
+  switch (transaction.type) {
+    case "charge":
+      return "charge";
+    case "charge_refund":
+    case "refund_hold":
+    case "refund_release":
+      return "refund";
+    case "adjustment":
+      return "ops";
+    case "match_refund":
+    case "match_debit":
+    default:
+      return "usage";
+  }
+}
+
+function getCashTransactionStateTone(transaction: MyPageCashTransaction) {
+  switch (transaction.type) {
+    case "charge":
+    case "match_refund":
+    case "refund_release":
+      return "positive";
+    case "match_debit":
+      return "negative";
+    case "refund_hold":
+      return "pending";
+    case "charge_refund":
+    case "adjustment":
+    default:
+      return "neutral";
+  }
+}
+
+function getCashTransactionAmountTone(transaction: MyPageCashTransaction) {
+  if (transaction.amountLabel.startsWith("+")) {
+    return "positive";
+  }
+
+  if (transaction.amountLabel.startsWith("-")) {
+    return "negative";
+  }
+
+  return "neutral";
 }
