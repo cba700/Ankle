@@ -20,7 +20,7 @@ export const HOME_LEVEL_FILTER_VALUES: readonly HomeLevelFilterKey[] = [
   "star",
 ];
 
-type HomeStateInput = HomeFilterState & {
+type HomeStateInput = Partial<HomeFilterState> & {
   query?: string;
 };
 
@@ -58,10 +58,10 @@ export function parseHomeMultiValueParam<T extends string>(
 }
 
 export function getHomeStateSearch({
-  districts,
-  genders,
-  hideClosed,
-  levels,
+  districts = [],
+  genders = [],
+  hideClosed = false,
+  levels = [],
   query,
 }: HomeStateInput) {
   const searchParams = new URLSearchParams();
