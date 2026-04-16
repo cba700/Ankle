@@ -161,16 +161,18 @@
   justify-content: center;
   min-height: 56px;
   padding: 0 12px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 16px;
   background: #f1f3f5;
   text-align: center;
   transition:
+    border-color 0.16s ease,
     background-color 0.16s ease,
     color 0.16s ease;
 }
 
 .packageButtonActive {
+  border-color: rgba(243, 109, 33, 0.42);
   background: #e7ebef;
 }
 
@@ -278,16 +280,18 @@
   justify-content: center;
   min-height: 48px;
   padding: 0 12px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: #f1f3f5;
   text-align: center;
   transition:
+    border-color 0.16s ease,
     background-color 0.16s ease,
     color 0.16s ease;
 }
 
 .paymentMethodButtonActive {
+  border-color: rgba(243, 109, 33, 0.42);
   background: #e7ebef;
 }
 
