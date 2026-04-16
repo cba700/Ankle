@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import type { MatchRecord } from "@/lib/matches";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { MatchCourtSection } from "./match-court-section";
-import { MatchDetailBackLink } from "./match-detail-back-link";
 import { MatchDetailHeader } from "./match-detail-header";
 import { MatchDetailFeedbackProvider } from "./match-detail-feedback";
 import { MatchDetailHeroClient } from "./match-detail-hero-client";
@@ -29,11 +27,6 @@ export function MatchDetail({
     <MatchDetailFeedbackProvider>
       <div className={styles.page}>
         <MatchDetailHeader />
-        <div className={styles.backBar}>
-          <Suspense fallback={<a className={styles.backLink} href="/">← 매치 목록으로</a>}>
-            <MatchDetailBackLink className={styles.backLink} />
-          </Suspense>
-        </div>
         <MatchDetailHeroClient
           courtName={view.courtName}
           images={view.images}

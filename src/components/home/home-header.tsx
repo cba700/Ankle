@@ -1,7 +1,11 @@
+"use client";
+
+import type { MouseEvent } from "react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { AppLink } from "@/components/navigation/app-link";
 import { MatchSearch } from "@/components/navigation/match-search";
 import { UserHeaderMenu } from "@/components/navigation/user-header-menu";
+import { HOME_RESET_TO_TODAY_EVENT } from "./home-route-state";
 import styles from "./home-header.module.css";
 
 type HomeHeaderProps = {
@@ -9,10 +13,25 @@ type HomeHeaderProps = {
 };
 
 export function HomeHeader({ isAdmin }: HomeHeaderProps) {
+  function handleBrandClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    window.dispatchEvent(new Event(HOME_RESET_TO_TODAY_EVENT));
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <AppLink className={styles.brand} href="/" showTransition={false}>
+        <AppLink className={styles.brand} href="/" onClick={handleBrandClick}>
           <BrandLogo className={styles.brandLogo} priority />
         </AppLink>
 
