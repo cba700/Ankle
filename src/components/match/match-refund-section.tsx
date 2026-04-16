@@ -61,8 +61,15 @@ function RefundPolicyPreviewBlock({
 }: {
   group: RefundPolicyGroup;
 }) {
+  const isShortfallHighlight =
+    group.title === "참가자 미달 무료 취소" || group.title === "참가자 미달 기준";
+
   return (
-    <section className={styles.refundPolicyBlock}>
+    <section
+      className={`${styles.refundPolicyBlock} ${
+        isShortfallHighlight ? styles.refundPolicyBlockHighlight : ""
+      }`}
+    >
       <h3 className={styles.refundLinkTitle}>{group.title}</h3>
 
       {group.rows ? (
