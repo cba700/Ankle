@@ -34,6 +34,8 @@ const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION =
   "20260416110000_add_notification_dispatches.sql";
 const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION =
   "20260416153000_add_match_refund_exceptions.sql";
+const REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION =
+  "20260416110000_add_account_withdrawal.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -49,6 +51,7 @@ const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is 
 const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
 const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_NOTIFICATION_DISPATCH_MIGRATION} before running notification features.`;
 const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION} before running refund exception features.`;
+const REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION} before running account withdrawal features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -62,6 +65,7 @@ let adminPlayerLevelSchemaCheckPromise: Promise<void> | null = null;
 let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
 let couponSchemaCheckPromise: Promise<void> | null = null;
 let notificationDispatchSchemaCheckPromise: Promise<void> | null = null;
+let accountWithdrawalSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -282,6 +286,27 @@ export async function assertCouponSchemaReady(
   }
 
   return couponSchemaCheckPromise;
+}
+
+export async function assertAccountWithdrawalSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!accountWithdrawalSchemaCheckPromise) {
+    accountWithdrawalSchemaCheckPromise = runAccountWithdrawalSchemaCheck(
+      client,
+    ).catch((error) => {
+      accountWithdrawalSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return accountWithdrawalSchemaCheckPromise;
 }
 
 export async function assertNotificationDispatchSchemaReady(
@@ -547,6 +572,31 @@ async function runNotificationDispatchSchemaCheck(supabase: SupabaseServerClient
   handleNotificationDispatchSchemaError(notificationDispatchCheck.error);
 }
 
+async function runAccountWithdrawalSchemaCheck(supabase: SupabaseServerClient) {
+  await runCouponSchemaCheck(supabase);
+
+  const profileWithdrawalCheck = await supabase
+    .from("profiles")
+    .select("account_status, withdrawal_requested_at, withdrawn_at")
+    .limit(1);
+
+  handleAccountWithdrawalSchemaCheckError(profileWithdrawalCheck.error);
+
+  const withdrawalRequestCheck = await supabase
+    .from("account_withdrawal_requests")
+    .select("refund_request_id, requested_at, status")
+    .limit(1);
+
+  handleAccountWithdrawalSchemaCheckError(withdrawalRequestCheck.error);
+
+  const withdrawalRejoinBlockCheck = await supabase
+    .from("withdrawal_rejoin_blocks")
+    .select("phone_number_e164, blocked_until")
+    .limit(1);
+
+  handleAccountWithdrawalSchemaCheckError(withdrawalRejoinBlockCheck.error);
+}
+
 function handleSchemaCheckError(
   error: { code?: string; message?: string } | null,
 ) {
@@ -754,6 +804,28 @@ function handleCouponSchemaCheckError(
   }
 
   throw new Error(`Failed to verify coupon schema: ${error.message}`);
+}
+
+function handleAccountWithdrawalSchemaCheckError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation") ||
+    error.message?.includes("Could not find the function")
+  ) {
+    throw new Error(REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify account withdrawal schema: ${error.message}`);
 }
 
 function handleRefundPolicyRuntimeSchemaError(

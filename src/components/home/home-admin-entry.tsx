@@ -40,7 +40,7 @@ export function HomeAdminEntry({ initialIsAdmin }: HomeAdminEntryProps) {
 
         const { data: profile, error } = await activeSupabase
           .from("profiles")
-          .select("role")
+          .select("role, account_status")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -53,7 +53,10 @@ export function HomeAdminEntry({ initialIsAdmin }: HomeAdminEntryProps) {
           return;
         }
 
-        setIsAdmin(normalizeUserRole(profile?.role) === "admin");
+        setIsAdmin(
+          profile?.account_status === "active" &&
+            normalizeUserRole(profile?.role) === "admin",
+        );
       } catch {
         if (!isMounted) {
           return;

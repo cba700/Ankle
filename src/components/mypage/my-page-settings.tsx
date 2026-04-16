@@ -2,6 +2,13 @@
 
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import {
+  isValidCashRefundAccountHolder,
+  isValidCashRefundAccountNumber,
+  normalizeCashRefundAccountHolder,
+  normalizeCashRefundAccountNumber,
+  CASH_REFUND_BANK_OPTIONS,
+} from "@/lib/cash-refunds";
 import type { MyPageProfile } from "@/lib/mypage";
 import {
   DISPLAY_NAME_MAX_LENGTH,
@@ -31,9 +38,28 @@ type MyPageSettingsProps = {
   initialActiveDialog: DialogKind | null;
   profile: MyPageProfile;
   temporaryLevelFormAction: (formData: FormData) => void | Promise<void>;
+  withdrawalPreview: WithdrawalPreview;
 };
 
-type DialogKind = "displayName" | "temporaryLevel";
+type WithdrawalPreview = {
+  cashBalanceAmount: number;
+  cashBalanceLabel: string;
+  couponCount: number;
+  futureMatchCount: number;
+  pendingChargeOrderCount: number;
+  pendingRefundRequestedAmountLabel: string | null;
+};
+
+type DialogKind = "accountWithdrawal" | "displayName" | "temporaryLevel";
+
+type AccountWithdrawalSubmitResponse =
+  | {
+      code?: string;
+      message?: string;
+      ok?: boolean;
+      status?: "withdrawal_pending" | "withdrawn";
+    }
+  | null;
 
 export function MyPageSettings({
   displayNameDraftValue,
@@ -44,6 +70,7 @@ export function MyPageSettings({
   initialActiveDialog,
   profile,
   temporaryLevelFormAction,
+  withdrawalPreview,
 }: MyPageSettingsProps) {
   const initials = profile.displayName.slice(0, 1).toUpperCase() || "A";
   const [activeDialog, setActiveDialog] = useState<DialogKind | null>(initialActiveDialog);
@@ -202,10 +229,16 @@ export function MyPageSettings({
               </form>
 
               <div className={styles.withdrawRow}>
-                <button className={styles.withdrawButton} disabled type="button">
+                <button
+                  className={styles.withdrawButton}
+                  onClick={() => setActiveDialog("accountWithdrawal")}
+                  type="button"
+                >
                   회원 탈퇴
                 </button>
-                <span className={styles.withdrawMeta}>준비 중</span>
+                <span className={styles.withdrawMeta}>
+                  {getWithdrawalMetaLabel(withdrawalPreview)}
+                </span>
               </div>
             </div>
           </section>
@@ -234,6 +267,14 @@ export function MyPageSettings({
           formAction={temporaryLevelFormAction}
           initialTemporaryLevel={profile.temporaryLevel}
           onClose={() => setActiveDialog(null)}
+        />
+      ) : null}
+
+      {activeDialog === "accountWithdrawal" ? (
+        <AccountWithdrawalDialog
+          displayName={profile.displayName}
+          onClose={() => setActiveDialog(null)}
+          preview={withdrawalPreview}
         />
       ) : null}
     </>
@@ -383,6 +424,267 @@ function TemporaryLevelDialog({
   );
 }
 
+function AccountWithdrawalDialog({
+  displayName,
+  onClose,
+  preview,
+}: {
+  displayName: string;
+  onClose: () => void;
+  preview: WithdrawalPreview;
+}) {
+  const hasBlockingReason =
+    preview.futureMatchCount > 0 || preview.pendingChargeOrderCount > 0;
+  const hasPendingRefundRequest = Boolean(preview.pendingRefundRequestedAmountLabel);
+  const requiresRefundAccount =
+    preview.cashBalanceAmount > 0 && !hasPendingRefundRequest;
+  const [selectedBankName, setSelectedBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolder, setAccountHolder] = useState(displayName);
+  const [agreedToWarnings, setAgreedToWarnings] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const canSubmit =
+    !isSubmitting &&
+    !hasBlockingReason &&
+    agreedToWarnings &&
+    (!requiresRefundAccount ||
+      (selectedBankName.length > 0 &&
+        isValidCashRefundAccountNumber(accountNumber) &&
+        isValidCashRefundAccountHolder(accountHolder)));
+
+  async function handleSubmit() {
+    if (!canSubmit) {
+      return;
+    }
+
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/account/withdrawal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accountHolder,
+          accountNumber,
+          agreedToWarnings,
+          bankName: selectedBankName,
+        }),
+      });
+      const payload =
+        (await response.json().catch(() => null)) as AccountWithdrawalSubmitResponse;
+
+      if (!response.ok || !payload?.ok) {
+        setErrorMessage(
+          payload?.message ?? "회원 탈퇴를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+        return;
+      }
+
+      window.location.href =
+        payload.status === "withdrawn"
+          ? "/login?error=account_withdrawn"
+          : "/login?error=account_withdrawal_pending";
+    } catch {
+      setErrorMessage("회원 탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <SettingsDialog
+      onClose={() => {
+        if (isSubmitting) {
+          return;
+        }
+
+        onClose();
+      }}
+      subtitle="탈퇴가 접수되면 보호 중인 기능 접근이 바로 제한됩니다."
+      title="회원 탈퇴"
+    >
+      <div className={styles.withdrawalSummaryGrid}>
+        <div className={styles.withdrawalSummaryCard}>
+          <span className={styles.withdrawalSummaryLabel}>보유 캐시</span>
+          <strong className={styles.withdrawalSummaryValue}>
+            {hasPendingRefundRequest
+              ? preview.pendingRefundRequestedAmountLabel
+              : preview.cashBalanceLabel}
+          </strong>
+        </div>
+        <div className={styles.withdrawalSummaryCard}>
+          <span className={styles.withdrawalSummaryLabel}>예정 매치</span>
+          <strong className={styles.withdrawalSummaryValue}>
+            {preview.futureMatchCount}건
+          </strong>
+        </div>
+        <div className={styles.withdrawalSummaryCard}>
+          <span className={styles.withdrawalSummaryLabel}>보유 쿠폰</span>
+          <strong className={styles.withdrawalSummaryValue}>
+            {preview.couponCount}장
+          </strong>
+        </div>
+      </div>
+
+      <div className={styles.withdrawalNoticeList}>
+        <div className={styles.withdrawalNoticeCard}>
+          <strong className={styles.withdrawalNoticeTitle}>탈퇴 후 바로 적용되는 내용</strong>
+          <p className={styles.withdrawalNoticeBody}>
+            회원 탈퇴가 접수되면 매치 신청, 캐시 충전, 마이페이지 접근이 즉시 제한됩니다.
+          </p>
+        </div>
+        <div className={styles.withdrawalNoticeCard}>
+          <strong className={styles.withdrawalNoticeTitle}>30일 재가입 제한</strong>
+          <p className={styles.withdrawalNoticeBody}>
+            탈퇴 시점의 휴대폰 번호는 30일 동안 다시 가입하거나 재인증에 사용할 수 없습니다.
+          </p>
+        </div>
+        <div className={styles.withdrawalNoticeCard}>
+          <strong className={styles.withdrawalNoticeTitle}>쿠폰 처리</strong>
+          <p className={styles.withdrawalNoticeBody}>
+            사용하지 않은 쿠폰은 탈퇴 완료 시 함께 소멸되며 복구되지 않습니다.
+          </p>
+        </div>
+      </div>
+
+      {hasBlockingReason ? (
+        <div className={styles.withdrawalBlockerCard}>
+          <strong className={styles.withdrawalBlockerTitle}>
+            먼저 정리해야 탈퇴할 수 있습니다.
+          </strong>
+          <div className={styles.withdrawalBlockerList}>
+            {preview.futureMatchCount > 0 ? (
+              <p className={styles.withdrawalBlockerItem}>
+                예정된 매치 {preview.futureMatchCount}건을 먼저 취소해 주세요.
+              </p>
+            ) : null}
+            {preview.pendingChargeOrderCount > 0 ? (
+              <p className={styles.withdrawalBlockerItem}>
+                미완료 충전 주문 {preview.pendingChargeOrderCount}건이 정리되어야 합니다.
+              </p>
+            ) : null}
+          </div>
+          <div className={styles.modalActionRow}>
+            <button className={styles.primaryButton} onClick={onClose} type="button">
+              확인
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.modalForm}>
+          {hasPendingRefundRequest ? (
+            <div className={styles.withdrawalInlineCard}>
+              <strong className={styles.withdrawalInlineTitle}>기존 환불 요청 사용</strong>
+              <p className={styles.withdrawalInlineBody}>
+                이미 접수된 캐시 환불 요청 {preview.pendingRefundRequestedAmountLabel}이
+                회원 탈퇴와 함께 처리됩니다.
+              </p>
+            </div>
+          ) : null}
+
+          {requiresRefundAccount ? (
+            <>
+              <div className={styles.withdrawalInlineCard}>
+                <strong className={styles.withdrawalInlineTitle}>캐시 환불 계좌 입력</strong>
+                <p className={styles.withdrawalInlineBody}>
+                  보유 캐시 {preview.cashBalanceLabel}는 환불 계좌가 확인된 뒤 탈퇴와 함께
+                  처리됩니다.
+                </p>
+              </div>
+
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>은행</span>
+                <select
+                  className={styles.selectInput}
+                  onChange={(event) => setSelectedBankName(event.target.value)}
+                  value={selectedBankName}
+                >
+                  <option value="">은행 선택</option>
+                  {CASH_REFUND_BANK_OPTIONS.map((bankName) => (
+                    <option key={bankName} value={bankName}>
+                      {bankName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>계좌번호</span>
+                <input
+                  className={styles.textInput}
+                  inputMode="numeric"
+                  onChange={(event) =>
+                    setAccountNumber(
+                      normalizeCashRefundAccountNumber(event.target.value),
+                    )
+                  }
+                  placeholder="숫자만 입력"
+                  type="text"
+                  value={accountNumber}
+                />
+              </label>
+
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>예금주</span>
+                <input
+                  className={styles.textInput}
+                  onChange={(event) =>
+                    setAccountHolder(
+                      normalizeCashRefundAccountHolder(event.target.value),
+                    )
+                  }
+                  placeholder="예금주명을 입력해 주세요"
+                  type="text"
+                  value={accountHolder}
+                />
+              </label>
+            </>
+          ) : null}
+
+          <label className={styles.checkboxField}>
+            <input
+              checked={agreedToWarnings}
+              className={styles.checkboxInput}
+              onChange={(event) => setAgreedToWarnings(event.target.checked)}
+              type="checkbox"
+            />
+            <span className={styles.checkboxLabel}>
+              위 내용을 모두 확인했고, 회원 탈퇴 이후 제한 사항에 동의합니다.
+            </span>
+          </label>
+
+          {errorMessage ? <p className={styles.fieldError}>{errorMessage}</p> : null}
+
+          <div className={styles.modalActionRow}>
+            <button
+              className={styles.secondaryButton}
+              disabled={isSubmitting}
+              onClick={onClose}
+              type="button"
+            >
+              취소
+            </button>
+            <button
+              className={styles.primaryButton}
+              disabled={!canSubmit}
+              onClick={handleSubmit}
+              type="button"
+            >
+              {isSubmitting
+                ? "처리 중..."
+                : getAccountWithdrawalSubmitLabel(preview, hasPendingRefundRequest)}
+            </button>
+          </div>
+        </div>
+      )}
+    </SettingsDialog>
+  );
+}
+
 function SettingsDialog({
   children,
   onClose,
@@ -456,4 +758,39 @@ function SettingsDialog({
 
 function getRoleLabel(role: MyPageProfile["role"]) {
   return role === "admin" ? "관리자" : "일반 사용자";
+}
+
+function getWithdrawalMetaLabel(preview: WithdrawalPreview) {
+  if (preview.futureMatchCount > 0) {
+    return `예정 매치 ${preview.futureMatchCount}건 정리 필요`;
+  }
+
+  if (preview.pendingChargeOrderCount > 0) {
+    return `미완료 충전 ${preview.pendingChargeOrderCount}건 확인 필요`;
+  }
+
+  if (preview.pendingRefundRequestedAmountLabel) {
+    return "기존 환불 요청과 함께 처리";
+  }
+
+  if (preview.cashBalanceAmount > 0) {
+    return "캐시 환불 후 탈퇴";
+  }
+
+  return "탈퇴 전 유의사항 확인";
+}
+
+function getAccountWithdrawalSubmitLabel(
+  preview: WithdrawalPreview,
+  hasPendingRefundRequest: boolean,
+) {
+  if (hasPendingRefundRequest) {
+    return "환불 처리와 함께 탈퇴하기";
+  }
+
+  if (preview.cashBalanceAmount > 0) {
+    return "환불 요청 후 탈퇴하기";
+  }
+
+  return "탈퇴하기";
 }

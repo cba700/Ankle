@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MyPageSettings } from "@/components/mypage/my-page-settings";
 import { buildLoginHref } from "@/lib/auth/redirect";
+import { getAccountWithdrawalPreview } from "@/lib/account-withdrawal";
+import { getPendingCashRefundRequestByUserId } from "@/lib/cash";
 import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
+import { assertAccountWithdrawalSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   updateMyPageDisplayNameAction,
@@ -45,6 +48,8 @@ export default async function MyPageSettingsRoute({
     redirect(buildLoginHref("/mypage/settings", "supabase_not_configured"));
   }
 
+  await assertAccountWithdrawalSchemaReady(supabase);
+
   const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
     supabase,
     user.id,
@@ -63,6 +68,10 @@ export default async function MyPageSettingsRoute({
         .eq("id", user.id)
         .maybeSingle()
     : { data: null };
+  const [withdrawalPreview, pendingRefundRequest] = await Promise.all([
+    getAccountWithdrawalPreview(supabase, user.id),
+    getPendingCashRefundRequestByUserId(supabase, user.id),
+  ]);
   const initialActiveDialog =
     readFirstSearchParam(resolvedSearchParams.edit) === "displayName"
       ? "displayName"
@@ -80,6 +89,16 @@ export default async function MyPageSettingsRoute({
       initialActiveDialog={initialActiveDialog}
       temporaryLevelFormAction={updateMyPageTemporaryLevelAction}
       profile={data.profile}
+      withdrawalPreview={{
+        cashBalanceAmount: data.cashBalanceAmount,
+        cashBalanceLabel: data.cashBalanceLabel,
+        couponCount: data.couponCount,
+        futureMatchCount: withdrawalPreview.futureMatchCount,
+        pendingChargeOrderCount: withdrawalPreview.pendingChargeOrderCount,
+        pendingRefundRequestedAmountLabel: pendingRefundRequest
+          ? `${pendingRefundRequest.requestedAmount.toLocaleString("ko-KR")}원`
+          : null,
+      }}
     />
   );
 }

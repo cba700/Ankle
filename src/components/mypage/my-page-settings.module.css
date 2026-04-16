@@ -318,8 +318,119 @@
   font-weight: 600;
 }
 
+.selectInput {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  border-radius: 16px;
+  background: rgba(247, 245, 241, 0.94);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .textInput::placeholder {
   color: rgba(122, 112, 102, 0.78);
+}
+
+.withdrawalSummaryGrid,
+.withdrawalNoticeList,
+.withdrawalBlockerList {
+  display: grid;
+  gap: 10px;
+}
+
+.withdrawalSummaryGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.withdrawalSummaryCard,
+.withdrawalNoticeCard,
+.withdrawalInlineCard,
+.withdrawalBlockerCard {
+  border: 1px solid rgba(201, 193, 183, 0.76);
+  border-radius: 18px;
+  background: rgba(247, 245, 241, 0.84);
+}
+
+.withdrawalSummaryCard {
+  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+}
+
+.withdrawalSummaryLabel {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.withdrawalSummaryValue {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.withdrawalNoticeList {
+  margin-top: 18px;
+}
+
+.withdrawalNoticeCard,
+.withdrawalInlineCard,
+.withdrawalBlockerCard {
+  padding: 16px;
+}
+
+.withdrawalNoticeTitle,
+.withdrawalInlineTitle,
+.withdrawalBlockerTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.withdrawalNoticeBody,
+.withdrawalInlineBody,
+.withdrawalBlockerItem {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.withdrawalInlineCard {
+  margin-bottom: 2px;
+}
+
+.withdrawalBlockerCard {
+  margin-top: 20px;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(201, 193, 183, 0.76);
+  border-radius: 18px;
+  background: rgba(247, 245, 241, 0.84);
+}
+
+.checkboxInput {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--accent-strong);
+  flex-shrink: 0;
+}
+
+.checkboxLabel {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
 }
 
 .levelList {
@@ -410,7 +521,8 @@
   .editButton:hover,
   .closeButton:hover,
   .secondaryButton:hover,
-  .signOutButton:hover {
+  .signOutButton:hover,
+  .withdrawButton:hover {
     background: rgba(247, 245, 241, 0.92);
   }
 
@@ -459,6 +571,10 @@
   .dialog {
     width: 100%;
     padding: 18px;
+  }
+
+  .withdrawalSummaryGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dialogHeader {
