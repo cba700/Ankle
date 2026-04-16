@@ -13,6 +13,7 @@ import ui from "./admin-ui.module.css";
 import styles from "./admin-match-list.module.css";
 
 type AdminMatchListProps = {
+  onSendNoShowNotice?: (formData: FormData) => void | Promise<void>;
   onUpdatePlayerLevel?: (formData: FormData) => void | Promise<void>;
   rows: AdminMatchRow[];
   variant: "dashboard" | "matches";
@@ -22,6 +23,7 @@ type AdminMatchListProps = {
 type MatchFilter = "all" | "open" | "today" | "draft" | "nearClosing" | "closed" | "cancelled";
 
 export function AdminMatchList({
+  onSendNoShowNotice,
   onUpdatePlayerLevel,
   rows,
   variant,
@@ -275,6 +277,24 @@ export function AdminMatchList({
                                                   {participant.genderLabel} · 현재 {participant.playerLevelLabel}
                                                 </span>
                                               </div>
+
+                                              <form
+                                                action={onSendNoShowNotice}
+                                                className={styles.participantActionForm}
+                                              >
+                                                <input
+                                                  name="applicationId"
+                                                  type="hidden"
+                                                  value={participant.applicationId}
+                                                />
+                                                <button
+                                                  className={`${ui.button} ${ui.buttonSmall}`}
+                                                  disabled={!onSendNoShowNotice || participant.noShowNoticeSent}
+                                                  type="submit"
+                                                >
+                                                  {participant.noShowNoticeSent ? "노쇼 안내 완료" : "노쇼 안내"}
+                                                </button>
+                                              </form>
                                             </div>
 
                                             <form

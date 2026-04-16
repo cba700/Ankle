@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { getMatchApplicationError } from "@/lib/match-application-errors";
+import {
+  cancelMatchReminderNotifications,
+  sendUserMatchCancelledNotification,
+} from "@/lib/notifications";
 import { assertCouponSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -39,5 +43,16 @@ export async function DELETE(
     return NextResponse.json({ code: mapped.code }, { status: mapped.status });
   }
 
-  return NextResponse.json({ ...(data ?? {}), ok: true });
+  const responsePayload = { ...(data ?? {}), ok: true } as {
+    applicationId?: unknown;
+  };
+
+  if (typeof responsePayload.applicationId === "string" && responsePayload.applicationId) {
+    await Promise.all([
+      cancelMatchReminderNotifications(responsePayload.applicationId),
+      sendUserMatchCancelledNotification(responsePayload.applicationId),
+    ]);
+  }
+
+  return NextResponse.json(responsePayload);
 }

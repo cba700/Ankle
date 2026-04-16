@@ -3,6 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
+import {
+  cancelMatchReminderNotifications,
+  refreshMatchReminderNotifications,
+  sendAdminMatchCancelledNotification,
+  sendNoShowNoticeNotification,
+} from "@/lib/notifications";
 import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
 import { buildPlayerLevelValue } from "@/lib/player-levels";
 import { getServerAuthState } from "@/lib/supabase/auth";
@@ -82,6 +88,14 @@ type MatchCountResult = {
   confirmed_count: number;
 };
 
+type MatchNotificationSnapshot = {
+  address: string;
+  end_at: string;
+  start_at: string;
+  title: string;
+  venue_name: string;
+};
+
 type CouponTemplateFormValues = {
   discountAmount: number;
   isActive: boolean;
@@ -155,12 +169,19 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
   const values = readUpdateMatchFormValues(formData);
   const venue = await resolveVenueForMatch(supabase, values);
   const confirmedCount = await getConfirmedCount(supabase, matchId);
+  const [previousMatch, confirmedApplicationIds] = await Promise.all([
+    getMatchNotificationSnapshot(supabase, matchId),
+    listConfirmedApplicationIds(supabase, matchId),
+  ]);
 
   if (values.capacity < confirmedCount) {
     throw new Error("Capacity cannot be lower than the current confirmed participants");
   }
 
   const slug = buildMatchSlug(venue.slug, values.startAt);
+  const shouldRefreshReminders =
+    values.status !== "cancelled" &&
+    hasNotificationContentChanged(previousMatch, values);
 
   const { error } = await supabase
     .from("matches")
@@ -210,6 +231,19 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
     if (cancelError) {
       throw new Error(cancelError.message);
     }
+
+    await Promise.all(
+      confirmedApplicationIds.map(async (applicationId) => {
+        await cancelMatchReminderNotifications(applicationId);
+        await sendAdminMatchCancelledNotification(applicationId);
+      }),
+    );
+  } else if (shouldRefreshReminders) {
+    await Promise.all(
+      confirmedApplicationIds.map((applicationId) =>
+        refreshMatchReminderNotifications(applicationId),
+      ),
+    );
   }
 
   redirect(`/admin/matches/${matchId}/edit`);
@@ -459,6 +493,20 @@ export async function updateAdminPlayerLevelAction(formData: FormData) {
   revalidatePath("/admin/matches");
 }
 
+export async function sendAdminNoShowNoticeAction(formData: FormData) {
+  await requireAdminSupabase();
+  const applicationId = String(formData.get("applicationId") ?? "").trim();
+
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+
+  await sendNoShowNoticeNotification(applicationId);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/matches");
+}
+
 export async function createAdminCouponTemplateAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertCouponSchemaReady(supabase);
@@ -661,6 +709,57 @@ async function getConfirmedCount(
   }
 
   return ((data as MatchCountResult | null)?.confirmed_count ?? 0);
+}
+
+async function listConfirmedApplicationIds(
+  supabase: AdminSupabaseClient,
+  matchId: string,
+) {
+  const { data, error } = await supabase
+    .from("match_applications")
+    .select("id")
+    .eq("match_id", matchId)
+    .eq("status", "confirmed");
+
+  if (error) {
+    throw new Error(`Failed to load confirmed applications: ${error.message}`);
+  }
+
+  return ((data ?? []) as { id: string }[]).map((row) => row.id);
+}
+
+async function getMatchNotificationSnapshot(
+  supabase: AdminSupabaseClient,
+  matchId: string,
+) {
+  const { data, error } = await supabase
+    .from("matches")
+    .select("title, venue_name, address, start_at, end_at")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load match snapshot: ${error.message}`);
+  }
+
+  return (data ?? null) as MatchNotificationSnapshot | null;
+}
+
+function hasNotificationContentChanged(
+  previousMatch: MatchNotificationSnapshot | null,
+  nextValues: MatchFormValues,
+) {
+  if (!previousMatch) {
+    return false;
+  }
+
+  return (
+    previousMatch.title !== nextValues.title ||
+    previousMatch.venue_name !== nextValues.venueName ||
+    previousMatch.address !== nextValues.address ||
+    previousMatch.start_at !== nextValues.startAt ||
+    previousMatch.end_at !== nextValues.endAt
+  );
 }
 
 type MatchFormValues = {

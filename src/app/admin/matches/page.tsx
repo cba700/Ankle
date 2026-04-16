@@ -1,5 +1,8 @@
 import { AppLink } from "@/components/navigation/app-link";
-import { updateAdminPlayerLevelAction } from "@/features/admin/actions";
+import {
+  sendAdminNoShowNoticeAction,
+  updateAdminPlayerLevelAction,
+} from "@/features/admin/actions";
 import { AdminMatchList } from "@/features/admin/components/admin-match-list";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import ui from "@/features/admin/components/admin-ui.module.css";
@@ -22,6 +25,7 @@ export default async function AdminMatchesPage() {
       title="매치 운영 리스트"
     >
       <AdminMatchList
+        onSendNoShowNotice={sendAdminNoShowNoticeAction}
         onUpdatePlayerLevel={updateAdminPlayerLevelAction}
         rows={rows}
         variant="matches"

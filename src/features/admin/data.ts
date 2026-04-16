@@ -18,6 +18,7 @@ import {
   listCouponUsageSummaries,
 } from "@/lib/coupons";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
+import { listSentApplicationNotificationIds } from "@/lib/notifications";
 import {
   assertAdminMatchParticipantsSchemaReady,
   assertCashChargeOperationsSchemaReady,
@@ -54,9 +55,21 @@ export async function getAdminMatches() {
     supabase,
     entities.map((entity) => entity.id),
   );
+  const noShowNoticeSentIds = await listSentApplicationNotificationIds(
+    Array.from(participantsByMatchId.values()).flatMap((participants) =>
+      participants.map((participant) => participant.applicationId),
+    ),
+    "no_show_notice",
+  );
 
   return entities.map((entity) =>
-    mapEntityToAdminRecord(entity, participantsByMatchId.get(entity.id) ?? []),
+    mapEntityToAdminRecord(
+      entity,
+      (participantsByMatchId.get(entity.id) ?? []).map((participant) => ({
+        ...participant,
+        noShowNoticeSent: noShowNoticeSentIds.has(participant.applicationId),
+      })),
+    ),
   );
 }
 
@@ -80,7 +93,19 @@ export async function getAdminMatchById(id: string) {
   }
 
   const participantsByMatchId = await getAdminMatchParticipantsByMatchId(supabase, [id]);
-  return mapEntityToAdminRecord(entity, participantsByMatchId.get(id) ?? []);
+  const participants = participantsByMatchId.get(id) ?? [];
+  const noShowNoticeSentIds = await listSentApplicationNotificationIds(
+    participants.map((participant) => participant.applicationId),
+    "no_show_notice",
+  );
+
+  return mapEntityToAdminRecord(
+    entity,
+    participants.map((participant) => ({
+      ...participant,
+      noShowNoticeSent: noShowNoticeSentIds.has(participant.applicationId),
+    })),
+  );
 }
 
 export async function getAdminVenues() {
@@ -305,6 +330,7 @@ async function getAdminMatchParticipantsByMatchId(
       applicationId: row.application_id,
       displayName: row.display_name?.trim() || "이름 미등록",
       gender: row.gender ?? null,
+      noShowNoticeSent: false,
       playerLevel:
         row.player_level ??
         row.temporary_level ??

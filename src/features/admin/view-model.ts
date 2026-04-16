@@ -361,6 +361,7 @@ export function buildAdminMatchRows(matches: AdminMatchRecord[]): AdminMatchRow[
         applicationId: participant.applicationId,
         displayName: participant.displayName,
         genderLabel: formatProfileGenderLabel(participant.gender),
+        noShowNoticeSent: participant.noShowNoticeSent,
         playerLevelLabel: formatPlayerLevel(participant.playerLevel),
         resolvedPlayerLevel: participant.playerLevel,
         userId: participant.userId,

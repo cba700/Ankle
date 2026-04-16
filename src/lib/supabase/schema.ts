@@ -30,6 +30,8 @@ const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION =
   "20260414234500_add_admin_match_participants_rpc.sql";
 const REQUIRED_COUPON_MIGRATION =
   "20260415123000_support_multiple_signup_coupons.sql";
+const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION =
+  "20260416110000_add_notification_dispatches.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -43,6 +45,7 @@ const REQUIRED_SIGNUP_PROFILE_MIGRATION_MESSAGE = `Database schema is outdated. 
 const REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_PLAYER_LEVEL_MIGRATION} before running admin player level features.`;
 const REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ADMIN_MATCH_PARTICIPANTS_MIGRATION} before running admin participant features.`;
 const REQUIRED_COUPON_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COUPON_MIGRATION} before running coupon features.`;
+const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_NOTIFICATION_DISPATCH_MIGRATION} before running notification features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -55,6 +58,7 @@ let signupProfileSchemaCheckPromise: Promise<void> | null = null;
 let adminPlayerLevelSchemaCheckPromise: Promise<void> | null = null;
 let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
 let couponSchemaCheckPromise: Promise<void> | null = null;
+let notificationDispatchSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -277,6 +281,27 @@ export async function assertCouponSchemaReady(
   return couponSchemaCheckPromise;
 }
 
+export async function assertNotificationDispatchSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!notificationDispatchSchemaCheckPromise) {
+    notificationDispatchSchemaCheckPromise = runNotificationDispatchSchemaCheck(
+      client,
+    ).catch((error) => {
+      notificationDispatchSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return notificationDispatchSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -479,6 +504,18 @@ async function runCouponSchemaCheck(supabase: SupabaseServerClient) {
   if (!isExpectedCouponRpcProbeError(applyToMatchCheck.error)) {
     handleCouponSchemaCheckError(applyToMatchCheck.error);
   }
+}
+
+async function runNotificationDispatchSchemaCheck(supabase: SupabaseServerClient) {
+  await runChargeOperationsSchemaCheck(supabase);
+  await runProfileOnboardingSchemaCheck(supabase);
+
+  const notificationDispatchCheck = await supabase
+    .from("notification_dispatches")
+    .select("dedupe_key, provider_group_id, scheduled_for")
+    .limit(1);
+
+  handleNotificationDispatchSchemaError(notificationDispatchCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -688,6 +725,27 @@ function handleCouponSchemaCheckError(
   }
 
   throw new Error(`Failed to verify coupon schema: ${error.message}`);
+}
+
+function handleNotificationDispatchSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify notification schema: ${error.message}`);
 }
 
 function isExpectedCouponRpcProbeError(

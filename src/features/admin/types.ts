@@ -105,6 +105,7 @@ export type AdminMatchParticipantRecord = {
   applicationId: string;
   displayName: string;
   gender: "female" | "male" | null;
+  noShowNoticeSent: boolean;
   playerLevel: string | null;
   playerLevelSource: "player_level" | "temporary_level" | "unset";
   userId: string;
@@ -223,6 +224,7 @@ export type AdminMatchParticipantRow = {
   applicationId: string;
   displayName: string;
   genderLabel: string;
+  noShowNoticeSent: boolean;
   playerLevelLabel: string;
   resolvedPlayerLevel: string | null;
   userId: string;

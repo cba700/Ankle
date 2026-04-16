@@ -21,6 +21,21 @@ type SolapiServerEnv = {
   senderPhone: string;
 };
 
+type SolapiKakaoTemplateEnv = {
+  cashCharged: string | null;
+  matchCancelledAdmin: string | null;
+  matchCancelledUser: string | null;
+  matchConfirmed: string | null;
+  matchReminderDayBefore: string | null;
+  matchReminderSameDay: string | null;
+  noShowNotice: string | null;
+};
+
+type SolapiKakaoEnv = SolapiServerEnv & {
+  kakaoChannelId: string;
+  templates: SolapiKakaoTemplateEnv;
+};
+
 export function getSupabasePublicEnv(): SupabasePublicEnv | null {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabasePublishableKey =
@@ -90,6 +105,34 @@ export function getSolapiServerEnv(): SolapiServerEnv | null {
     apiKey,
     apiSecret,
     senderPhone,
+  };
+}
+
+export function getSolapiKakaoEnv(): SolapiKakaoEnv | null {
+  const serverEnv = getSolapiServerEnv();
+  const kakaoChannelId = process.env.SOLAPI_KAKAO_CHANNEL_ID?.trim();
+
+  if (!serverEnv || !kakaoChannelId) {
+    return null;
+  }
+
+  return {
+    ...serverEnv,
+    kakaoChannelId,
+    templates: {
+      cashCharged: process.env.SOLAPI_KAKAO_TEMPLATE_CASH_CHARGED?.trim() ?? null,
+      matchCancelledAdmin:
+        process.env.SOLAPI_KAKAO_TEMPLATE_MATCH_CANCELLED_ADMIN?.trim() ?? null,
+      matchCancelledUser:
+        process.env.SOLAPI_KAKAO_TEMPLATE_MATCH_CANCELLED_USER?.trim() ?? null,
+      matchConfirmed:
+        process.env.SOLAPI_KAKAO_TEMPLATE_MATCH_CONFIRMED?.trim() ?? null,
+      matchReminderDayBefore:
+        process.env.SOLAPI_KAKAO_TEMPLATE_MATCH_REMINDER_DAY_BEFORE?.trim() ?? null,
+      matchReminderSameDay:
+        process.env.SOLAPI_KAKAO_TEMPLATE_MATCH_REMINDER_SAME_DAY?.trim() ?? null,
+      noShowNotice: process.env.SOLAPI_KAKAO_TEMPLATE_NO_SHOW_NOTICE?.trim() ?? null,
+    },
   };
 }
 
