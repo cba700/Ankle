@@ -19,7 +19,7 @@
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #fff;
   font-size: 13px;
   font-weight: 700;
 }
@@ -31,9 +31,7 @@
   padding: 28px;
   border: 1px solid rgba(201, 193, 183, 0.78);
   border-radius: 28px;
-  background:
-    radial-gradient(circle at top right, rgba(255, 122, 27, 0.1), transparent 34%),
-    rgba(255, 255, 255, 0.96);
+  background: #fff;
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
 }
 
@@ -94,7 +92,7 @@
   padding: 18px;
   border: 1px solid rgba(201, 193, 183, 0.72);
   border-radius: 20px;
-  background: rgba(247, 245, 241, 0.88);
+  background: #fff;
 }
 
 .summaryLabel {
@@ -169,7 +167,7 @@
 @media (hover: hover) {
   .secondaryLink:hover,
   .backLink:hover {
-    background: rgba(247, 245, 241, 0.92);
+    background: #fff;
   }
 
   .primaryLink:hover {

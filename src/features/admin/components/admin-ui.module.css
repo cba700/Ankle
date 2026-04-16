@@ -35,7 +35,7 @@
 .sectionCard {
   border: 0.5px solid rgba(201, 193, 183, 0.72);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   padding: 16px 18px;
   box-shadow: 0 14px 34px rgba(29, 24, 19, 0.04);
 }
@@ -44,7 +44,7 @@
   overflow: hidden;
   border: 0.5px solid rgba(201, 193, 183, 0.72);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   box-shadow: 0 14px 34px rgba(29, 24, 19, 0.04);
 }
 
@@ -59,7 +59,7 @@
 
 .tableHeadCell {
   padding: 12px 14px;
-  background: #f5f1ea;
+  background: #fff;
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 700;
@@ -78,7 +78,7 @@
 }
 
 .tableRow:hover {
-  background: #faf8f5;
+  background: #fff;
 }
 
 .muted {

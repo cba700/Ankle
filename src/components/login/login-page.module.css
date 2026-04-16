@@ -16,7 +16,7 @@
   padding: 48px 28px 36px;
   border: 1px solid rgba(23, 23, 23, 0.08);
   border-radius: 32px;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   box-shadow: 0 24px 56px rgba(23, 23, 23, 0.1);
   backdrop-filter: blur(16px);
 }
@@ -179,7 +179,7 @@
   padding: 0 16px;
   border: 1px solid rgba(17, 17, 17, 0.12);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
+  background: #fff;
   color: #111111;
   font-size: 15px;
 }
@@ -248,7 +248,7 @@
   padding: 0 16px;
   border: 1px solid rgba(17, 17, 17, 0.12);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
+  background: #fff;
   color: #555555;
   font-size: 15px;
   font-weight: 700;

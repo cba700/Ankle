@@ -25,7 +25,7 @@
   padding: 0 14px;
   border: 0.5px solid rgba(201, 193, 183, 0.74);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.94);
+  background: #fff;
   color: var(--text-primary);
 }
 
@@ -90,7 +90,7 @@
   display: grid;
   gap: 14px;
   padding: 16px;
-  background: #fbf9f5;
+  background: #fff;
   border-top: 0.5px solid var(--line);
 }
 
@@ -105,7 +105,7 @@
   padding: 14px;
   border: 0.5px solid rgba(201, 193, 183, 0.68);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.96);
+  background: #fff;
 }
 
 .summaryLabel,
