@@ -19,15 +19,21 @@ export default async function CashChargeFailRoute({
   searchParams: Promise<{
     code?: string;
     message?: string;
+    next?: string;
     orderId?: string;
   }>;
 }) {
+  const params = await searchParams;
+  const normalizedNextPath = normalizeInternalNextPath(params.next ?? null);
+  const chargePath = normalizedNextPath
+    ? `/cash/charge?next=${encodeURIComponent(normalizedNextPath)}`
+    : "/cash/charge";
   const { configured, user } = await getServerUserState();
 
   if (!configured || !user) {
     redirect(
       buildLoginHref(
-        "/cash/charge",
+        chargePath,
         configured ? undefined : "supabase_not_configured",
       ),
     );
@@ -36,26 +42,33 @@ export default async function CashChargeFailRoute({
   const supabase = await getSupabaseServerClient();
 
   if (!supabase) {
-    redirect(buildLoginHref("/cash/charge", "supabase_not_configured"));
+    redirect(buildLoginHref(chargePath, "supabase_not_configured"));
   }
 
   const requiredSetupHref = await getRequiredMemberSetupRedirectPath(
     supabase,
     user.id,
-    "/cash/charge",
+    chargePath,
   );
 
   if (requiredSetupHref) {
     redirect(requiredSetupHref);
   }
 
-  const params = await searchParams;
-
   return (
     <CashChargeFailPage
       code={params.code ?? null}
       message={params.message ?? null}
       orderId={params.orderId ?? null}
+      redirectPath={chargePath}
     />
   );
+}
+
+function normalizeInternalNextPath(path: string | null) {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return null;
+  }
+
+  return path;
 }

@@ -78,6 +78,13 @@ type TossPaymentsFactory = (clientKey: string) => {
   };
 };
 
+type PaymentFailureReport = {
+  code: string;
+  orderId: string;
+  rawMessage?: string;
+  source: "sdk_launch";
+};
+
 const PAYMENT_METHODS: Array<{
   description: string;
   key: ChargePaymentMethod;
@@ -150,6 +157,7 @@ export function CashChargePage({
 
     setFeedbackMessage(null);
     setIsSubmitting(true);
+    let createdOrderId: string | null = null;
 
     try {
       const response = await fetch("/api/cash/charge-orders", {
@@ -189,6 +197,7 @@ export function CashChargePage({
         return;
       }
 
+      createdOrderId = payload.orderId;
       const TossPayments = await loadTossPayments();
       const payment = TossPayments(tossClientKey).payment({
         customerKey,
@@ -217,7 +226,23 @@ export function CashChargePage({
 
       await payment.requestPayment(requestPaymentParams);
     } catch (error) {
-      setFeedbackMessage(getSdkErrorMessage(error));
+      const failureCode = getSdkFailureCode(error);
+
+      if (createdOrderId) {
+        void reportChargeFailure({
+          code: failureCode,
+          orderId: createdOrderId,
+          rawMessage: getRawErrorMessage(error) ?? undefined,
+          source: "sdk_launch",
+        });
+      }
+
+      if (failureCode === "PAY_PROCESS_CANCELED") {
+        window.location.replace(currentChargePath);
+        return;
+      }
+
+      setFeedbackMessage(getSdkErrorMessage());
     } finally {
       setIsSubmitting(false);
     }
@@ -336,12 +361,40 @@ function getChargeErrorMessage(code?: string) {
   }
 }
 
-function getSdkErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message.trim()) {
-    return `결제창을 열지 못했습니다. ${error.message}`;
+function getSdkErrorMessage() {
+  return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function getSdkFailureCode(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string" &&
+    error.code.trim()
+  ) {
+    return error.code.trim();
   }
 
-  return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  return "PAYMENT_WINDOW_OPEN_FAILED";
+}
+
+function getRawErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string" &&
+    error.message.trim()
+  ) {
+    return error.message.trim();
+  }
+
+  return null;
 }
 
 function buildRequestPaymentParams(
@@ -412,4 +465,29 @@ function loadTossPayments() {
   });
 
   return tossPaymentsPromise;
+}
+
+async function reportChargeFailure({
+  code,
+  orderId,
+  rawMessage,
+  source,
+}: PaymentFailureReport) {
+  try {
+    await fetch("/api/payments/toss/fail", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      keepalive: true,
+      body: JSON.stringify({
+        code,
+        orderId,
+        rawMessage,
+        source,
+      }),
+    });
+  } catch {
+    // Best-effort failure logging should not block charge retries.
+  }
 }
