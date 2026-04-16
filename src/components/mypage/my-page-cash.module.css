@@ -4,9 +4,9 @@
 }
 
 .main {
-  padding: 32px 0 40px;
+  padding: 24px 0 40px;
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .backLink {
@@ -40,7 +40,7 @@
 .heroCard {
   padding: 24px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
 }
@@ -78,18 +78,26 @@
   letter-spacing: -0.05em;
 }
 
+.heroDescription {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
 .heroActions {
   display: grid;
-  justify-items: end;
-  gap: 8px;
-  min-width: 176px;
+  gap: 10px;
+  min-width: 190px;
   flex-shrink: 0;
 }
 
-.primaryButton {
+.primaryButton,
+.secondaryButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   min-height: 46px;
   padding: 0 18px;
   border-radius: 12px;
@@ -104,24 +112,15 @@
   box-shadow: 0 14px 28px rgba(255, 107, 0, 0.24);
 }
 
-.refundLinkButton,
-.refundLinkText {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 24px;
-  padding: 0;
-  font-size: 13px;
-  font-weight: 700;
+.secondaryButton {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text-primary);
 }
 
-.refundLinkButton {
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.refundLinkText {
+.secondaryButton:disabled {
+  cursor: default;
+  background: #fff;
   color: var(--text-tertiary);
 }
 
@@ -137,7 +136,8 @@
   letter-spacing: -0.02em;
 }
 
-.feedbackBox p {
+.feedbackBox p,
+.sectionDescription {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
@@ -180,6 +180,10 @@
   min-width: 0;
 }
 
+.sectionDescription {
+  margin-top: 12px;
+}
+
 .tabList {
   margin-top: 18px;
   display: flex;
@@ -213,7 +217,7 @@
   margin-top: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .activityCard {
@@ -224,65 +228,53 @@
   box-shadow: 0 8px 18px rgba(17, 17, 17, 0.03);
 }
 
+.activityContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
 .activityCopy {
   min-width: 0;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .activityHeader {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.activityBadgeRow {
-  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.activityBadge,
+.activityTitle {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
 .activityState {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
 }
 
-.activityTitle {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.4;
-}
-
-.activityCategory {
-  border: 1px solid transparent;
-}
-
-.activityCategoryCharge {
-  background: var(--blue-soft);
-  color: var(--blue-text);
-}
-
-.activityCategoryUsage {
+.activityStateAccent {
   background: rgba(255, 107, 0, 0.1);
   color: var(--accent-strong);
 }
 
-.activityCategoryRefund {
-  background: #edf8f1;
-  color: #24734a;
+.activityStateDanger {
+  background: rgba(191, 61, 53, 0.12);
+  color: var(--red-text);
 }
 
-.activityCategoryOps {
+.activityStateMuted {
   background: var(--gray-soft);
   color: var(--text-secondary);
 }
@@ -290,7 +282,7 @@
 .activityMeta,
 .activityBalance {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -300,27 +292,6 @@
 
 .activityBalance {
   color: var(--text-tertiary);
-  font-size: 13px;
-}
-
-.activityStatePositive {
-  background: #edf8f1;
-  color: #24734a;
-}
-
-.activityStateNegative {
-  background: rgba(191, 61, 53, 0.12);
-  color: var(--red-text);
-}
-
-.activityStatePending {
-  background: rgba(255, 214, 102, 0.24);
-  color: #8b5a12;
-}
-
-.activityStateNeutral {
-  background: var(--gray-soft);
-  color: var(--text-secondary);
 }
 
 .activityAmount {
@@ -328,24 +299,24 @@
   align-items: center;
   justify-content: center;
   min-width: 108px;
-  min-height: 34px;
-  padding: 0 14px;
+  min-height: 32px;
+  padding: 0 12px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
 }
 
-.activityAmountPositive {
-  background: #edf8f1;
-  color: #24734a;
+.activityAmountAccent {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
 }
 
-.activityAmountNegative {
+.activityAmountDanger {
   background: rgba(191, 61, 53, 0.12);
   color: var(--red-text);
 }
 
-.activityAmountNeutral {
+.activityAmountMuted {
   background: var(--gray-soft);
   color: var(--text-secondary);
 }
@@ -543,16 +514,16 @@
     filter: brightness(0.98);
   }
 
-  .refundLinkButton:hover,
+  .secondaryButton:hover:not(:disabled),
   .refundDialogClose:hover:not(:disabled),
   .refundCancelButton:hover:not(:disabled) {
-    color: var(--text-primary);
+    background: #fff;
   }
 }
 
 @media (max-width: 767px) {
   .main {
-    padding: 20px 0 36px;
+    padding: 16px 0 36px;
     gap: 12px;
   }
 
@@ -568,16 +539,15 @@
   .heroActions {
     width: 100%;
     min-width: 0;
-    justify-items: stretch;
   }
 
-  .primaryButton,
-  .refundLinkButton,
-  .refundLinkText {
-    width: 100%;
+  .activityContent {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
 
   .activityAmount {
+    justify-self: start;
     min-width: 0;
   }
 
