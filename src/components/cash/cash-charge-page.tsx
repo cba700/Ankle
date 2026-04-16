@@ -242,7 +242,7 @@ export function CashChargePage({
         return;
       }
 
-      if (failureCode === "PAYMENT_WINDOW_OPEN_FAILED") {
+      if (createdOrderId) {
         return;
       }
 
