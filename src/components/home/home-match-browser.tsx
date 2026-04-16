@@ -131,14 +131,10 @@ export function HomeMatchBrowser({
     });
   }
 
-  function handleToggleOption(
+  function handleApplyGroupFilters(
     groupId: "districts" | "genders" | "levels",
-    optionId: string,
+    nextValues: string[],
   ) {
-    const currentValues = filterState[groupId] as string[];
-    const nextValues = currentValues.includes(optionId)
-      ? currentValues.filter((item) => item !== optionId)
-      : [...currentValues, optionId];
     const nextFilterState = {
       ...filterState,
       [groupId]: nextValues,
@@ -200,8 +196,8 @@ export function HomeMatchBrowser({
           <HomeFilterBar
             filterState={filterState}
             groups={HOME_FILTER_GROUPS}
+            onApplyGroupFilters={handleApplyGroupFilters}
             onToggleHideClosed={handleToggleHideClosed}
-            onToggleOption={handleToggleOption}
           />
         </div>
       </div>
