@@ -157,10 +157,6 @@ function getOrderFailureMeta(code: string | null) {
     return "사용자 취소";
   }
 
-  if (code === "PAYMENT_WINDOW_OPEN_FAILED") {
-    return "결제창 실행 실패";
-  }
-
   return "결제 실패";
 }
 
