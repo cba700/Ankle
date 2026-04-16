@@ -195,22 +195,130 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 42px;
+  padding: 0 18px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 14px;
   background: #fff;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   touch-action: manipulation;
 }
 
 .tabButtonActive {
-  border-color: transparent;
+  border-color: #171717;
   background: #171717;
   color: #fff;
   box-shadow: 0 14px 26px rgba(17, 17, 17, 0.14);
+}
+
+.activityList {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activityCard {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.03);
+}
+
+.activityContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.activityCopy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.activityHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activityTitle {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.activityState {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.activityStateAccent {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+}
+
+.activityStateDanger {
+  background: rgba(191, 61, 53, 0.12);
+  color: var(--red-text);
+}
+
+.activityStateMuted {
+  background: var(--gray-soft);
+  color: var(--text-secondary);
+}
+
+.activityMeta,
+.activityBalance {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.activityMeta {
+  color: var(--text-secondary);
+}
+
+.activityBalance {
+  color: var(--text-tertiary);
+}
+
+.activityAmount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.activityAmountAccent {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+}
+
+.activityAmountDanger {
+  background: rgba(191, 61, 53, 0.12);
+  color: var(--red-text);
+}
+
+.activityAmountMuted {
+  background: var(--gray-soft);
+  color: var(--text-secondary);
 }
 
 .refundDialogRoot {
@@ -430,6 +538,16 @@
 
   .heroActions {
     width: 100%;
+    min-width: 0;
+  }
+
+  .activityContent {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .activityAmount {
+    justify-self: start;
     min-width: 0;
   }
 
