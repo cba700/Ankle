@@ -259,9 +259,9 @@ function mapCashTransaction(transaction: CashTransactionEntity): MyPageCashTrans
 
   return {
     amountLabel: `${isPositive ? "+" : "-"}${formatMoney(amount)}원`,
-    balanceLabel: `잔액 ${formatMoney(transaction.balanceAfter)}원`,
+    balanceLabel: `이후 보유 캐시 ${formatMoney(transaction.balanceAfter)}원`,
     id: transaction.id,
-    metaLabel: `${formatCompactDateLabel(new Date(transaction.createdAt))} · ${transaction.memo || getCashTransactionTitle(transaction.type)}`,
+    metaLabel: getCashTransactionMetaLabel(transaction),
     title: getCashTransactionTitle(transaction.type),
     tone: getCashTransactionTone(transaction.type, transaction.deltaAmount),
     type: transaction.type,
@@ -494,16 +494,38 @@ function getCashTransactionTitle(type: CashTransactionEntity["type"]) {
     case "charge_refund":
       return "충전 환불";
     case "match_refund":
-      return "매치 환급";
+      return "매치 참가비 환급";
     case "refund_hold":
       return "캐시 환불 신청";
     case "refund_release":
-      return "환불 신청 반려";
+      return "환불 처리 취소";
     case "adjustment":
-      return "운영 보정";
+      return "운영 조정";
     case "match_debit":
     default:
-      return "매치 신청 차감";
+      return "매치 참가";
+  }
+}
+
+function getCashTransactionMetaLabel(transaction: CashTransactionEntity) {
+  const dateLabel = formatCompactDateLabel(new Date(transaction.createdAt));
+
+  switch (transaction.type) {
+    case "charge":
+      return `${dateLabel} · 충전한 캐시가 정상 반영되었어요.`;
+    case "charge_refund":
+      return `${dateLabel} · 충전 금액이 환불되어 다시 돌아왔어요.`;
+    case "match_refund":
+      return `${dateLabel} · 취소된 참가비가 캐시로 환급되었어요.`;
+    case "refund_hold":
+      return `${dateLabel} · 입력한 계좌로 환불을 진행하기 위해 캐시를 접수했어요.`;
+    case "refund_release":
+      return `${dateLabel} · 환불이 취소되어 캐시를 다시 사용할 수 있어요.`;
+    case "adjustment":
+      return `${dateLabel} · ${transaction.memo || "운영 확인 후 캐시 상태를 조정했어요."}`;
+    case "match_debit":
+    default:
+      return `${dateLabel} · 매치 참가 비용이 차감되었어요.`;
   }
 }
 

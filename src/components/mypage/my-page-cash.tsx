@@ -58,8 +58,8 @@ type RefundSubmitResponse =
 const CASH_HISTORY_TABS: Array<{ id: CashHistoryTab; label: string }> = [
   { id: "all", label: "전체" },
   { id: "charge", label: "충전" },
-  { id: "usage", label: "사용/취소" },
-  { id: "refund", label: "환불" },
+  { id: "usage", label: "참가" },
+  { id: "refund", label: "환급" },
 ];
 
 export function MyPageCash({
@@ -225,17 +225,17 @@ export function MyPageCash({
           <div className={styles.heroCopy}>
             <span className={styles.heroBadge}>
               <WalletIcon className={styles.heroBadgeIcon} />
-              Cash Ledger
+              캐시 상태
             </span>
-            <p className={styles.heroEyebrow}>나의 캐시</p>
+            <p className={styles.heroEyebrow}>사용 가능 금액</p>
             <h1 className={styles.heroTitle}>{cashBalanceLabel}</h1>
-            <p className={styles.heroDescription}>
-              충전, 매치 신청 차감, 환급처럼 실제 잔액이 움직인 최근 거래만 필터별로 확인할 수
-              있습니다.
-            </p>
+            <p className={styles.heroDescription}>지금 바로 매치 참가와 환급에 사용할 수 있어요.</p>
           </div>
 
           <div className={styles.heroActions}>
+            <AppLink className={styles.primaryButton} href="/cash/charge">
+              충전하기
+            </AppLink>
             <button
               className={styles.secondaryButton}
               disabled={!canOpenRefundRequest}
@@ -244,9 +244,6 @@ export function MyPageCash({
             >
               {refundButtonLabel}
             </button>
-            <AppLink className={styles.primaryButton} href="/cash/charge">
-              충전하기
-            </AppLink>
           </div>
         </section>
 
@@ -288,8 +285,8 @@ export function MyPageCash({
         <section className={`${baseStyles.applicationSection} ${styles.detailSection}`}>
           <div className={baseStyles.sectionHeading}>
             <div>
-              <p className={baseStyles.sectionEyebrow}>실제 캐시 거래 기준</p>
-              <h2 className={baseStyles.sectionTitle}>캐시 상세 내역</h2>
+              <p className={baseStyles.sectionEyebrow}>사용자의 활동 기준</p>
+              <h2 className={baseStyles.sectionTitle}>캐시 활동 내역</h2>
             </div>
             <span className={baseStyles.sectionCount}>{filteredTransactions.length}건</span>
           </div>
@@ -325,25 +322,41 @@ export function MyPageCash({
               ) : null}
             </div>
           ) : (
-            <div className={baseStyles.cashTransactionList}>
+            <div className={styles.activityList}>
               {filteredTransactions.map((transaction) => (
-                <article className={baseStyles.cashTransactionCard} key={transaction.id}>
-                  <div className={baseStyles.cashTransactionTop}>
-                    <strong className={baseStyles.cashTransactionTitle}>{transaction.title}</strong>
+                <article className={styles.activityCard} key={transaction.id}>
+                  <div className={styles.activityContent}>
+                    <div className={styles.activityCopy}>
+                      <div className={styles.activityHeader}>
+                        <strong className={styles.activityTitle}>{transaction.title}</strong>
+                        <span
+                          className={`${styles.activityState} ${
+                            transaction.tone === "danger"
+                              ? styles.activityStateDanger
+                              : transaction.tone === "muted"
+                                ? styles.activityStateMuted
+                                : styles.activityStateAccent
+                          }`}
+                        >
+                          {getCashTransactionStateLabel(transaction)}
+                        </span>
+                      </div>
+                      <p className={styles.activityMeta}>{transaction.metaLabel}</p>
+                      <p className={styles.activityBalance}>{transaction.balanceLabel}</p>
+                    </div>
+
                     <span
-                      className={`${baseStyles.cashTransactionAmount} ${
+                      className={`${styles.activityAmount} ${
                         transaction.tone === "danger"
-                          ? baseStyles.cashAmountDanger
+                          ? styles.activityAmountDanger
                           : transaction.tone === "muted"
-                            ? baseStyles.cashAmountMuted
-                            : baseStyles.cashAmountAccent
+                            ? styles.activityAmountMuted
+                            : styles.activityAmountAccent
                       }`}
                     >
                       {transaction.amountLabel}
                     </span>
                   </div>
-                  <p className={baseStyles.cashTransactionMeta}>{transaction.metaLabel}</p>
-                  <p className={baseStyles.cashTransactionBalance}>{transaction.balanceLabel}</p>
                 </article>
               ))}
             </div>
@@ -565,41 +578,60 @@ function matchesCashHistoryTab(
 function getCashHistoryDescription(tab: CashHistoryTab) {
   switch (tab) {
     case "charge":
-      return "토스 결제 승인 후 실제로 적립된 충전 거래만 보여줍니다.";
+      return "충전이 완료되어 바로 사용할 수 있게 된 캐시만 보여드려요.";
     case "refund":
-      return "매치 환급, 충전 환불, 환불 신청 반려로 복구된 캐시를 모아 보여줍니다.";
+      return "참가 취소, 충전 환불, 환불 취소로 다시 돌아온 캐시를 모아 보여드려요.";
     case "usage":
-      return "매치 신청으로 캐시가 차감된 거래만 표시합니다. 환급된 건은 환불 탭에서 확인하세요.";
+      return "매치 참가로 캐시가 차감된 활동만 보여드려요.";
     case "all":
     default:
-      return "운영 보정을 포함해 실제 잔액이 움직인 최근 거래를 모두 보여줍니다.";
+      return "최근에 어떤 활동으로 캐시가 늘고 줄었는지 한눈에 확인할 수 있어요.";
   }
 }
 
 function getCashHistoryEmptyTitle(tab: CashHistoryTab) {
   switch (tab) {
     case "charge":
-      return "아직 완료된 충전 내역이 없습니다.";
+      return "아직 충전된 캐시가 없습니다.";
     case "refund":
-      return "아직 반영된 환불 내역이 없습니다.";
+      return "아직 돌아온 캐시가 없습니다.";
     case "usage":
-      return "아직 반영된 사용 내역이 없습니다.";
+      return "아직 참가로 사용한 캐시가 없습니다.";
     case "all":
     default:
-      return "아직 반영된 캐시 거래가 없습니다.";
+      return "아직 캐시 활동이 없습니다.";
   }
 }
 
 function getCashHistoryEmptyDescription(tab: CashHistoryTab) {
   switch (tab) {
     case "charge":
-      return "캐시를 충전하면 이 탭에서 완료된 적립 내역을 바로 확인할 수 있습니다.";
+      return "캐시를 충전하면 이 탭에서 바로 사용할 수 있는 금액으로 확인할 수 있습니다.";
     case "refund":
-      return "매치 환급, 충전 환불, 환불 신청 반려가 반영되면 이 탭에서 확인할 수 있습니다.";
+      return "참가 취소나 환불 취소가 반영되면 이 탭에서 돌아온 금액을 확인할 수 있습니다.";
     case "usage":
-      return "매치 신청으로 캐시가 차감되면 이 탭에 사용 내역이 추가됩니다.";
+      return "매치에 참가하면 이 탭에 사용한 캐시 활동이 추가됩니다.";
     case "all":
     default:
-      return "충전, 신청 차감, 환급이 발생하면 이 영역에서 바로 확인할 수 있습니다.";
+      return "충전, 참가, 환급이 생기면 이 영역에서 바로 확인할 수 있습니다.";
+  }
+}
+
+function getCashTransactionStateLabel(transaction: MyPageCashTransaction) {
+  switch (transaction.type) {
+    case "charge":
+      return "충전";
+    case "charge_refund":
+    case "match_refund":
+      return "환급";
+    case "refund_hold":
+      return "신청";
+    case "refund_release":
+      return "복구";
+    case "adjustment":
+      return "조정";
+    case "match_debit":
+    default:
+      return "차감";
   }
 }
