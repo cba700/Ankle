@@ -3,7 +3,8 @@ import { getMatchApplicationError } from "@/lib/match-application-errors";
 import { getMemberSetupState } from "@/lib/member-access";
 import {
   refreshMatchReminderNotifications,
-  sendMatchConfirmedNotification,
+  sendMatchAppliedNotification,
+  sendMatchConfirmedNotificationsForThreshold,
 } from "@/lib/notifications";
 import { assertCouponSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -80,7 +81,8 @@ export async function POST(
 
   if (typeof responsePayload.applicationId === "string" && responsePayload.applicationId) {
     await Promise.all([
-      sendMatchConfirmedNotification(responsePayload.applicationId),
+      sendMatchAppliedNotification(responsePayload.applicationId),
+      sendMatchConfirmedNotificationsForThreshold(responsePayload.applicationId),
       refreshMatchReminderNotifications(responsePayload.applicationId),
     ]);
   }

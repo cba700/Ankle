@@ -1,11 +1,17 @@
 import { notFound } from "next/navigation";
 import {
+  cancelAdminMatchForRainAction,
+  checkAdminMatchWeatherAction,
+  sendAdminMatchRainAlertAction,
+  sendAdminMatchRainAlertChangedAction,
   setAdminMatchRefundExceptionAction,
   updateAdminMatchAction,
 } from "@/features/admin/actions";
 import { AdminMatchEditor } from "@/features/admin/components/admin-match-editor";
+import { AdminMatchWeatherPanel } from "@/features/admin/components/admin-match-weather-panel";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import { getAdminMatchById, getAdminVenueOptions } from "@/features/admin/data";
+import { getAdminMatchWeatherData } from "@/lib/match-weather";
 import { buildAdminMatchFormValue } from "@/features/admin/view-model";
 
 export default async function AdminEditMatchPage({
@@ -14,10 +20,17 @@ export default async function AdminEditMatchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const match = await getAdminMatchById(id);
-  const venueOptions = await getAdminVenueOptions();
+  const [match, venueOptions, weather] = await Promise.all([
+    getAdminMatchById(id),
+    getAdminVenueOptions(),
+    getAdminMatchWeatherData(id),
+  ]);
   const formAction = updateAdminMatchAction.bind(null, id);
   const refundExceptionAction = setAdminMatchRefundExceptionAction.bind(null, id);
+  const checkWeatherAction = checkAdminMatchWeatherAction.bind(null, id);
+  const sendRainAlertAction = sendAdminMatchRainAlertAction.bind(null, id);
+  const sendRainAlertChangedAction = sendAdminMatchRainAlertChangedAction.bind(null, id);
+  const cancelForRainAction = cancelAdminMatchForRainAction.bind(null, id);
 
   if (!match) {
     notFound();
@@ -30,6 +43,13 @@ export default async function AdminEditMatchPage({
       eyebrow="Edit Match"
       title={match.title}
     >
+      <AdminMatchWeatherPanel
+        onCancelForRain={cancelForRainAction}
+        onCheckWeather={checkWeatherAction}
+        onSendRainAlert={sendRainAlertAction}
+        onSendRainAlertChanged={sendRainAlertChangedAction}
+        weather={weather}
+      />
       <AdminMatchEditor
         formAction={formAction}
         mode="edit"

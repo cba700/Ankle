@@ -391,6 +391,8 @@ add constraint notification_dispatches_event_type_check
 check (
   event_type in (
     'cash_charged',
+    'cash_refund_processed',
+    'match_applied',
     'match_confirmed',
     'match_cancelled_user',
     'match_cancelled_admin',
@@ -400,7 +402,10 @@ check (
     'participant_shortage_notice_day_before',
     'participant_shortage_notice_same_day',
     'rain_notice',
-    'rain_change_notice'
+    'rain_change_notice',
+    'rain_alert',
+    'rain_alert_changed',
+    'rain_match_cancelled'
   )
 );
 
