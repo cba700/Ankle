@@ -57,6 +57,7 @@
   align-items: center;
   min-height: 30px;
   padding: 0 12px;
+  border: 1px solid transparent;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
@@ -73,7 +74,8 @@
 }
 
 .statusNeutral {
-  background: #ededed;
+  border-color: var(--line);
+  background: #fff;
   color: var(--text-tertiary);
 }
 
@@ -159,17 +161,19 @@
   justify-content: center;
   min-height: 56px;
   padding: 0 12px;
-  border: 0;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #f1f3f5;
+  background: #fff;
   text-align: center;
   transition:
+    border-color 0.16s ease,
     background-color 0.16s ease,
     color 0.16s ease;
 }
 
 .packageButtonActive {
-  background: #e7ebef;
+  border-color: rgba(243, 109, 33, 0.42);
+  background: var(--accent-soft);
 }
 
 .packageAmount {
@@ -276,17 +280,19 @@
   justify-content: center;
   min-height: 48px;
   padding: 0 12px;
-  border: 0;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f1f3f5;
+  background: #fff;
   text-align: center;
   transition:
+    border-color 0.16s ease,
     background-color 0.16s ease,
     color 0.16s ease;
 }
 
 .paymentMethodButtonActive {
-  background: #e7ebef;
+  border-color: rgba(243, 109, 33, 0.42);
+  background: var(--accent-soft);
 }
 
 .paymentMethodLabel {
