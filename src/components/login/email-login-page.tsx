@@ -49,6 +49,21 @@ export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
         return;
       }
 
+      const { data: profile } = await activeSupabase
+        .from("profiles")
+        .select("account_status")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (profile?.account_status !== "active") {
+        setLoginStatus({ status: "signedOut" });
+        return;
+      }
+
       setLoginStatus({
         email: user.email ?? "앵클 사용자",
         status: "signedIn",

@@ -7,6 +7,9 @@ import {
   getAdminVenues as getMockAdminVenues,
 } from "@/features/admin/mock/admin-venues";
 import {
+  listWithdrawalRequestLinksByRefundRequestIds,
+} from "@/lib/account-withdrawal";
+import {
   listCashAccounts,
   listRecentCashChargeOrders,
   listRecentCashChargeOrderEvents,
@@ -19,6 +22,7 @@ import {
 } from "@/lib/coupons";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import {
+  assertAccountWithdrawalSchemaReady,
   assertAdminMatchParticipantsSchemaReady,
   assertCashChargeOperationsSchemaReady,
   assertCouponSchemaReady,
@@ -116,6 +120,7 @@ export async function getAdminCashDashboardData() {
       accounts: [],
       chargeOrders: [],
       chargeOrderEvents: [],
+      linkedWithdrawalRefundRequestIds: [],
       refundRequests: [],
       transactions: [],
     };
@@ -128,6 +133,7 @@ export async function getAdminCashDashboardData() {
       accounts: [],
       chargeOrders: [],
       chargeOrderEvents: [],
+      linkedWithdrawalRefundRequestIds: [],
       refundRequests: [],
       transactions: [],
     };
@@ -135,6 +141,7 @@ export async function getAdminCashDashboardData() {
 
   await assertCashChargeOperationsSchemaReady(supabase);
   await assertCashRefundRequestSchemaReady(supabase);
+  await assertAccountWithdrawalSchemaReady(supabase);
 
   const [accounts, chargeOrders, chargeOrderEvents, refundRequests, transactions] = await Promise.all([
     listCashAccounts(supabase),
@@ -143,11 +150,20 @@ export async function getAdminCashDashboardData() {
     listRecentCashRefundRequests(supabase),
     listRecentCashTransactions(supabase),
   ]);
+  const linkedWithdrawalRefundRequestIds = Array.from(
+    (
+      await listWithdrawalRequestLinksByRefundRequestIds(
+        supabase,
+        refundRequests.map((request) => request.id),
+      )
+    ).keys(),
+  );
 
   return {
     accounts,
     chargeOrders,
     chargeOrderEvents,
+    linkedWithdrawalRefundRequestIds,
     refundRequests,
     transactions,
   };

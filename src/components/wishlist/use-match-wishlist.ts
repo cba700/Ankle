@@ -145,6 +145,20 @@ export function useMatchWishlist() {
       }
 
       if (
+        response.status === 403 &&
+        (payload?.code === "ACCOUNT_WITHDRAWAL_PENDING" ||
+          payload?.code === "ACCOUNT_WITHDRAWN")
+      ) {
+        window.location.href = buildLoginHref(
+          nextPath,
+          payload.code === "ACCOUNT_WITHDRAWN"
+            ? "account_withdrawn"
+            : "account_withdrawal_pending",
+        );
+        return;
+      }
+
+      if (
         response.status === 503 ||
         payload?.code === "SUPABASE_NOT_CONFIGURED"
       ) {

@@ -7,6 +7,7 @@ import { retryPendingTossChargeOrder } from "@/lib/payments/toss-charge";
 import { buildPlayerLevelValue } from "@/lib/player-levels";
 import { getServerAuthState } from "@/lib/supabase/auth";
 import {
+  assertAccountWithdrawalSchemaReady,
   assertAdminPlayerLevelSchemaReady,
   assertCashChargeOperationsSchemaReady,
   assertCouponSchemaReady,
@@ -382,12 +383,18 @@ export async function retryPendingCashChargeOrderAction(formData: FormData) {
 export async function approveCashRefundRequestAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertCashRefundRequestSchemaReady(supabase);
+  await assertAccountWithdrawalSchemaReady(supabase);
   const admin = requireServiceRoleClient();
   const requestId = String(formData.get("requestId") ?? "").trim();
 
   if (!requestId) {
     throw new Error("Refund request ID is required");
   }
+
+  const linkedWithdrawalRequest = await getLinkedPendingWithdrawalRequestByRefundRequestId(
+    admin,
+    requestId,
+  );
 
   const { error } = await admin.rpc("approve_cash_refund_request", {
     p_note: null,
@@ -398,18 +405,34 @@ export async function approveCashRefundRequestAction(formData: FormData) {
     throw new Error(error.message);
   }
 
+  if (linkedWithdrawalRequest) {
+    const { error: finalizeError } = await admin.rpc("finalize_account_withdrawal", {
+      p_withdrawal_request_id: linkedWithdrawalRequest.id,
+    });
+
+    if (finalizeError) {
+      throw new Error(finalizeError.message);
+    }
+  }
+
   redirect("/admin/cash");
 }
 
 export async function rejectCashRefundRequestAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertCashRefundRequestSchemaReady(supabase);
+  await assertAccountWithdrawalSchemaReady(supabase);
   const admin = requireServiceRoleClient();
   const requestId = String(formData.get("requestId") ?? "").trim();
 
   if (!requestId) {
     throw new Error("Refund request ID is required");
   }
+
+  const linkedWithdrawalRequest = await getLinkedPendingWithdrawalRequestByRefundRequestId(
+    admin,
+    requestId,
+  );
 
   const { error } = await admin.rpc("reject_cash_refund_request", {
     p_note: null,
@@ -418,6 +441,16 @@ export async function rejectCashRefundRequestAction(formData: FormData) {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (linkedWithdrawalRequest) {
+    const { error: cancelError } = await admin.rpc("cancel_account_withdrawal", {
+      p_withdrawal_request_id: linkedWithdrawalRequest.id,
+    });
+
+    if (cancelError) {
+      throw new Error(cancelError.message);
+    }
   }
 
   redirect("/admin/cash");
@@ -1018,6 +1051,23 @@ function requireServiceRoleClient() {
   }
 
   return admin as any;
+}
+
+async function getLinkedPendingWithdrawalRequestByRefundRequestId(
+  admin: ReturnType<typeof requireServiceRoleClient>,
+  refundRequestId: string,
+) {
+  const { data, error } = await (admin.from("account_withdrawal_requests" as any) as any)
+    .select("id")
+    .eq("refund_request_id", refundRequestId)
+    .eq("status", "pending")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load linked withdrawal request: ${error.message}`);
+  }
+
+  return typeof data?.id === "string" ? { id: data.id } : null;
 }
 
 async function getVenueImageUrls(

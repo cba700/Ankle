@@ -26,6 +26,7 @@ type PhoneVerificationRow = {
 type PhoneVerificationStatus =
   | "PHONE_ALREADY_REGISTERED"
   | "PHONE_NUMBER_INVALID"
+  | "PHONE_REJOIN_BLOCKED"
   | "PHONE_VERIFICATION_ATTEMPTS_EXCEEDED"
   | "PHONE_VERIFICATION_BLOCKED"
   | "PHONE_VERIFICATION_EXPIRED"
@@ -422,6 +423,32 @@ export async function assertPhoneOwnershipAvailable(
     throw new PhoneVerificationError(
       "PHONE_ALREADY_REGISTERED",
       "이미 가입된 휴대폰 번호입니다. 기존 로그인 방식으로 로그인해 주세요.",
+      { httpStatus: 409 },
+    );
+  }
+
+  const { data: rejoinBlock, error: rejoinBlockError } = await (admin.from(
+    "withdrawal_rejoin_blocks" as any,
+  ) as any)
+    .select("blocked_until")
+    .eq("phone_number_e164", phoneNumberE164)
+    .gt("blocked_until", new Date().toISOString())
+    .order("blocked_until", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (
+    rejoinBlockError &&
+    rejoinBlockError.code !== "42P01" &&
+    rejoinBlockError.code !== "42703"
+  ) {
+    throw new Error(`Failed to check phone rejoin block: ${rejoinBlockError.message}`);
+  }
+
+  if (typeof rejoinBlock?.blocked_until === "string") {
+    throw new PhoneVerificationError(
+      "PHONE_REJOIN_BLOCKED",
+      "탈퇴 후 30일 동안은 같은 휴대폰 번호로 다시 가입할 수 없습니다.",
       { httpStatus: 409 },
     );
   }

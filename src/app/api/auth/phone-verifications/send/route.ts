@@ -5,6 +5,7 @@ import {
   sendPhoneVerificationCode,
   type PhoneVerificationPurpose,
 } from "@/lib/phone-auth";
+import { getServerUserState } from "@/lib/supabase/auth";
 import { assertProfileOnboardingSchemaReady } from "@/lib/supabase/schema";
 import {
   getSupabaseServerClient,
@@ -55,14 +56,28 @@ export async function POST(request: Request) {
 
     await assertProfileOnboardingSchemaReady(supabase);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { accountStatus, user } = await getServerUserState();
 
     if (!user) {
       return NextResponse.json(
         { code: "AUTH_REQUIRED", message: "로그인이 필요한 기능입니다." },
         { headers: PRIVATE_NO_STORE_HEADERS, status: 401 },
+      );
+    }
+
+    if (accountStatus !== "active") {
+      return NextResponse.json(
+        {
+          code:
+            accountStatus === "withdrawn"
+              ? "ACCOUNT_WITHDRAWN"
+              : "ACCOUNT_WITHDRAWAL_PENDING",
+          message:
+            accountStatus === "withdrawn"
+              ? "탈퇴 처리된 계정입니다. 30일 이후 다시 로그인해 주세요."
+              : "이미 회원 탈퇴 처리 중인 계정입니다.",
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 403 },
       );
     }
 
