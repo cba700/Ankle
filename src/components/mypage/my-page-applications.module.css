@@ -4,33 +4,27 @@
 }
 
 .main {
-  padding: 22px 0 36px;
+  padding: 18px 0 32px;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
-.breadcrumb {
+.backLink {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.breadcrumbLink {
-  color: inherit;
-}
-
-.breadcrumbSeparator {
-  color: var(--text-tertiary);
-}
-
-.breadcrumbCurrent {
   color: var(--text-primary);
 }
 
+.backIcon,
 .heroBadgeIcon,
 .calendarControlIcon {
   width: 18px;
@@ -46,11 +40,11 @@
 }
 
 .heroCard {
-  padding: 22px;
+  padding: 18px 20px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
 }
 
 .heroCopy {
@@ -61,21 +55,21 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 30px;
+  padding: 0 10px;
   border-radius: 999px;
   background: rgba(255, 107, 0, 0.1);
   color: var(--accent-strong);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .heroTitle {
-  margin: 12px 0 0;
-  font-size: clamp(28px, 4vw, 36px);
-  line-height: 1.08;
+  margin: 10px 0 0;
+  font-size: clamp(24px, 3.3vw, 31px);
+  line-height: 1.12;
   letter-spacing: -0.05em;
 }
 
@@ -88,17 +82,17 @@
 
 .heroStats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  min-width: 248px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  min-width: 160px;
 }
 
 .heroStat {
   display: grid;
   gap: 4px;
-  padding: 16px;
+  padding: 14px 16px;
   border: 1px solid rgba(243, 109, 33, 0.14);
-  border-radius: 18px;
+  border-radius: 16px;
   background: #fff;
 }
 
@@ -111,7 +105,7 @@
 }
 
 .heroStatValue {
-  font-size: 30px;
+  font-size: 28px;
   line-height: 1;
   font-weight: 900;
   letter-spacing: -0.03em;
@@ -125,7 +119,7 @@
 }
 
 .calendarCard {
-  padding: 20px;
+  padding: 18px;
 }
 
 .calendarHeader {
@@ -153,8 +147,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -167,14 +161,14 @@
 }
 
 .calendarLegend {
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .legendItem {
@@ -195,8 +189,8 @@
 
 .legendDot,
 .dayDot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   background: var(--accent-strong);
   flex-shrink: 0;
@@ -206,11 +200,11 @@
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .weekdayRow {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .weekdayCell {
@@ -222,19 +216,19 @@
 }
 
 .calendarGrid {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .dayButton {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
-  min-height: 74px;
-  padding: 12px 4px 10px;
+  min-height: 48px;
+  padding: 7px 2px 6px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   background: #fff;
   color: var(--text-primary);
   touch-action: manipulation;
@@ -278,7 +272,7 @@
 }
 
 .dayNumber {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   line-height: 1;
 }
@@ -288,13 +282,12 @@
 }
 
 .dayButtonSelected .dayDot {
-  background: #fff;
+  display: none;
 }
 
 .detailSection {
   min-width: 0;
-  min-height: 100%;
-  padding: 22px;
+  padding: 20px;
   border-radius: 24px;
   border-color: rgba(201, 193, 183, 0.78);
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
@@ -306,6 +299,35 @@
     transform 0.16s ease,
     box-shadow 0.16s ease,
     border-color 0.16s ease;
+}
+
+.applicationCardLink {
+  cursor: pointer;
+}
+
+.applicationTitle {
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.applicationVenue,
+.applicationMeta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.applicationMeta {
+  color: var(--text-tertiary);
+}
+
+.applicationCash {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.applicationCashDanger {
+  color: var(--red-text);
 }
 
 .resultEmptyState {
@@ -359,14 +381,14 @@
 
 @media (max-width: 767px) {
   .main {
-    padding: 16px 0 36px;
+    padding: 16px 0 30px;
     gap: 12px;
   }
 
   .heroCard,
   .calendarCard,
   .detailSection {
-    padding: 18px;
+    padding: 16px;
   }
 
   .heroCard {
@@ -388,25 +410,21 @@
   }
 
   .heroTitle {
-    font-size: 26px;
+    font-size: 22px;
   }
 
   .heroStatValue {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .dayButton {
-    min-height: 64px;
-    border-radius: 14px;
-    padding: 10px 2px 8px;
+    min-height: 44px;
+    border-radius: 12px;
+    padding: 6px 2px 5px;
   }
 }
 
 @media (max-width: 420px) {
-  .heroStats {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .calendarLegend {
     font-size: 12px;
   }
@@ -417,7 +435,7 @@
   }
 
   .dayNumber {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .legendMarker {

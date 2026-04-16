@@ -121,15 +121,10 @@ export function MyPageApplications({
       </header>
 
       <main className={`pageShell ${styles.main}`}>
-        <nav aria-label="현재 위치" className={styles.breadcrumb}>
-          <AppLink className={styles.breadcrumbLink} href="/mypage">
-            마이페이지
-          </AppLink>
-          <span aria-hidden="true" className={styles.breadcrumbSeparator}>
-            /
-          </span>
-          <span className={styles.breadcrumbCurrent}>신청 내역</span>
-        </nav>
+        <AppLink className={styles.backLink} href="/mypage">
+          <ArrowLeftIcon className={styles.backIcon} />
+          마이페이지로 돌아가기
+        </AppLink>
 
         <section className={styles.heroCard}>
           <div className={styles.heroCopy}>
@@ -138,19 +133,12 @@ export function MyPageApplications({
               신청 캘린더
             </span>
             <h1 className={styles.heroTitle}>날짜별 매치 신청 내역</h1>
-            <p className={styles.heroDescription}>
-              날짜를 선택하면 신청한 매치와 상태가 바로 표시됩니다.
-            </p>
           </div>
 
           <div className={styles.heroStats}>
             <div className={styles.heroStat}>
               <span className={styles.heroStatLabel}>전체 신청</span>
               <strong className={styles.heroStatValue}>{applications.length}건</strong>
-            </div>
-            <div className={styles.heroStat}>
-              <span className={styles.heroStatLabel}>표시 날짜</span>
-              <strong className={styles.heroStatValue}>{markedDateKeys.size}일</strong>
             </div>
           </div>
         </section>
@@ -267,17 +255,23 @@ export function MyPageApplications({
                         >
                           {application.statusLabel}
                         </span>
-                        {application.href ? (
-                          <span className={baseStyles.detailLink}>
-                            상세 보기
-                            <ArrowRightIcon className={baseStyles.detailArrow} />
-                          </span>
-                        ) : null}
                       </div>
-                      <strong className={baseStyles.applicationTitle}>{application.title}</strong>
-                      <p className={baseStyles.applicationVenue}>{application.venueName}</p>
-                      <p className={baseStyles.applicationMeta}>{application.metaLabel}</p>
-                      <p className={baseStyles.applicationCash}>{application.cashLabel}</p>
+                      <strong className={`${baseStyles.applicationTitle} ${styles.applicationTitle}`}>
+                        {application.title}
+                      </strong>
+                      <p className={`${baseStyles.applicationVenue} ${styles.applicationVenue}`}>
+                        {application.venueName}
+                      </p>
+                      <p className={`${baseStyles.applicationMeta} ${styles.applicationMeta}`}>
+                        {application.metaLabel}
+                      </p>
+                      <p
+                        className={`${baseStyles.applicationCash} ${styles.applicationCash} ${
+                          isCashChargeOnly(application.cashLabel) ? styles.applicationCashDanger : ""
+                        }`}
+                      >
+                        {application.cashLabel}
+                      </p>
                     </>
                   );
 
@@ -380,8 +374,11 @@ function buildCalendarDays(monthStart: Date, markedDateKeys: Set<string>): Calen
   const firstCellDate = addDays(normalizedMonthStart, -firstWeekdayIndex);
   const currentMonthKey = getYearMonthKey(normalizedMonthStart);
   const todayKey = toDateKey(getSeoulTodayStart());
+  const lastDateOfMonth = addDays(addCalendarMonths(normalizedMonthStart, 1), -1);
+  const daysInMonth = Number.parseInt(toDateKey(lastDateOfMonth).slice(-2), 10);
+  const totalCells = Math.ceil((firstWeekdayIndex + daysInMonth) / 7) * 7;
 
-  return Array.from({ length: 42 }, (_, index) => {
+  return Array.from({ length: totalCells }, (_, index) => {
     const date = addDays(firstCellDate, index);
     const dateKey = toDateKey(date);
 
@@ -447,4 +444,8 @@ function createSeoulDate(year: number, month: number, day: number) {
 
 function parseDateKey(dateKey: string) {
   return new Date(`${dateKey}T00:00:00+09:00`);
+}
+
+function isCashChargeOnly(cashLabel: string) {
+  return cashLabel.includes("캐시 차감") && !cashLabel.includes("캐시 환급");
 }
