@@ -234,26 +234,20 @@
   box-shadow: 0 8px 20px rgba(17, 17, 17, 0.03);
 }
 
-.refundPolicyGroupStack {
+.refundInlineBlock {
   display: grid;
-  gap: 16px;
-}
-
-.refundPolicyGroup {
-  display: grid;
-  gap: 10px;
-}
-
-.refundPolicyGroup + .refundPolicyGroup {
-  padding-top: 16px;
+  gap: 8px;
+  margin-top: 2px;
+  padding-top: 14px;
   border-top: 1px solid rgba(201, 193, 183, 0.45);
 }
 
-.refundPolicyGroupTitle {
+.refundInlineLabel {
   margin: 0;
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 800;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   line-height: 1.5;
 }
 
@@ -392,8 +386,8 @@
     border-radius: 16px;
   }
 
-  .refundPolicyGroup + .refundPolicyGroup {
-    padding-top: 14px;
+  .refundInlineBlock {
+    padding-top: 12px;
   }
 
   .infoGrid,

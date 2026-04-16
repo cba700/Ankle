@@ -104,29 +104,44 @@ function CombinedRefundPolicyPreviewBlock({
 }: {
   groups: RefundPolicyGroup[];
 }) {
+  const [shortfallCancelGroup, shortfallCriteriaGroup] = groups;
+
   return (
     <section className={`${styles.refundPolicyBlock} ${styles.refundPolicyBlockHighlight}`}>
-      <div className={styles.refundPolicyGroupStack}>
-        {groups.map((group) => (
-          <div className={styles.refundPolicyGroup} key={group.title}>
-            <h3 className={styles.refundPolicyGroupTitle}>{group.title}</h3>
-
-            {group.rows ? (
-              <div className={styles.refundTable}>
-                {group.rows.map((row) => (
-                  <div
-                    className={styles.refundRow}
-                    key={`${group.title}-${row.condition}-${row.policy}`}
-                  >
-                    <span className={styles.refundCondition}>{row.condition}</span>
-                    <strong className={styles.refundPolicy}>{row.policy}</strong>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ))}
+      <div className={styles.refundCardLabel}>
+        {shortfallCancelGroup?.title ?? "참가자 미달 무료 취소"}
       </div>
+
+      {shortfallCancelGroup?.rows ? (
+        <div className={styles.refundTable}>
+          {shortfallCancelGroup.rows.map((row) => (
+            <div
+              className={styles.refundRow}
+              key={`${shortfallCancelGroup.title}-${row.condition}-${row.policy}`}
+            >
+              <span className={styles.refundCondition}>{row.condition}</span>
+              <strong className={styles.refundPolicy}>{row.policy}</strong>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {shortfallCriteriaGroup?.rows ? (
+        <div className={styles.refundInlineBlock}>
+          <p className={styles.refundInlineLabel}>{shortfallCriteriaGroup.title}</p>
+          <div className={styles.refundTable}>
+            {shortfallCriteriaGroup.rows.map((row) => (
+              <div
+                className={styles.refundRow}
+                key={`${shortfallCriteriaGroup.title}-${row.condition}-${row.policy}`}
+              >
+                <span className={styles.refundCondition}>{row.condition}</span>
+                <strong className={styles.refundPolicy}>{row.policy}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
