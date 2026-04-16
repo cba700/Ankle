@@ -105,14 +105,6 @@ function getOrderMeta(order: Awaited<ReturnType<typeof listCashChargeOrdersByUse
     return "적립 완료";
   }
 
-  if (order.lastErrorMessage) {
-    return order.lastErrorMessage;
-  }
-
-  if (order.failureMessage) {
-    return order.failureMessage;
-  }
-
   if (order.status === "pending") {
     return "승인 대기";
   }
@@ -122,10 +114,10 @@ function getOrderMeta(order: Awaited<ReturnType<typeof listCashChargeOrdersByUse
   }
 
   if (order.status === "cancelled") {
-    return "주문 취소";
+    return "사용자 취소";
   }
 
-  return "결제 실패";
+  return getOrderFailureMeta(order.lastErrorCode ?? order.failureCode);
 }
 
 function getOrderStatusLabel(
@@ -158,6 +150,18 @@ function getOrderStatusTone(
   }
 
   return "neutral" as const;
+}
+
+function getOrderFailureMeta(code: string | null) {
+  if (code === "PAY_PROCESS_CANCELED") {
+    return "사용자 취소";
+  }
+
+  if (code === "PAYMENT_WINDOW_OPEN_FAILED") {
+    return "결제창 실행 실패";
+  }
+
+  return "결제 실패";
 }
 
 function normalizeInternalNextPath(path: string | null) {

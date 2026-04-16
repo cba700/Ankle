@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "@/components/icons";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
@@ -10,40 +11,57 @@ type CashChargeFailPageProps = {
   code: string | null;
   message: string | null;
   orderId: string | null;
+  redirectPath: string;
 };
 
 export function CashChargeFailPage({
   code,
   message,
   orderId,
+  redirectPath,
 }: CashChargeFailPageProps) {
+  const router = useRouter();
   const startedRef = useRef(false);
+  const isUserCancelled = code === "PAY_PROCESS_CANCELED";
 
   useEffect(() => {
-    if (startedRef.current || !orderId) {
+    if (startedRef.current) {
       return;
     }
 
     startedRef.current = true;
 
-    void fetch("/api/payments/toss/fail", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code,
-        message,
-        orderId,
-      }),
-    }).catch(() => null);
-  }, [code, message, orderId]);
+    const syncFailure = orderId
+      ? fetch("/api/payments/toss/fail", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          keepalive: true,
+          body: JSON.stringify({
+            code,
+            message,
+            orderId,
+            source: "redirect_fail",
+          }),
+        }).catch(() => null)
+      : Promise.resolve(null);
+
+    if (isUserCancelled) {
+      void syncFailure;
+      router.replace(redirectPath);
+    }
+  }, [code, isUserCancelled, message, orderId, redirectPath, router]);
+
+  if (isUserCancelled) {
+    return null;
+  }
 
   return (
     <div className={styles.page}>
       <div className="pageShell">
         <main className={styles.main}>
-          <AppLink className={styles.backLink} href="/cash/charge">
+          <AppLink className={styles.backLink} href={redirectPath}>
             <ArrowLeftIcon />
             충전 화면으로 돌아가기
           </AppLink>
@@ -54,11 +72,11 @@ export function CashChargeFailPage({
             </span>
             <h1 className={styles.title}>결제가 완료되지 않았어요.</h1>
             <p className={styles.description}>
-              {getFailMessage(message, code)}
+              {getFailMessage(code)}
             </p>
 
             <div className={styles.actionRow}>
-              <AppLink className={styles.primaryLink} href="/cash/charge">
+              <AppLink className={styles.primaryLink} href={redirectPath}>
                 다시 충전하기
               </AppLink>
               <AppLink className={styles.secondaryLink} href="/mypage">
@@ -74,15 +92,9 @@ export function CashChargeFailPage({
   );
 }
 
-function getFailMessage(message: string | null, code: string | null) {
-  const trimmedMessage = message?.trim();
-
-  if (trimmedMessage) {
-    return trimmedMessage;
-  }
-
-  if (code === "PAY_PROCESS_CANCELED") {
-    return "결제가 취소되었습니다. 다시 시도해 주세요.";
+function getFailMessage(code: string | null) {
+  if (code === "PAYMENT_WINDOW_OPEN_FAILED") {
+    return "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
 
   return "결제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
