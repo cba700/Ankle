@@ -1,15 +1,20 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
+import transitionStyles from "@/components/navigation/route-transition.module.css";
 import { useSearchParams } from "next/navigation";
 import { useMatchDetailFeedback } from "@/components/match/match-detail-feedback";
 import { normalizeSearchQuery } from "@/lib/match-search";
 import type { CalendarDate } from "@/lib/date";
-import { getHomeStateSearch } from "./home-route-state";
+import {
+  HOME_RESET_TO_TODAY_EVENT,
+  getHomeStateSearch,
+} from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
 import { HomeFilterBar } from "./home-filter-bar";
 import { HomeMatchList } from "./home-match-list";
 import { useMatchWishlist } from "@/components/wishlist/use-match-wishlist";
+import { HomePageSkeleton } from "./home-page-skeleton";
 import type { HomeMatchRow } from "./home-types";
 import { HOME_FILTERS } from "./home-view-model";
 import styles from "./home-page.module.css";
@@ -20,6 +25,8 @@ type HomeMatchBrowserProps = {
   initialActiveFilterIds: string[];
   rows: HomeMatchRow[];
 };
+
+const RESET_SKELETON_MS = 280;
 
 export function HomeMatchBrowser({
   dates,
@@ -32,7 +39,10 @@ export function HomeMatchBrowser({
   const defaultDateKey = dates[0]?.key ?? "";
   const [selectedDateKey, setSelectedDateKey] = useState(initialSelectedDateKey || defaultDateKey);
   const [activeFilterIds, setActiveFilterIds] = useState<string[]>(initialActiveFilterIds);
+  const [isResetPending, setIsResetPending] = useState(false);
+  const hideResetTimerRef = useRef<number | null>(null);
   const { pendingMatchIds, savedMatchIds, toggleMatchWishlist } = useMatchWishlist();
+  const normalizedQuery = normalizeSearchQuery(searchParams.get("q") ?? undefined);
 
   const activeDateKey = dates.some((date) => date.key === selectedDateKey)
     ? selectedDateKey
@@ -40,9 +50,8 @@ export function HomeMatchBrowser({
   const selectedDate = dates.find((date) => date.key === activeDateKey) ?? dates[0];
   const hideClosed = activeFilterIds.includes("hideClosed");
   const detailStateSearch = getHomeStateSearch({
-    dateKey: activeDateKey,
     filterIds: activeFilterIds,
-    query: normalizeSearchQuery(searchParams.get("q") ?? undefined),
+    query: normalizedQuery,
   });
   const visibleRows = rows.filter((row) => {
     if (row.dateKey !== activeDateKey) {
@@ -66,8 +75,42 @@ export function HomeMatchBrowser({
     return left.publicId.localeCompare(right.publicId);
   });
 
+  useEffect(() => {
+    return () => {
+      if (hideResetTimerRef.current) {
+        window.clearTimeout(hideResetTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleResetToToday() {
+      if (!defaultDateKey || activeDateKey === defaultDateKey) {
+        return;
+      }
+
+      if (hideResetTimerRef.current) {
+        window.clearTimeout(hideResetTimerRef.current);
+      }
+
+      setIsResetPending(true);
+      startTransition(() => {
+        setSelectedDateKey(defaultDateKey);
+      });
+      hideResetTimerRef.current = window.setTimeout(() => {
+        hideResetTimerRef.current = null;
+        setIsResetPending(false);
+      }, RESET_SKELETON_MS);
+    }
+
+    window.addEventListener(HOME_RESET_TO_TODAY_EVENT, handleResetToToday);
+
+    return () => {
+      window.removeEventListener(HOME_RESET_TO_TODAY_EVENT, handleResetToToday);
+    };
+  }, [activeDateKey, defaultDateKey]);
+
   function handleSelectDate(dateKey: string) {
-    syncUrl(dateKey, activeFilterIds);
     startTransition(() => {
       setSelectedDateKey(dateKey);
     });
@@ -78,16 +121,16 @@ export function HomeMatchBrowser({
       ? activeFilterIds.filter((item) => item !== filterId)
       : [...activeFilterIds, filterId];
 
-    syncUrl(activeDateKey, nextActiveFilterIds);
+    syncUrl(nextActiveFilterIds);
     startTransition(() => {
       setActiveFilterIds(nextActiveFilterIds);
     });
   }
 
-  function syncUrl(dateKey: string, filterIds: string[]) {
+  function syncUrl(filterIds: string[]) {
     const nextSearch = getHomeStateSearch({
-      dateKey,
       filterIds,
+      query: normalizedQuery,
     });
     const nextUrl = `${window.location.pathname}${nextSearch}`;
     const currentUrl = `${window.location.pathname}${window.location.search}`;
@@ -119,6 +162,11 @@ export function HomeMatchBrowser({
 
   return (
     <section className={styles.browserPanel}>
+      {isResetPending ? (
+        <div aria-hidden="true" className={transitionStyles.overlay}>
+          <HomePageSkeleton />
+        </div>
+      ) : null}
       <div className={styles.controlsSticky}>
         <div className={styles.controlsStack}>
           <HomeDatePicker
