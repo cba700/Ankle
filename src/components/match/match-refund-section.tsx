@@ -15,6 +15,12 @@ const MATCH_REFUND_SECTION =
 const RAIN_REFUND_SECTION =
   REFUND_POLICY_SECTIONS.find((section) => section.id === RAIN_REFUND_SECTION_ID) ?? null;
 const MATCH_REFUND_PREVIEW_GROUPS = MATCH_REFUND_SECTION?.groups.slice(1) ?? [];
+const MATCH_REFUND_SHORTFALL_GROUPS = MATCH_REFUND_PREVIEW_GROUPS.filter((group) =>
+  isShortfallRefundGroup(group.title),
+);
+const MATCH_REFUND_OTHER_GROUPS = MATCH_REFUND_PREVIEW_GROUPS.filter(
+  (group) => !isShortfallRefundGroup(group.title),
+);
 const RAIN_REFUND_PREVIEW_GROUP = RAIN_REFUND_SECTION?.groups[0] ?? null;
 
 export function MatchRefundSection() {
@@ -33,7 +39,11 @@ export function MatchRefundSection() {
           </div>
         </div>
 
-        {MATCH_REFUND_PREVIEW_GROUPS.map((group) => (
+        {MATCH_REFUND_SHORTFALL_GROUPS.length > 0 ? (
+          <CombinedRefundPolicyPreviewBlock groups={MATCH_REFUND_SHORTFALL_GROUPS} />
+        ) : null}
+
+        {MATCH_REFUND_OTHER_GROUPS.map((group) => (
           <RefundPolicyPreviewBlock group={group} key={group.title} />
         ))}
 
@@ -61,15 +71,8 @@ function RefundPolicyPreviewBlock({
 }: {
   group: RefundPolicyGroup;
 }) {
-  const isShortfallHighlight =
-    group.title === "참가자 미달 무료 취소" || group.title === "참가자 미달 기준";
-
   return (
-    <section
-      className={`${styles.refundPolicyBlock} ${
-        isShortfallHighlight ? styles.refundPolicyBlockHighlight : ""
-      }`}
-    >
+    <section className={styles.refundPolicyBlock}>
       <h3 className={styles.refundLinkTitle}>{group.title}</h3>
 
       {group.rows ? (
@@ -94,4 +97,40 @@ function RefundPolicyPreviewBlock({
       ) : null}
     </section>
   );
+}
+
+function CombinedRefundPolicyPreviewBlock({
+  groups,
+}: {
+  groups: RefundPolicyGroup[];
+}) {
+  return (
+    <section className={`${styles.refundPolicyBlock} ${styles.refundPolicyBlockHighlight}`}>
+      <div className={styles.refundPolicyGroupStack}>
+        {groups.map((group) => (
+          <div className={styles.refundPolicyGroup} key={group.title}>
+            <h3 className={styles.refundPolicyGroupTitle}>{group.title}</h3>
+
+            {group.rows ? (
+              <div className={styles.refundTable}>
+                {group.rows.map((row) => (
+                  <div
+                    className={styles.refundRow}
+                    key={`${group.title}-${row.condition}-${row.policy}`}
+                  >
+                    <span className={styles.refundCondition}>{row.condition}</span>
+                    <strong className={styles.refundPolicy}>{row.policy}</strong>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function isShortfallRefundGroup(title: string) {
+  return title === "참가자 미달 무료 취소" || title === "참가자 미달 기준";
 }

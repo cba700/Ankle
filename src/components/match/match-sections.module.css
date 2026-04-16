@@ -230,8 +230,31 @@
   padding: 18px 20px;
   border: 1px solid rgba(222, 217, 209, 0.92);
   border-radius: 18px;
-  background: linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);
+  background: #fff;
   box-shadow: 0 8px 20px rgba(17, 17, 17, 0.03);
+}
+
+.refundPolicyGroupStack {
+  display: grid;
+  gap: 16px;
+}
+
+.refundPolicyGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.refundPolicyGroup + .refundPolicyGroup {
+  padding-top: 16px;
+  border-top: 1px solid rgba(201, 193, 183, 0.45);
+}
+
+.refundPolicyGroupTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .refundCardLabel {
@@ -331,12 +354,11 @@
 }
 
 .refundPolicyBlock .refundCondition {
-  color: var(--text-primary);
-  font-weight: 700;
+  color: var(--text-secondary);
 }
 
 .refundPolicyBlock .refundPolicy {
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .refundPolicyBlock .bulletList {
@@ -368,6 +390,10 @@
   .refundPolicyBlockHighlight {
     padding: 16px 18px;
     border-radius: 16px;
+  }
+
+  .refundPolicyGroup + .refundPolicyGroup {
+    padding-top: 14px;
   }
 
   .infoGrid,
