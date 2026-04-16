@@ -36,12 +36,9 @@ export function MatchDetail({
         </div>
         <MatchDetailHeroClient
           courtName={view.courtName}
-          dateText={view.dateText}
           images={view.images}
           statusLabel={view.statusLabel}
           statusTone={view.statusTone}
-          time={view.time}
-          title={view.title}
         />
 
         <main className={styles.body}>
