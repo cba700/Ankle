@@ -17,6 +17,7 @@ import {
   normalizeSignupAgreementValues,
 } from "@/lib/signup-profile";
 import { saveSignupProfileData } from "@/lib/signup-profile-server";
+import { ensureAuthUserBootstrap } from "@/lib/auth/user-bootstrap";
 import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 
@@ -105,6 +106,8 @@ export async function POST(request: Request) {
     );
   }
 
+  let createdUserId: string | null = null;
+
   try {
     const verifiedPhone = await getVerifiedSignupPhoneVerification(
       admin,
@@ -145,11 +148,15 @@ export async function POST(request: Request) {
       return response;
     }
 
-    const createdUserId = createdUserData.user?.id;
+    const createdUser = createdUserData.user ?? null;
 
-    if (!createdUserId) {
+    if (!createdUser?.id) {
       throw new Error("Supabase did not return a created user.");
     }
+
+    createdUserId = createdUser.id;
+
+    await ensureAuthUserBootstrap(createdUser, admin);
 
     const verifiedAt = new Date().toISOString();
     const { error: phoneProfileError } = await (admin.from("profiles" as any) as any)
@@ -161,11 +168,11 @@ export async function POST(request: Request) {
       .eq("id", createdUserId);
 
     if (phoneProfileError) {
-      try {
-        await admin.auth.admin.deleteUser(createdUserId);
-      } catch {}
-
       if (phoneProfileError.code === "23505") {
+        try {
+          await admin.auth.admin.deleteUser(createdUserId);
+        } catch {}
+
         return NextResponse.json(
           {
             code: "PHONE_ALREADY_REGISTERED",
@@ -178,22 +185,14 @@ export async function POST(request: Request) {
       throw new Error(`Failed to update new profile with phone number: ${phoneProfileError.message}`);
     }
 
-    try {
-      await saveSignupProfileData(admin as any, {
-        agreements,
-        birthDate,
-        gender,
-        legalName,
-        source: "email_signup",
-        userId: createdUserId,
-      });
-    } catch (signupProfileError) {
-      try {
-        await admin.auth.admin.deleteUser(createdUserId);
-      } catch {}
-
-      throw signupProfileError;
-    }
+    await saveSignupProfileData(admin as any, {
+      agreements,
+      birthDate,
+      gender,
+      legalName,
+      source: "email_signup",
+      userId: createdUserId,
+    });
 
     await consumeVerifiedSignupPhoneVerification(admin, verificationRequestId);
 
@@ -240,7 +239,28 @@ export async function POST(request: Request) {
       return response;
     }
 
-    throw error;
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (createdUserId) {
+      try {
+        await admin.auth.admin.deleteUser(createdUserId);
+      } catch {}
+    }
+
+    console.error("[email-signup]", {
+      message,
+      provider: "email",
+      stage: "signup",
+      userId: createdUserId,
+    });
+
+    return NextResponse.json(
+      {
+        code: "EMAIL_SIGNUP_FAILED",
+        message: "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
+    );
   }
 }
 

@@ -21,6 +21,8 @@ type LoginStatus =
   | { email: string; status: "signedIn" };
 
 const ERROR_MESSAGES: Record<string, string> = {
+  account_setup_failed:
+    "계정 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
   account_withdrawal_pending:
     "회원 탈퇴가 접수되어 현재 계정 접근이 제한되었습니다.",
   account_withdrawn:
