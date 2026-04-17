@@ -7,6 +7,7 @@ import {
   formatSeoulDateShortLabel,
   formatSeoulTime,
 } from "@/lib/date";
+import { getCashAccountByUserId } from "@/lib/cash";
 import { normalizeKoreanMobilePhoneNumber } from "@/lib/phone-number";
 import {
   cancelSolapiScheduledGroupMessage,
@@ -102,6 +103,7 @@ type ChargeOrderNotificationRow = {
 
 type CashRefundRequestNotificationRow = {
   id: string;
+  processed_at: string | null;
   requested_amount: number;
   user_id: string;
 };
@@ -177,9 +179,10 @@ export async function sendCashChargedNotification({
       },
       phoneNumberE164: getVerifiedPhoneNumber(profile),
       templateVariables: {
+        "#{고객명}": getDisplayName(profile),
         "#{보유캐시}": `${formatMoney(remainingCash)}원`,
-        "#{충전금액}": `${formatMoney(amount)}원`,
-        "#{회원명}": getDisplayName(profile),
+        "#{충전캐시}": `${formatMoney(amount)}원`,
+        "#{충전일시}": formatNotificationDateTime(new Date()),
       },
       userId,
     });
@@ -195,6 +198,7 @@ export async function sendCashRefundProcessedNotification(refundRequestId: strin
     }
 
     const profile = await getProfileByUserId(admin, refundRequest.user_id);
+    const cashAccount = await getCashAccountByUserId(admin, refundRequest.user_id);
 
     await sendImmediateKakaoNotification(admin, {
       applicationId: null,
@@ -207,8 +211,12 @@ export async function sendCashRefundProcessedNotification(refundRequestId: strin
       },
       phoneNumberE164: getVerifiedPhoneNumber(profile),
       templateVariables: {
-        "#{회원명}": getDisplayName(profile),
-        "#{환불금액}": `${formatMoney(refundRequest.requested_amount)}원`,
+        "#{고객명}": getDisplayName(profile),
+        "#{잔여캐시}": `${formatMoney(cashAccount?.balance ?? 0)}원`,
+        "#{처리일시}": formatNotificationDateTime(
+          new Date(refundRequest.processed_at ?? new Date().toISOString()),
+        ),
+        "#{환불캐시}": `${formatMoney(refundRequest.requested_amount)}원`,
       },
       userId: refundRequest.user_id,
     });
@@ -1007,7 +1015,7 @@ async function getCashRefundRequestById(
 ) {
   const { data, error } = await admin
     .from("cash_refund_requests")
-    .select("id, requested_amount, user_id")
+    .select("id, processed_at, requested_amount, user_id")
     .eq("id", refundRequestId)
     .maybeSingle();
 
@@ -1016,6 +1024,16 @@ async function getCashRefundRequestById(
   }
 
   return (data ?? null) as CashRefundRequestNotificationRow | null;
+}
+
+function formatNotificationDateTime(date: Date) {
+  const dateKey = formatSeoulDateInput(date);
+  const year = dateKey.slice(0, 4);
+  const month = dateKey.slice(5, 7);
+  const day = dateKey.slice(8, 10);
+  const time = formatSeoulTime(date);
+
+  return `${year}-${month}-${day} ${time}`;
 }
 
 async function listConfirmedApplicationIdsByMatchId(
