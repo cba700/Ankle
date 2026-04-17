@@ -55,7 +55,6 @@ export default async function CashChargeRoute({
     supabase,
     user.id,
     chargePath,
-    { skipPhoneVerification: true },
   );
 
   if (requiredSetupHref) {

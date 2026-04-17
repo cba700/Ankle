@@ -6,6 +6,7 @@ import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import {
   buildLoginHref,
   normalizePostAuthNextPath,
+  shouldRequirePhoneVerificationBeforeContinue,
 } from "@/lib/auth/redirect";
 import {
   bindSingleSessionCookie,
@@ -133,7 +134,10 @@ async function continueWithActiveAccount({
     supabase,
     userId,
     nextPath,
-    { skipPhoneVerification: true },
+    {
+      skipPhoneVerification:
+        !shouldRequirePhoneVerificationBeforeContinue(nextPath),
+    },
   );
 
   const response = NextResponse.redirect(

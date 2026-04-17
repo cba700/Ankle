@@ -1,8 +1,9 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-
-export type AccountStatus = "active" | "withdrawal_pending" | "withdrawn";
+import type { AccountStatus } from "@/lib/account-status";
+export { normalizeAccountStatus } from "@/lib/account-status";
+export type { AccountStatus } from "@/lib/account-status";
 
 export type AccountWithdrawalRequestStatus =
   | "pending"
@@ -37,14 +38,6 @@ type AccountWithdrawalRequestRow = {
 type SupabaseServerClient = NonNullable<
   Awaited<ReturnType<typeof getSupabaseServerClient>>
 >;
-
-export function normalizeAccountStatus(value: unknown): AccountStatus {
-  if (value === "withdrawal_pending" || value === "withdrawn") {
-    return value;
-  }
-
-  return "active";
-}
 
 export function getAccountStatusLoginErrorCode(status: AccountStatus) {
   if (status === "withdrawal_pending") {

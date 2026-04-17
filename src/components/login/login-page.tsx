@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { buildAuthContinueHref } from "@/lib/auth/redirect";
 import { getKakaoSyncOAuthOptions } from "@/lib/kakao-sync";
+import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
 
@@ -70,7 +72,7 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
           return;
         }
 
-        if (profile?.account_status !== "active") {
+        if (normalizeAccountStatus(profile?.account_status) !== "active") {
           setLoginStatus({ status: "signedOut" });
           return;
         }
@@ -169,7 +171,10 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
             <p className={styles.accountEmail}>{loginStatus.email}</p>
 
             <div className={styles.actionRow}>
-              <AppLink className={styles.secondaryButton} href={nextPath}>
+              <AppLink
+                className={styles.secondaryButton}
+                href={buildAuthContinueHref(nextPath)}
+              >
                 {nextPath === "/" ? "홈으로 이동" : "원래 화면으로 이동"}
               </AppLink>
 
