@@ -180,8 +180,8 @@ export async function sendCashChargedNotification({
       phoneNumberE164: getVerifiedPhoneNumber(profile),
       templateVariables: {
         "#{고객명}": getDisplayName(profile),
-        "#{보유캐시}": `${formatMoney(remainingCash)}원`,
-        "#{충전캐시}": `${formatMoney(amount)}원`,
+        "#{보유캐시}": formatMoney(remainingCash),
+        "#{충전캐시}": formatMoney(amount),
         "#{충전일시}": formatNotificationDateTime(new Date()),
       },
       userId,
@@ -212,11 +212,11 @@ export async function sendCashRefundProcessedNotification(refundRequestId: strin
       phoneNumberE164: getVerifiedPhoneNumber(profile),
       templateVariables: {
         "#{고객명}": getDisplayName(profile),
-        "#{잔여캐시}": `${formatMoney(cashAccount?.balance ?? 0)}원`,
+        "#{잔여캐시}": formatMoney(cashAccount?.balance ?? 0),
         "#{처리일시}": formatNotificationDateTime(
           new Date(refundRequest.processed_at ?? new Date().toISOString()),
         ),
-        "#{환불캐시}": `${formatMoney(refundRequest.requested_amount)}원`,
+        "#{환불캐시}": formatMoney(refundRequest.requested_amount),
       },
       userId: refundRequest.user_id,
     });
