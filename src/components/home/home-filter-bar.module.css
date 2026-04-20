@@ -1,7 +1,6 @@
 .section {
   max-width: 100%;
   min-width: 0;
-  overflow: hidden;
 }
 
 .row {
@@ -22,10 +21,11 @@
   display: none;
 }
 
-.chip {
+.triggerChip,
+.optionChip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid rgba(201, 193, 183, 0.72);
@@ -33,18 +33,160 @@
   background: #fff;
   color: var(--text-secondary);
   font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.chipActive {
-  border-color: rgba(255, 107, 0, 0.28);
-  background: rgba(255, 107, 0, 0.08);
+.triggerChipActive,
+.optionChipActive {
+  border-color: rgba(243, 109, 33, 0.42);
   color: var(--accent-strong);
-  font-weight: 700;
 }
 
-.chevron {
-  width: 14px;
-  height: 14px;
+.sheetRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+}
+
+.sheetBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(17, 17, 17, 0.42);
+}
+
+.sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: min(78vh, 680px);
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 -18px 40px rgba(17, 17, 17, 0.12);
+}
+
+.sheetHeader {
+  padding: calc(16px + env(safe-area-inset-top)) 16px 12px;
+  border-bottom: 1px solid rgba(222, 217, 209, 0.76);
+  background: #fff;
+}
+
+.sheetTitleRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.sheetCloseButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.sheetBackIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.sheetTitleCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sheetTitle {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
+.sheetDescription {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sheetBody {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.optionGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+}
+
+.sheetFooter {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(222, 217, 209, 0.76);
+  background: #fff;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.primaryButton {
+  border: 0;
+  background: linear-gradient(180deg, #ff7b1b 0%, #ff6b00 100%);
+  color: #fff;
+}
+
+.secondaryButton {
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+  .sheet {
+    top: 50%;
+    right: 50%;
+    bottom: auto;
+    left: auto;
+    width: min(560px, calc(100vw - 40px));
+    max-height: min(72vh, 640px);
+    border-radius: 28px;
+    transform: translate(50%, -50%);
+    box-shadow: 0 24px 56px rgba(17, 17, 17, 0.18);
+  }
+
+  .sheetHeader {
+    padding: 18px 20px 14px;
+  }
+
+  .sheetBody {
+    padding: 18px 20px;
+  }
+
+  .sheetFooter {
+    padding: 16px 20px 20px;
+  }
 }

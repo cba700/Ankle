@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { startTransition, useEffect, useRef, useState } from "react";
 import transitionStyles from "@/components/navigation/route-transition.module.css";
 import { useSearchParams } from "next/navigation";
@@ -11,18 +12,22 @@ import {
   getHomeStateSearch,
 } from "./home-route-state";
 import { HomeDatePicker } from "./home-date-picker";
-import { HomeFilterBar } from "./home-filter-bar";
 import { HomeMatchList } from "./home-match-list";
 import { useMatchWishlist } from "@/components/wishlist/use-match-wishlist";
 import { HomePageSkeleton } from "./home-page-skeleton";
-import type { HomeMatchRow } from "./home-types";
-import { HOME_FILTERS } from "./home-view-model";
+import type { HomeFilterState, HomeMatchRow } from "./home-types";
+import { HOME_FILTER_GROUPS } from "./home-view-model";
 import styles from "./home-page.module.css";
+
+const HomeFilterBar = dynamic(
+  () => import("./home-filter-bar").then((module) => module.HomeFilterBar),
+  { ssr: false },
+);
 
 type HomeMatchBrowserProps = {
   dates: CalendarDate[];
+  initialFilterState: HomeFilterState;
   initialSelectedDateKey: string;
-  initialActiveFilterIds: string[];
   rows: HomeMatchRow[];
 };
 
@@ -30,15 +35,15 @@ const RESET_SKELETON_MS = 280;
 
 export function HomeMatchBrowser({
   dates,
+  initialFilterState,
   initialSelectedDateKey,
-  initialActiveFilterIds,
   rows,
 }: HomeMatchBrowserProps) {
   const showToast = useMatchDetailFeedback();
   const searchParams = useSearchParams();
   const defaultDateKey = dates[0]?.key ?? "";
   const [selectedDateKey, setSelectedDateKey] = useState(initialSelectedDateKey || defaultDateKey);
-  const [activeFilterIds, setActiveFilterIds] = useState<string[]>(initialActiveFilterIds);
+  const [filterState, setFilterState] = useState(initialFilterState);
   const [isResetPending, setIsResetPending] = useState(false);
   const hideResetTimerRef = useRef<number | null>(null);
   const { pendingMatchIds, savedMatchIds, toggleMatchWishlist } = useMatchWishlist();
@@ -48,32 +53,35 @@ export function HomeMatchBrowser({
     ? selectedDateKey
     : defaultDateKey;
   const selectedDate = dates.find((date) => date.key === activeDateKey) ?? dates[0];
-  const hideClosed = activeFilterIds.includes("hideClosed");
   const detailStateSearch = getHomeStateSearch({
-    filterIds: activeFilterIds,
+    ...filterState,
     query: normalizedQuery,
   });
-  const visibleRows = rows.filter((row) => {
-    if (row.dateKey !== activeDateKey) {
-      return false;
-    }
+  const visibleRows = rows
+    .filter((row) => row.dateKey === activeDateKey)
+    .filter((row) => !filterState.hideClosed || !row.isClosed)
+    .filter((row) => filterState.districts.length === 0 || filterState.districts.includes(row.district))
+    .filter(
+      (row) =>
+        filterState.genders.length === 0 ||
+        (row.genderKey !== null && filterState.genders.includes(row.genderKey)),
+    )
+    .filter(
+      (row) =>
+        filterState.levels.length === 0 ||
+        (row.levelKey !== null && filterState.levels.includes(row.levelKey)),
+    )
+    .sort((left, right) => {
+      if (left.time !== right.time) {
+        return left.time.localeCompare(right.time);
+      }
 
-    if (hideClosed && row.isClosed) {
-      return false;
-    }
+      if (left.venueName !== right.venueName) {
+        return left.venueName.localeCompare(right.venueName, "ko");
+      }
 
-    return true;
-  }).sort((left, right) => {
-    if (left.time !== right.time) {
-      return left.time.localeCompare(right.time);
-    }
-
-    if (left.venueName !== right.venueName) {
-      return left.venueName.localeCompare(right.venueName, "ko");
-    }
-
-    return left.publicId.localeCompare(right.publicId);
-  });
+      return left.publicId.localeCompare(right.publicId);
+    });
 
   useEffect(() => {
     return () => {
@@ -116,20 +124,36 @@ export function HomeMatchBrowser({
     });
   }
 
-  function toggleFilter(filterId: string) {
-    const nextActiveFilterIds = activeFilterIds.includes(filterId)
-      ? activeFilterIds.filter((item) => item !== filterId)
-      : [...activeFilterIds, filterId];
+  function handleToggleHideClosed() {
+    const nextFilterState = {
+      ...filterState,
+      hideClosed: !filterState.hideClosed,
+    };
 
-    syncUrl(nextActiveFilterIds);
+    syncUrl(nextFilterState);
     startTransition(() => {
-      setActiveFilterIds(nextActiveFilterIds);
+      setFilterState(nextFilterState);
     });
   }
 
-  function syncUrl(filterIds: string[]) {
+  function handleApplyGroupFilters(
+    groupId: "districts" | "genders" | "levels",
+    nextValues: string[],
+  ) {
+    const nextFilterState = {
+      ...filterState,
+      [groupId]: nextValues,
+    } as HomeFilterState;
+
+    syncUrl(nextFilterState);
+    startTransition(() => {
+      setFilterState(nextFilterState);
+    });
+  }
+
+  function syncUrl(nextFilterState: HomeFilterState) {
     const nextSearch = getHomeStateSearch({
-      filterIds,
+      ...nextFilterState,
       query: normalizedQuery,
     });
     const nextUrl = `${window.location.pathname}${nextSearch}`;
@@ -175,9 +199,10 @@ export function HomeMatchBrowser({
             selectedDateKey={activeDateKey}
           />
           <HomeFilterBar
-            activeFilterIds={activeFilterIds}
-            items={HOME_FILTERS}
-            onToggle={toggleFilter}
+            filterState={filterState}
+            groups={HOME_FILTER_GROUPS}
+            onApplyGroupFilters={handleApplyGroupFilters}
+            onToggleHideClosed={handleToggleHideClosed}
           />
         </div>
       </div>

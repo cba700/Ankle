@@ -16,22 +16,17 @@ export function bindSingleSessionCookie(response: NextResponse, sessionKey: stri
 
 export async function createSingleSessionBinding(
   supabase: {
-    from: (table: string) => {
-      update: (values: Record<string, unknown>) => {
-        eq: (
-          column: string,
-          value: string,
-        ) => Promise<{ error: { code?: string; message?: string } | null }>;
-      };
-    };
+    from: (table: string) => any;
   },
   userId: string,
 ) {
   const sessionKey = crypto.randomUUID();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .update({ active_session_key: sessionKey })
-    .eq("id", userId);
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     if (
@@ -45,6 +40,10 @@ export async function createSingleSessionBinding(
     }
 
     throw new Error(`Failed to bind active session: ${error.message}`);
+  }
+
+  if (!data?.id) {
+    throw new Error("Failed to bind active session: profile row not found.");
   }
 
   return sessionKey;

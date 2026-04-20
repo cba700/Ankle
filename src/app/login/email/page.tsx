@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { normalizePostAuthNextPath } from "@/lib/auth/redirect";
+import { redirect } from "next/navigation";
+import {
+  buildAuthContinueHref,
+  normalizePostAuthNextPath,
+} from "@/lib/auth/redirect";
 import { EmailLoginPage } from "@/components/login/email-login-page";
+import { getServerUserState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
   title: "이메일 로그인",
@@ -14,6 +19,11 @@ export default async function EmailLoginRoute({
 }) {
   const resolvedSearchParams = await searchParams;
   const nextPath = normalizePostAuthNextPath(toSearchParam(resolvedSearchParams.next));
+  const { user } = await getServerUserState();
+
+  if (user) {
+    redirect(buildAuthContinueHref(nextPath));
+  }
 
   return <EmailLoginPage nextPath={nextPath} />;
 }

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
+import { buildAuthContinueHref } from "@/lib/auth/redirect";
 import { getKakaoSyncOAuthOptions } from "@/lib/kakao-sync";
+import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
 
@@ -19,6 +21,8 @@ type LoginStatus =
   | { email: string; status: "signedIn" };
 
 const ERROR_MESSAGES: Record<string, string> = {
+  account_setup_failed:
+    "계정 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
   account_withdrawal_pending:
     "회원 탈퇴가 접수되어 현재 계정 접근이 제한되었습니다.",
   account_withdrawn:
@@ -70,7 +74,7 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
           return;
         }
 
-        if (profile?.account_status !== "active") {
+        if (normalizeAccountStatus(profile?.account_status) !== "active") {
           setLoginStatus({ status: "signedOut" });
           return;
         }
@@ -169,7 +173,10 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
             <p className={styles.accountEmail}>{loginStatus.email}</p>
 
             <div className={styles.actionRow}>
-              <AppLink className={styles.secondaryButton} href={nextPath}>
+              <AppLink
+                className={styles.secondaryButton}
+                href={buildAuthContinueHref(nextPath)}
+              >
                 {nextPath === "/" ? "홈으로 이동" : "원래 화면으로 이동"}
               </AppLink>
 

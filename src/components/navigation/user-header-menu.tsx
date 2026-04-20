@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { UserIcon } from "@/components/icons";
+import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { AppLink } from "./app-link";
 import styles from "./user-header-menu.module.css";
@@ -71,10 +72,10 @@ export function UserHeaderMenu({
           return;
         }
 
+        const accountStatus = normalizeAccountStatus(profile?.account_status);
         setMenuState({
-          isAdmin:
-            profile?.account_status === "active" && profile?.role === "admin",
-          isSignedIn: profile?.account_status === "active",
+          isAdmin: accountStatus === "active" && profile?.role === "admin",
+          isSignedIn: accountStatus === "active",
         });
       } catch {
         if (!isMounted) {

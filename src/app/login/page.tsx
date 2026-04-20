@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { normalizeNextPath } from "@/lib/auth/redirect";
+import { redirect } from "next/navigation";
+import { buildAuthContinueHref, normalizeNextPath } from "@/lib/auth/redirect";
 import { LoginPage } from "@/components/login/login-page";
+import { getServerUserState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
   title: "로그인",
@@ -15,6 +17,11 @@ export default async function Login({
   const resolvedSearchParams = await searchParams;
   const errorCode = toSearchParam(resolvedSearchParams.error);
   const nextPath = normalizeNextPath(toSearchParam(resolvedSearchParams.next));
+  const { user } = await getServerUserState();
+
+  if (user) {
+    redirect(buildAuthContinueHref(nextPath));
+  }
 
   return <LoginPage errorCode={errorCode} nextPath={nextPath} />;
 }

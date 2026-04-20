@@ -6,6 +6,8 @@ const INVALID_POST_AUTH_PREFIXES = [
   "/signup",
   "/verify-phone",
 ];
+const PHONE_VERIFICATION_REQUIRED_PREFIXES = ["/cash/charge"];
+const MATCH_APPLY_PATH_PATTERN = /^\/match\/[^/]+\/apply(?:\/|$)/;
 
 export function normalizeNextPath(nextPath?: string | null) {
   if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
@@ -111,4 +113,16 @@ export function buildAuthContinueHref(nextPath?: string | null) {
 
   const query = params.toString();
   return query ? `/auth/continue?${query}` : "/auth/continue";
+}
+
+export function shouldRequirePhoneVerificationBeforeContinue(
+  nextPath?: string | null,
+) {
+  const normalizedNextPath = normalizePostAuthNextPath(nextPath);
+
+  return (
+    PHONE_VERIFICATION_REQUIRED_PREFIXES.some((prefix) =>
+      normalizedNextPath.startsWith(prefix),
+    ) || MATCH_APPLY_PATH_PATTERN.test(normalizedNextPath)
+  );
 }

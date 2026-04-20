@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
+import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { LegalFooter } from "@/components/legal/legal-footer";
@@ -36,38 +37,46 @@ export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
     let isMounted = true;
 
     async function syncLoginStatus() {
-      const {
-        data: { user },
-      } = await activeSupabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await activeSupabase.auth.getUser();
 
-      if (!isMounted) {
-        return;
-      }
+        if (!isMounted) {
+          return;
+        }
 
-      if (!user) {
+        if (!user) {
+          setLoginStatus({ status: "signedOut" });
+          return;
+        }
+
+        const { data: profile } = await activeSupabase
+          .from("profiles")
+          .select("account_status")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (normalizeAccountStatus(profile?.account_status) !== "active") {
+          setLoginStatus({ status: "signedOut" });
+          return;
+        }
+
+        setLoginStatus({
+          email: user.email ?? "앵클 사용자",
+          status: "signedIn",
+        });
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
         setLoginStatus({ status: "signedOut" });
-        return;
       }
-
-      const { data: profile } = await activeSupabase
-        .from("profiles")
-        .select("account_status")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!isMounted) {
-        return;
-      }
-
-      if (profile?.account_status !== "active") {
-        setLoginStatus({ status: "signedOut" });
-        return;
-      }
-
-      setLoginStatus({
-        email: user.email ?? "앵클 사용자",
-        status: "signedIn",
-      });
     }
 
     void syncLoginStatus();
@@ -133,7 +142,10 @@ export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
             <p className={styles.accountEmail}>{loginStatus.email}</p>
 
             <div className={styles.actionRow}>
-              <AppLink className={styles.secondaryButton} href={nextPath}>
+              <AppLink
+                className={styles.secondaryButton}
+                href={buildAuthContinueHref(nextPath)}
+              >
                 {nextPath === "/" ? "홈으로 이동" : "원래 화면으로 이동"}
               </AppLink>
 

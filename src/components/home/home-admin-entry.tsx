@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppLink } from "@/components/navigation/app-link";
+import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import styles from "./home-header.module.css";
 
@@ -54,7 +55,7 @@ export function HomeAdminEntry({ initialIsAdmin }: HomeAdminEntryProps) {
         }
 
         setIsAdmin(
-          profile?.account_status === "active" &&
+          normalizeAccountStatus(profile?.account_status) === "active" &&
             normalizeUserRole(profile?.role) === "admin",
         );
       } catch {
