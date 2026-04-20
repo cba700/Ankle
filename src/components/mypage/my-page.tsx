@@ -155,11 +155,7 @@ export function MyPage({ data }: MyPageProps) {
                 const content = (
                   <>
                     <span className={styles.menuLabel}>{item.label}</span>
-                    {item.statusText ? (
-                      <span className={styles.menuMeta}>{item.statusText}</span>
-                    ) : (
-                      <span aria-hidden="true" className={styles.menuMetaPlaceholder} />
-                    )}
+                    {item.statusText ? <span className={styles.menuMeta}>{item.statusText}</span> : null}
                     <ArrowRightIcon className={styles.menuArrow} />
                   </>
                 );
@@ -196,11 +192,7 @@ export function MyPage({ data }: MyPageProps) {
                 const content = (
                   <>
                     <span className={styles.menuLabel}>{item.label}</span>
-                    {item.statusText ? (
-                      <span className={styles.menuMeta}>{item.statusText}</span>
-                    ) : (
-                      <span aria-hidden="true" className={styles.menuMetaPlaceholder} />
-                    )}
+                    {item.statusText ? <span className={styles.menuMeta}>{item.statusText}</span> : null}
                     <ArrowRightIcon className={styles.menuArrow} />
                   </>
                 );

@@ -343,14 +343,12 @@
 }
 
 .menuRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 20px;
   border-top: 1px solid #f1f1f1;
   min-width: 0;
-  text-align: left;
 }
 
 .menuRowDisabled {
@@ -358,6 +356,7 @@
 }
 
 .menuLabel {
+  flex: 1;
   min-width: 0;
   color: var(--text-primary);
   font-size: 15px;
@@ -376,15 +375,12 @@
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 700;
-}
-
-.menuMetaPlaceholder {
-  width: 1px;
-  min-height: 1px;
+  flex-shrink: 0;
 }
 
 .menuArrow {
   color: var(--line-strong);
+  flex-shrink: 0;
 }
 
 .applicationSection {
@@ -683,21 +679,11 @@
   }
 
   .menuRow {
-    grid-template-columns: minmax(0, 1fr) auto auto;
     padding: 14px 16px;
   }
 
   .menuMeta {
-    grid-column: 2;
-    justify-self: end;
-    margin-top: 0;
     text-align: right;
-  }
-
-  .menuArrow {
-    grid-column: 3;
-    grid-row: auto;
-    align-self: center;
   }
 
   .sectionHeading {
