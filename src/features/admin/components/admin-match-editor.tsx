@@ -19,10 +19,15 @@ import {
   getAdminMatchRefundExceptionMeta,
 } from "../view-model";
 import { AdminStatusBadge } from "./admin-status-badge";
+import { ConfirmSubmitButton } from "./confirm-submit-button";
 import ui from "./admin-ui.module.css";
 import styles from "./admin-match-editor.module.css";
 
 type AdminMatchEditorProps = {
+  canDelete?: boolean;
+  deleteAction?: (formData: FormData) => void | Promise<void>;
+  deleteConfirmMessage?: string;
+  deleteDisabledReason?: string;
   mode: "create" | "edit";
   values: AdminMatchFormValue;
   venueOptions: AdminVenueOption[];
@@ -50,6 +55,10 @@ const REFUND_EXCEPTION_ACTIONS: Array<{
 ];
 
 export function AdminMatchEditor({
+  canDelete = false,
+  deleteAction,
+  deleteConfirmMessage = "",
+  deleteDisabledReason = "",
   mode,
   values,
   venueOptions,
@@ -567,6 +576,38 @@ export function AdminMatchEditor({
                     value={formValues.operatorNote}
                   />
                 </label>
+              </div>
+            </section>
+
+            <section className={`${ui.sectionCard} ${styles.section}`}>
+              <div className={styles.deleteBlock}>
+                <div>
+                  <p className={styles.sectionEyebrow}>삭제</p>
+                  <h3 className={styles.deleteTitle}>이 매치를 삭제합니다.</h3>
+                  <p className={styles.deleteDescription}>
+                    신청 이력이 없는 매치만 삭제할 수 있습니다. 삭제 후 되돌릴 수 없습니다.
+                  </p>
+                </div>
+
+                <div className={styles.deleteActions}>
+                  <p
+                    className={`${styles.deleteHint} ${!canDelete ? styles.deleteHintBlocked : ""}`}
+                  >
+                    {canDelete
+                      ? "삭제하면 운영 목록과 편집 페이지에서 즉시 사라집니다."
+                      : deleteDisabledReason}
+                  </p>
+
+                  <ConfirmSubmitButton
+                    className={`${ui.button} ${styles.deleteButton}`}
+                    confirmationMessage={deleteConfirmMessage}
+                    disabled={!canDelete || !deleteAction}
+                    formAction={deleteAction}
+                    formNoValidate
+                  >
+                    삭제
+                  </ConfirmSubmitButton>
+                </div>
               </div>
             </section>
           </>
