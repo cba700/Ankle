@@ -344,31 +344,17 @@
 
 .menuRow {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 12px;
   padding: 14px 20px;
   border-top: 1px solid #f1f1f1;
   min-width: 0;
+  text-align: left;
 }
 
 .menuRowDisabled {
   opacity: 0.78;
-}
-
-.menuIconWrap {
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.menuIconImage {
-  width: 28px;
-  height: 28px;
-  display: block;
 }
 
 .menuLabel {
@@ -377,6 +363,7 @@
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
+  text-align: left;
 }
 
 .menuMeta {
@@ -696,19 +683,19 @@
   }
 
   .menuRow {
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     padding: 14px 16px;
   }
 
   .menuMeta {
-    grid-column: 3;
+    grid-column: 2;
     justify-self: end;
     margin-top: 0;
     text-align: right;
   }
 
   .menuArrow {
-    grid-column: 4;
+    grid-column: 3;
     grid-row: auto;
     align-self: center;
   }
