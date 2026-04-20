@@ -136,6 +136,8 @@ type CouponTemplateFormValues = {
 
 const REQUIRED_COUPON_DELETE_MIGRATION =
   "20260415153000_allow_admin_delete_coupon_templates.sql";
+const REQUIRED_MATCH_VENUE_DELETE_MIGRATION =
+  "20260420110000_allow_admin_delete_matches_and_venues.sql";
 
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
 const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
@@ -295,6 +297,31 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
   redirect(`/admin/matches/${matchId}/edit`);
 }
 
+export async function deleteAdminMatchAction(matchId: string, _formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
+  const applicationCount = await getMatchApplicationCount(supabase, matchId);
+
+  if (applicationCount > 0) {
+    throw new Error("신청/참가 이력이 있는 매치는 삭제할 수 없습니다. 운영 취소를 사용해 주세요.");
+  }
+
+  const { error } = await supabase.from("matches").delete().eq("id", matchId);
+
+  if (error) {
+    if (isDeletePermissionError(error)) {
+      throw new Error(
+        `Database schema is outdated. Apply migration ${REQUIRED_MATCH_VENUE_DELETE_MIGRATION} before deleting matches and venues.`,
+      );
+    }
+
+    throw new Error(`Failed to delete match: ${error.message}`);
+  }
+
+  revalidateAdminMatchPaths(matchId);
+  redirect("/admin/matches");
+}
+
 export async function createAdminVenueAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
   await assertVenueManagementSchemaReady(supabase);
@@ -397,6 +424,45 @@ export async function updateAdminVenueAction(venueId: string, formData: FormData
   );
 
   redirect(`/admin/venues/${venueId}/edit`);
+}
+
+export async function deleteAdminVenueAction(venueId: string, _formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertVenueManagementSchemaReady(supabase);
+  const matchCount = await getVenueMatchCount(supabase, venueId);
+
+  if (matchCount > 0) {
+    throw new Error("이 경기장으로 생성된 매치가 있어 삭제할 수 없습니다. 비활성화로 보관해 주세요.");
+  }
+
+  const imageUrls = await getVenueImageUrls(supabase, venueId);
+  const { error } = await supabase.from("venues").delete().eq("id", venueId);
+
+  if (error) {
+    if (isDeletePermissionError(error)) {
+      throw new Error(
+        `Database schema is outdated. Apply migration ${REQUIRED_MATCH_VENUE_DELETE_MIGRATION} before deleting matches and venues.`,
+      );
+    }
+
+    if (error.code === "23503" || error.message?.includes("violates foreign key constraint")) {
+      throw new Error("이 경기장으로 생성된 매치가 있어 삭제할 수 없습니다. 비활성화로 보관해 주세요.");
+    }
+
+    throw new Error(`Failed to delete venue: ${error.message}`);
+  }
+
+  const admin = getSupabaseServiceRoleClient() as any;
+
+  if (admin) {
+    await safeDeleteVenueImageUrls(
+      admin,
+      imageUrls.filter((url) => isManagedVenueImageUrl(url)),
+    );
+  }
+
+  revalidateAdminVenuePaths(venueId);
+  redirect("/admin/venues");
 }
 
 export async function adjustAdminCashBalanceAction(formData: FormData) {
@@ -1010,6 +1076,38 @@ async function getConfirmedCount(
   return ((data as MatchCountResult | null)?.confirmed_count ?? 0);
 }
 
+async function getMatchApplicationCount(
+  supabase: AdminSupabaseClient,
+  matchId: string,
+) {
+  const { count, error } = await supabase
+    .from("match_applications")
+    .select("id", { count: "exact", head: true })
+    .eq("match_id", matchId);
+
+  if (error) {
+    throw new Error(`Failed to load match applications: ${error.message}`);
+  }
+
+  return count ?? 0;
+}
+
+async function getVenueMatchCount(
+  supabase: AdminSupabaseClient,
+  venueId: string,
+) {
+  const { count, error } = await supabase
+    .from("matches")
+    .select("id", { count: "exact", head: true })
+    .eq("venue_id", venueId);
+
+  if (error) {
+    throw new Error(`Failed to load venue matches: ${error.message}`);
+  }
+
+  return count ?? 0;
+}
+
 async function listConfirmedApplicationIds(
   supabase: AdminSupabaseClient,
   matchId: string,
@@ -1480,6 +1578,23 @@ function revalidateAdminMatchPaths(matchId: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/matches");
   revalidatePath(`/admin/matches/${matchId}/edit`);
+}
+
+function revalidateAdminVenuePaths(venueId: string) {
+  revalidatePath("/admin");
+  revalidatePath("/admin/venues");
+  revalidatePath("/admin/matches");
+  revalidatePath("/admin/matches/new");
+  revalidatePath(`/admin/venues/${venueId}/edit`);
+}
+
+function isDeletePermissionError(error: { code?: string; message?: string | null }) {
+  return (
+    error.code === "42501" ||
+    error.message?.includes("permission denied") ||
+    error.message?.includes("new row violates row-level security policy") ||
+    error.message?.includes("violates row-level security policy")
+  );
 }
 
 async function getVenueImageUrls(

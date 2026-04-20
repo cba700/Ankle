@@ -120,6 +120,30 @@ export async function getAdminMatchById(id: string) {
   );
 }
 
+export async function getAdminMatchApplicationCount(id: string) {
+  if (!isSupabaseConfigured()) {
+    const match = getMockAdminMatchById(id);
+    return match ? Math.max(match.currentParticipants, match.participants.length) : 0;
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return 0;
+  }
+
+  const { count, error } = await supabase
+    .from("match_applications")
+    .select("id", { count: "exact", head: true })
+    .eq("match_id", id);
+
+  if (error) {
+    throw new Error(`Failed to load match application count: ${error.message}`);
+  }
+
+  return count ?? 0;
+}
+
 export async function getAdminVenues() {
   if (!isSupabaseConfigured()) {
     return getMockAdminVenues();

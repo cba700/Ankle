@@ -103,6 +103,48 @@
   height: 18px;
 }
 
+.deleteBlock {
+  display: grid;
+  gap: 14px;
+}
+
+.deleteTitle {
+  margin: 6px 0 0;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.deleteDescription,
+.deleteHint {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.deleteActions {
+  display: grid;
+  gap: 12px;
+}
+
+.deleteHintBlocked {
+  color: #bf3d35;
+}
+
+.deleteButton {
+  border-color: rgba(191, 61, 53, 0.42);
+  background: #fff6f4;
+  color: #bf3d35;
+  justify-self: start;
+}
+
+.deleteButton:disabled {
+  border-color: var(--line);
+  background: #f7f4ef;
+  color: var(--text-tertiary);
+}
+
 @media (min-width: 760px) {
   .fieldGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -111,5 +153,10 @@
   .actionBar {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
+  }
+
+  .deleteActions {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
   }
 }

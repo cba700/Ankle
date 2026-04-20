@@ -1,14 +1,24 @@
 import type { AdminVenueFormValue } from "../types";
+import ui from "./admin-ui.module.css";
+import { ConfirmSubmitButton } from "./confirm-submit-button";
 import { AdminVenueImageField } from "./admin-venue-image-field";
 import styles from "./admin-venue-editor.module.css";
 
 type AdminVenueEditorProps = {
+  canDelete?: boolean;
+  deleteAction?: (formData: FormData) => void | Promise<void>;
+  deleteConfirmMessage?: string;
+  deleteDisabledReason?: string;
   mode: "create" | "edit";
   values: AdminVenueFormValue;
   formAction: (formData: FormData) => void | Promise<void>;
 };
 
 export function AdminVenueEditor({
+  canDelete = false,
+  deleteAction,
+  deleteConfirmMessage = "",
+  deleteDisabledReason = "",
   mode,
   values,
   formAction,
@@ -115,6 +125,40 @@ export function AdminVenueEditor({
           </label>
         </div>
       </section>
+
+      {mode === "edit" ? (
+        <section className={styles.section}>
+          <div className={styles.deleteBlock}>
+            <div>
+              <p className={styles.eyebrow}>삭제</p>
+              <h3 className={styles.deleteTitle}>이 경기장을 삭제합니다.</h3>
+              <p className={styles.deleteDescription}>
+                연결된 매치가 없는 경기장만 삭제할 수 있습니다. 삭제 후 되돌릴 수 없습니다.
+              </p>
+            </div>
+
+            <div className={styles.deleteActions}>
+              <p
+                className={`${styles.deleteHint} ${!canDelete ? styles.deleteHintBlocked : ""}`}
+              >
+                {canDelete
+                  ? "삭제하면 관리 경기장 목록과 이후 매치 생성 옵션에서 즉시 사라집니다."
+                  : deleteDisabledReason}
+              </p>
+
+              <ConfirmSubmitButton
+                className={`${ui.button} ${styles.deleteButton}`}
+                confirmationMessage={deleteConfirmMessage}
+                disabled={!canDelete || !deleteAction}
+                formAction={deleteAction}
+                formNoValidate
+              >
+                삭제
+              </ConfirmSubmitButton>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </form>
   );
 }

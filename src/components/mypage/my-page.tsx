@@ -14,7 +14,6 @@ type MyPageProps = {
 
 type MenuItem = {
   href?: string;
-  iconSrc: string;
   key: string;
   label: string;
   external?: boolean;
@@ -28,32 +27,27 @@ export function MyPage({ data }: MyPageProps) {
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
-      iconSrc: "/emoji/mypage/applications.svg",
       key: "applications",
       label: "신청 내역",
     },
     {
       href: "/mypage/cash",
-      iconSrc: "/emoji/mypage/cash.svg",
       key: "history",
       label: "캐시 내역",
     },
     {
       href: "/mypage/coupons",
-      iconSrc: "/emoji/mypage/coupon.svg",
       key: "coupon",
       label: "쿠폰",
       statusText: String(data.couponCount),
     },
     {
       href: "/mypage/wishlist",
-      iconSrc: "/emoji/mypage/wishlist.svg",
       key: "wishlist",
       label: "관심 매치",
       statusText: `${data.wishlistCount}건`,
     },
     {
-      iconSrc: "/emoji/mypage/settings.svg",
       key: "settings",
       label: "설정",
       href: "/mypage/settings",
@@ -62,7 +56,6 @@ export function MyPage({ data }: MyPageProps) {
   const guideMenuItems: MenuItem[] = [
     {
       href: "/mypage/guide",
-      iconSrc: "/emoji/mypage/notice.svg",
       key: "level-guide",
       label: "레벨 가이드",
     },
@@ -71,7 +64,6 @@ export function MyPage({ data }: MyPageProps) {
     {
       external: true,
       href: kakaoChannelUrl,
-      iconSrc: "/emoji/mypage/contact.svg",
       key: "contact",
       label: "문의하기",
       statusText: kakaoChannelUrl ? "카카오톡 상담" : "준비 중",
@@ -162,22 +154,8 @@ export function MyPage({ data }: MyPageProps) {
               {myMenuItems.map((item) => {
                 const content = (
                   <>
-                    <span aria-hidden="true" className={styles.menuIconWrap}>
-                      <img
-                        alt=""
-                        className={styles.menuIconImage}
-                        decoding="async"
-                        height="28"
-                        src={item.iconSrc}
-                        width="28"
-                      />
-                    </span>
                     <span className={styles.menuLabel}>{item.label}</span>
-                    {item.statusText ? (
-                      <span className={styles.menuMeta}>{item.statusText}</span>
-                    ) : (
-                      <span aria-hidden="true" className={styles.menuMetaPlaceholder} />
-                    )}
+                    {item.statusText ? <span className={styles.menuMeta}>{item.statusText}</span> : null}
                     <ArrowRightIcon className={styles.menuArrow} />
                   </>
                 );
@@ -213,22 +191,8 @@ export function MyPage({ data }: MyPageProps) {
               {guideMenuItems.map((item) => {
                 const content = (
                   <>
-                    <span aria-hidden="true" className={styles.menuIconWrap}>
-                      <img
-                        alt=""
-                        className={styles.menuIconImage}
-                        decoding="async"
-                        height="28"
-                        src={item.iconSrc}
-                        width="28"
-                      />
-                    </span>
                     <span className={styles.menuLabel}>{item.label}</span>
-                    {item.statusText ? (
-                      <span className={styles.menuMeta}>{item.statusText}</span>
-                    ) : (
-                      <span aria-hidden="true" className={styles.menuMetaPlaceholder} />
-                    )}
+                    {item.statusText ? <span className={styles.menuMeta}>{item.statusText}</span> : null}
                     <ArrowRightIcon className={styles.menuArrow} />
                   </>
                 );
@@ -260,16 +224,6 @@ export function MyPage({ data }: MyPageProps) {
               {supportMenuItems.map((item) => {
                 const content = (
                   <>
-                    <span aria-hidden="true" className={styles.menuIconWrap}>
-                      <img
-                        alt=""
-                        className={styles.menuIconImage}
-                        decoding="async"
-                        height="28"
-                        src={item.iconSrc}
-                        width="28"
-                      />
-                    </span>
                     <span className={styles.menuLabel}>{item.label}</span>
                     <span className={styles.menuMeta}>{item.statusText}</span>
                     <ArrowRightIcon className={styles.menuArrow} />
