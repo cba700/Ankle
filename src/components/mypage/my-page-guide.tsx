@@ -312,12 +312,7 @@ export function MyPageGuide({ initialIsAdmin }: MyPageGuideProps) {
               <BasketIcon className={styles.heroBadgeIcon} />
               Level System
             </span>
-            <p className={styles.heroEyebrow}>공정한 팀 구성을 위한 기준</p>
-            <h1 className={styles.heroTitle}>🏀 앵클 레벨 가이드 — 농구</h1>
-            <p className={styles.heroDescription}>
-              앵클베스킷 레벨 시스템은 참가자들의 실력을 데이터로 기록해 공정하고 재밌는 팀
-              구성을 위해 운영됩니다.
-            </p>
+            <h1 className={styles.heroTitle}>🏀 앵클 레벨 가이드</h1>
           </div>
 
           <div className={styles.heroCallout}>
