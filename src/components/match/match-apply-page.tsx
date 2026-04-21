@@ -187,12 +187,19 @@ export function MatchApplyPage({
                     {selectedCoupon ? `${selectedCoupon.name} 자동 적용` : "쿠폰 없음"}
                   </span>
                 </div>
-                <div className={styles.listRow}>
-                  <span className={styles.rowLabel}>캐시/포인트</span>
-                  <span className={styles.rowValueGroup}>
-                    <strong>{finalChargeLabel} 사용</strong>
-                    <small>잔액 {cashBalanceLabel}</small>
-                  </span>
+                <div className={styles.cashSummary}>
+                  <div className={styles.cashSummaryItem}>
+                    <span>사용 예정</span>
+                    <strong>{finalChargeLabel}</strong>
+                  </div>
+                  <div className={styles.cashSummaryItem}>
+                    <span>보유 캐시</span>
+                    <strong>{cashBalanceLabel}</strong>
+                  </div>
+                  <div className={styles.cashSummaryItem}>
+                    <span>신청 후</span>
+                    <strong>{cashBalanceAfterApplyLabel}</strong>
+                  </div>
                 </div>
               </section>
 
