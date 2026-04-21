@@ -130,7 +130,10 @@ export function MyPageApplications({
           <section className={styles.calendarCard}>
             <div className={styles.calendarHeader}>
               <div>
-                <p className={styles.cardEyebrow}>신청한 날짜 기준</p>
+                <span className={styles.calendarBadge}>
+                  <CalendarIcon className={styles.calendarBadgeIcon} />
+                  Application Ledger
+                </span>
                 <h2 className={styles.cardTitle}>{SEOUL_MONTH_FORMATTER.format(currentMonthStart)}</h2>
               </div>
 
@@ -161,7 +164,6 @@ export function MyPageApplications({
                 </span>
                 신청 있음
               </span>
-              <span className={styles.legendItem}>주황색 날짜를 누르면 결과가 바로 표시됩니다</span>
             </div>
 
             <div className={styles.weekdayRow}>
@@ -226,34 +228,15 @@ export function MyPageApplications({
                 {selectedApplications.map((application) => {
                   const content = (
                     <>
-                      <div className={baseStyles.applicationTop}>
-                        <span
-                          className={`${baseStyles.statusBadge} ${
-                            application.statusTone === "danger"
-                              ? baseStyles.statusDanger
-                              : application.statusTone === "muted"
-                                ? baseStyles.statusMuted
-                                : baseStyles.statusAccent
-                          }`}
-                        >
-                          {application.statusLabel}
-                        </span>
-                      </div>
                       <strong className={`${baseStyles.applicationTitle} ${styles.applicationTitle}`}>
                         {application.title}
                       </strong>
-                      <p className={`${baseStyles.applicationVenue} ${styles.applicationVenue}`}>
-                        {application.venueName}
-                      </p>
-                      <p className={`${baseStyles.applicationMeta} ${styles.applicationMeta}`}>
-                        {application.metaLabel}
-                      </p>
                       <p
                         className={`${baseStyles.applicationCash} ${styles.applicationCash} ${
                           isCashChargeOnly(application.cashLabel) ? styles.applicationCashDanger : ""
                         }`}
                       >
-                        {application.cashLabel}
+                        {application.cashLabel} · {application.statusLabel}
                       </p>
                     </>
                   );

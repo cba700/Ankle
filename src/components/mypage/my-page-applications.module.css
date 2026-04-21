@@ -25,6 +25,7 @@
 }
 
 .backIcon,
+.calendarBadgeIcon,
 .calendarControlIcon {
   width: 18px;
   height: 18px;
@@ -37,11 +38,19 @@
   box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
 }
 
-.cardEyebrow {
-  margin: 0;
-  color: var(--text-tertiary);
+.calendarBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .contentGrid {
@@ -97,8 +106,7 @@
   margin-top: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
   color: var(--text-secondary);
   font-size: 12px;
@@ -239,23 +247,14 @@
 }
 
 .applicationTitle {
-  font-size: 20px;
-  line-height: 1.25;
-}
-
-.applicationVenue,
-.applicationMeta {
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.applicationMeta {
-  color: var(--text-tertiary);
+  font-size: 18px;
+  line-height: 1.3;
 }
 
 .applicationCash {
+  color: var(--text-secondary);
   font-size: 13px;
+  font-weight: 700;
   line-height: 1.5;
 }
 
