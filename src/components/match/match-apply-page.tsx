@@ -10,18 +10,14 @@ import {
   buildWelcomeHref,
 } from "@/lib/auth/redirect";
 import { formatMoney } from "@/lib/date";
-import {
-  MATCH_REFUND_POLICY_HREF,
-  RAIN_REFUND_POLICY_HREF,
-} from "@/lib/refund-policy";
-import type { MatchDetailStatusTone, MatchDetailViewModel } from "./match-detail-types";
+import type { MatchDetailViewModel } from "./match-detail-types";
 import styles from "./match-apply-page.module.css";
 
 type MatchApplyPageProps = {
-  accountLabel: string;
   alreadyApplied: boolean;
   availableCoupons: MatchApplyCouponOption[];
   canApply: boolean;
+  cashBalanceAmount: number;
   cashBalanceLabel: string;
   priceSummary: {
     originalPriceAmount: number;
@@ -44,10 +40,10 @@ const CHECK_ITEMS = [
 ] as const;
 
 export function MatchApplyPage({
-  accountLabel,
   alreadyApplied,
   availableCoupons,
   canApply,
+  cashBalanceAmount,
   cashBalanceLabel,
   priceSummary,
   view,
@@ -56,9 +52,6 @@ export function MatchApplyPage({
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [isComplete, setIsComplete] = useState(alreadyApplied);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCouponId, setSelectedCouponId] = useState<string | null>(
-    availableCoupons[0]?.id ?? null,
-  );
   const [feedbackMessage, setFeedbackMessage] = useState(
     alreadyApplied ? "이미 신청이 완료된 매치입니다." : null,
   );
@@ -67,11 +60,19 @@ export function MatchApplyPage({
   const applyPath = `${detailHref}/apply`;
   const allConfirmed = checkedIds.length === CHECK_ITEMS.length || alreadyApplied;
   const canSubmit = allConfirmed && canApply && !isComplete && !isSubmitting;
-  const selectedCoupon =
-    availableCoupons.find((coupon) => coupon.id === selectedCouponId) ?? null;
+  const selectedCoupon = availableCoupons[0] ?? null;
+  const selectedCouponId = selectedCoupon?.id ?? null;
   const couponDiscountAmount = selectedCoupon?.discountAmount ?? 0;
   const finalChargeAmount = Math.max(priceSummary.originalPriceAmount - couponDiscountAmount, 0);
   const finalChargeLabel = `${formatMoney(finalChargeAmount)}원`;
+  const cashBalanceAfterApply = cashBalanceAmount - finalChargeAmount;
+  const cashBalanceAfterApplyLabel =
+    cashBalanceAfterApply >= 0
+      ? `${formatMoney(cashBalanceAfterApply)}원`
+      : `${formatMoney(Math.abs(cashBalanceAfterApply))}원 부족`;
+  const applyInfoItems = view.infoItems.filter((item) =>
+    ["level", "gender", "format", "participants"].includes(item.key),
+  );
 
   function toggleCheck(id: string) {
     setCheckedIds((current) =>
@@ -155,22 +156,14 @@ export function MatchApplyPage({
             매치 상세로 돌아가기
           </AppLink>
 
-          <section className={styles.heroCard}>
-            <p className={styles.eyebrow}>Match Apply</p>
-            <div className={styles.heroTop}>
-              <div>
-                <div className={getStatusClassName(view.statusTone, styles)}>
-                  {view.statusLabel}
-                </div>
-                <h1 className={styles.title}>{view.title}</h1>
-              </div>
-              <strong className={styles.price}>{view.priceLabel}</strong>
+          <section className={styles.topBanner}>
+            <div className={styles.bannerCopy}>
+              <p className={styles.bannerDate}>{view.dateText}</p>
+              <strong className={styles.bannerTime}>{view.time}</strong>
+              <span className={styles.bannerPlace}>{view.courtName}</span>
             </div>
-            <p className={styles.subTitle}>
-              {view.dateText} {view.time} · {view.courtName}
-            </p>
-            <div className={styles.metaRow}>
-              <span>{view.address}</span>
+            <div className={styles.bannerMark} aria-hidden="true">
+              ANKLE
             </div>
           </section>
 
@@ -186,130 +179,80 @@ export function MatchApplyPage({
               </p>
             </section>
           ) : (
-            <div className={styles.contentGrid}>
+            <div className={styles.stack}>
               <section className={styles.card}>
-                <h2 className={styles.sectionTitle}>신청 계정</h2>
-                <p className={styles.sectionDescription}>
-                  추가 입력 없이 현재 로그인된 계정으로만 진행합니다.
-                </p>
-                <div className={styles.accountBox}>
-                  <span className={styles.accountLabel}>카카오 계정</span>
-                  <strong className={styles.accountValue}>{accountLabel}</strong>
+                <div className={styles.listRow}>
+                  <span className={styles.rowLabel}>내 쿠폰</span>
+                  <span className={styles.rowValue}>
+                    {selectedCoupon ? `${selectedCoupon.name} 자동 적용` : "쿠폰 없음"}
+                  </span>
                 </div>
-                <div className={styles.accountBox}>
-                  <span className={styles.accountLabel}>현재 보유 캐시</span>
-                  <strong className={styles.accountValue}>{cashBalanceLabel}</strong>
-                </div>
-              </section>
-
-              <section className={styles.card}>
-                <div className={styles.fieldset}>
-                  <div className={styles.priceSummaryHeader}>
-                    <h2 className={styles.sectionTitle}>쿠폰 선택</h2>
-                    <span className={styles.couponBadge}>{availableCoupons.length}장 보유</span>
+                <div className={styles.cashSummary}>
+                  <div className={styles.cashSummaryItem}>
+                    <span>사용 예정</span>
+                    <strong>{finalChargeLabel}</strong>
                   </div>
-                  <p className={styles.sectionDescription}>신청할 때는 쿠폰 1장만 사용할 수 있습니다.</p>
-
-                  <div className={styles.couponOptionList}>
-                    <label
-                      className={`${styles.couponOption} ${
-                        selectedCouponId === null ? styles.couponOptionSelected : ""
-                      }`}
-                    >
-                      <input
-                        checked={selectedCouponId === null}
-                        className={styles.couponOptionInput}
-                        name="coupon"
-                        onChange={() => setSelectedCouponId(null)}
-                        type="radio"
-                      />
-                      <span className={styles.couponOptionCopy}>
-                        <strong className={styles.couponOptionName}>쿠폰 없이 진행</strong>
-                        <span className={styles.couponOptionMeta}>정가 그대로 차감</span>
-                      </span>
-                      <strong className={styles.couponOptionAmount}>
-                        {priceSummary.originalPriceLabel}
-                      </strong>
-                    </label>
-
-                    {availableCoupons.map((coupon) => (
-                      <label
-                        className={`${styles.couponOption} ${
-                          selectedCouponId === coupon.id ? styles.couponOptionSelected : ""
-                        }`}
-                        key={coupon.id}
-                      >
-                        <input
-                          checked={selectedCouponId === coupon.id}
-                          className={styles.couponOptionInput}
-                          name="coupon"
-                          onChange={() => setSelectedCouponId(coupon.id)}
-                          type="radio"
-                        />
-                        <span className={styles.couponOptionCopy}>
-                          <strong className={styles.couponOptionName}>{coupon.name}</strong>
-                          <span className={styles.couponOptionMeta}>{coupon.discountLabel} 할인</span>
-                        </span>
-                        <strong className={styles.couponOptionAmount}>{coupon.discountLabel}</strong>
-                      </label>
-                    ))}
+                  <div className={styles.cashSummaryItem}>
+                    <span>보유 캐시</span>
+                    <strong>{cashBalanceLabel}</strong>
+                  </div>
+                  <div className={styles.cashSummaryItem}>
+                    <span>신청 후</span>
+                    <strong>{cashBalanceAfterApplyLabel}</strong>
                   </div>
                 </div>
               </section>
 
               <section className={styles.card}>
-                <div className={styles.priceSummaryHeader}>
-                  <h2 className={styles.sectionTitle}>차감 요약</h2>
-                  {selectedCoupon ? (
-                    <span className={styles.couponBadge}>{selectedCoupon.name}</span>
-                  ) : null}
-                </div>
+                <h2 className={styles.sectionTitle}>결제 금액</h2>
                 <div className={styles.priceSummaryList}>
                   <div className={styles.priceSummaryRow}>
-                    <span>참가비</span>
+                    <span>이용 금액</span>
                     <strong>{priceSummary.originalPriceLabel}</strong>
                   </div>
                   {selectedCoupon ? (
                     <div className={styles.priceSummaryRow}>
-                      <span>{selectedCoupon.name}</span>
+                      <span>쿠폰 할인</span>
                       <strong className={styles.discountValue}>-{selectedCoupon.discountLabel}</strong>
                     </div>
                   ) : null}
+                  <div className={styles.priceSummaryRow}>
+                    <span>캐시 사용</span>
+                    <strong className={styles.discountValue}>-{finalChargeLabel}</strong>
+                  </div>
+                  <div className={styles.priceSummaryRow}>
+                    <span>신청 후 예상 잔액</span>
+                    <strong>{cashBalanceAfterApplyLabel}</strong>
+                  </div>
                   <div className={`${styles.priceSummaryRow} ${styles.priceSummaryRowStrong}`}>
-                    <span>최종 차감</span>
-                    <strong>{finalChargeLabel}</strong>
+                    <span>최종 결제 금액</span>
+                    <strong>0원</strong>
                   </div>
                 </div>
               </section>
 
               <section className={styles.card}>
-                <h2 className={styles.sectionTitle}>신청 전 확인</h2>
-                <p className={styles.sectionDescription}>
-                  일정과 운영 방식, 환불 기준을 마지막으로 확인해 주세요.
-                </p>
-                <div className={styles.policyPanel}>
-                  <strong className={styles.policyTitle}>환불 기준</strong>
-                  <ul className={styles.policyList}>
-                    {view.refundRows.map((row) => (
-                      <li className={styles.policyItem} key={row.condition}>
-                        <span>{row.condition}</span>
-                        <strong>{row.policy}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className={styles.policyLinkRow}>
-                    <AppLink className={styles.policyLink} href={MATCH_REFUND_POLICY_HREF}>
-                      매치 환불 전체 보기
-                    </AppLink>
-                    <AppLink className={styles.policyLink} href={RAIN_REFUND_POLICY_HREF}>
-                      강수 환불 보기
-                    </AppLink>
-                  </div>
+                <h2 className={styles.sectionTitle}>참가 조건</h2>
+                <div className={styles.infoGrid}>
+                  {applyInfoItems.map((item) => (
+                    <div className={styles.infoItem} key={item.key}>
+                      <span>{getInfoLabel(item.key)}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
                 </div>
-                <div className={styles.noticeBox}>
-                  <p>{view.notice}</p>
-                  {view.levelHint ? <p>{view.levelHint}</p> : null}
-                </div>
+              </section>
+
+              <section className={styles.card}>
+                <h2 className={styles.sectionTitle}>환불 기준</h2>
+                <ul className={styles.refundList}>
+                  {view.refundRows.map((row) => (
+                    <li className={styles.refundItem} key={row.condition}>
+                      <span>{row.condition}</span>
+                      <strong>{row.policy}</strong>
+                    </li>
+                  ))}
+                </ul>
               </section>
 
               <section className={styles.card}>
@@ -351,15 +294,10 @@ export function MatchApplyPage({
       <div className={styles.actionWrap}>
         <div className={styles.actionBar}>
           <div className={styles.actionCopy}>
-            <strong>{isComplete ? "신청 확정 완료" : "신청 전 최종 확인"}</strong>
             <p>
               {isComplete
                 ? "현재 계정 기준 신청과 캐시 차감이 반영되었습니다."
-                : !canApply
-                  ? "마감된 매치는 신청할 수 없습니다."
-                  : canSubmit
-                    ? "체크 완료 후 캐시 차감과 함께 신청이 확정됩니다."
-                    : "체크 3개를 모두 완료하면 다음으로 진행됩니다."}
+                : "신청 시 이용약관 및 개인정보 처리방침에 동의한 것으로 간주됩니다."}
             </p>
           </div>
 
@@ -374,7 +312,7 @@ export function MatchApplyPage({
               onClick={handleConfirm}
               type="button"
             >
-              {!canApply ? "신청 마감" : isSubmitting ? "신청 처리 중..." : "캐시로 신청 확정"}
+              {!canApply ? "신청 마감" : isSubmitting ? "신청 처리 중..." : "신청하기"}
             </button>
           )}
         </div>
@@ -417,23 +355,24 @@ function getErrorMessage(code?: string) {
   return "신청 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
-function getStatusClassName(
-  tone: MatchDetailStatusTone,
-  classNames: Record<string, string>,
-) {
-  if (tone === "danger") {
-    return `${classNames.statusPill} ${classNames.statusDanger}`;
+function getInfoLabel(key: string) {
+  if (key === "level") {
+    return "레벨";
   }
 
-  if (tone === "accent") {
-    return `${classNames.statusPill} ${classNames.statusAccent}`;
+  if (key === "gender") {
+    return "성별";
   }
 
-  if (tone === "open") {
-    return `${classNames.statusPill} ${classNames.statusOpen}`;
+  if (key === "format") {
+    return "방식";
   }
 
-  return `${classNames.statusPill} ${classNames.statusNeutral}`;
+  if (key === "participants") {
+    return "인원";
+  }
+
+  return "정보";
 }
 
 function buildSuccessMessage(payload?: {

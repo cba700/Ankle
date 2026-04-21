@@ -58,33 +58,21 @@
   min-width: 0;
 }
 
-.heroEyebrow {
-  margin: 18px 0 0;
-  color: var(--text-tertiary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .heroTitle {
-  margin: 8px 0 0;
-  font-size: clamp(30px, 4.4vw, 44px);
+  margin: 14px 0 0;
+  font-size: clamp(26px, 3.8vw, 38px);
   line-height: 1.08;
   letter-spacing: -0.05em;
-}
-
-.heroDescription {
-  margin: 12px 0 0;
-  color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.65;
 }
 
 .heroCallout {
   display: grid;
   gap: 6px;
+  width: 100%;
   padding: 16px 18px;
   border-radius: 18px;
   background: linear-gradient(135deg, rgba(255, 123, 27, 0.1), rgba(255, 232, 203, 0.6));
+  box-sizing: border-box;
 }
 
 .heroCalloutTitle {
@@ -94,60 +82,6 @@
 }
 
 .heroCalloutBody {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.structureSection {
-  min-width: 0;
-}
-
-.structureGrid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.structureCard {
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-  display: grid;
-  gap: 8px;
-}
-
-.structureGrade {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: fit-content;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(17, 17, 17, 0.05);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-.structureSubLevel {
-  font-size: 24px;
-  letter-spacing: -0.04em;
-}
-
-.structureMetaLabel {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
-.structureAudience {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
@@ -169,56 +103,48 @@
 }
 
 .toneBasic {
-  --guide-accent: #ff8d3a;
-  --guide-surface: rgba(255, 152, 74, 0.1);
+  --guide-accent: #f4c542;
+  --guide-surface: #fff7ed;
 }
 
 .toneMiddle {
-  --guide-accent: #c39712;
-  --guide-surface: rgba(255, 211, 94, 0.16);
+  --guide-accent: #ffb443;
+  --guide-surface: rgba(255, 180, 67, 0.14);
 }
 
 .toneHigh {
-  --guide-accent: #d95540;
-  --guide-surface: rgba(233, 117, 96, 0.12);
+  --guide-accent: #ff8c00;
+  --guide-surface: rgba(255, 140, 0, 0.12);
 }
 
 .toneStar {
-  --guide-accent: #5b5d72;
-  --guide-surface: rgba(91, 93, 114, 0.12);
+  --guide-accent: #ff4500;
+  --guide-surface: rgba(255, 69, 0, 0.12);
 }
 
 .sectionIntro {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .sectionBadge {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--guide-surface);
+  margin: 0;
   color: var(--guide-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: clamp(24px, 3.4vw, 32px);
-  line-height: 1.18;
-  letter-spacing: -0.04em;
-}
-
-.sectionDescription {
-  margin: 0;
-  color: var(--text-secondary);
+  color: #8f8a83;
   font-size: 14px;
-  line-height: 1.65;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0;
 }
 
 .levelList {
@@ -247,7 +173,7 @@
   color: var(--guide-accent);
   font-size: 20px;
   line-height: 1.2;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
 .levelSummary {
@@ -290,17 +216,6 @@
   line-height: 1.65;
 }
 
-@media (min-width: 768px) {
-  .heroCard {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-    align-items: end;
-  }
-
-  .heroCallout {
-    align-self: stretch;
-  }
-}
-
 @media (max-width: 767px) {
   .main {
     padding: 16px 0 36px;
@@ -312,7 +227,7 @@
     padding: 18px;
   }
 
-  .structureGrid {
-    grid-template-columns: minmax(0, 1fr);
+  .sectionBadge {
+    font-size: 34px;
   }
 }
