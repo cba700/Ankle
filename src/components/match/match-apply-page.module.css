@@ -1,12 +1,12 @@
 .page {
   min-height: 100vh;
-  padding: 28px 0 calc(138px + env(safe-area-inset-bottom));
-  background: var(--user-page-background);
+  padding: 22px 0 calc(132px + env(safe-area-inset-bottom));
+  background: #f5f5f5;
 }
 
 .main {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .backLink {
@@ -15,282 +15,205 @@
   justify-self: start;
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--line);
+  border: 1px solid #dedede;
   border-radius: 999px;
   background: #fff;
+  color: #2b2b2b;
   font-size: 13px;
   font-weight: 700;
 }
 
-.heroCard,
-.card,
-.completeCard {
+.topBanner {
+  position: relative;
+  min-height: 178px;
+  overflow: hidden;
   padding: 24px;
-  border: 1px solid rgba(201, 193, 183, 0.78);
-  border-radius: 24px;
-  background: #fff;
-  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
-}
-
-.eyebrow {
-  margin: 0 0 12px;
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.heroTop {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.statusPill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.statusNeutral {
-  border-color: var(--line);
-  background: #fff;
-  color: var(--text-tertiary);
-}
-
-.statusAccent {
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--accent-strong);
-}
-
-.statusDanger {
-  background: #e03200;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #111 0%, #242424 52%, #ff8c00 100%);
   color: #fff;
 }
 
-.statusOpen {
-  background: #eaf7f1;
-  color: #0f8f61;
+.topBanner::after {
+  position: absolute;
+  right: -42px;
+  bottom: -64px;
+  width: 190px;
+  height: 190px;
+  border: 18px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  content: "";
 }
 
-.title {
-  margin: 12px 0 0;
-  font-size: clamp(28px, 4.6vw, 42px);
-  line-height: 1.06;
-  letter-spacing: -0.05em;
-}
-
-.price {
-  font-size: clamp(30px, 4vw, 42px);
-  line-height: 1;
-  letter-spacing: -0.05em;
-}
-
-.subTitle {
-  margin: 12px 0 0;
-  color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.metaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.metaRow span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-  white-space: normal;
-}
-
-.contentGrid {
+.bannerCopy {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 16px;
+  gap: 8px;
+  max-width: 74%;
+}
+
+.bannerDate {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.bannerTime {
+  font-size: 32px;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.bannerPlace {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.bannerMark {
+  position: absolute;
+  right: 18px;
+  top: 22px;
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.card,
+.completeCard {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #e6e1da;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.04);
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: 22px;
-  line-height: 1.18;
-  letter-spacing: -0.04em;
+  color: #161616;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
 }
 
 .sectionDescription {
   margin: 8px 0 0;
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: #737373;
+  font-size: 13px;
   line-height: 1.6;
 }
 
-.priceSummaryHeader {
-  display: flex;
+.listRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  min-height: 56px;
 }
 
-.couponBadge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--accent-strong);
-  font-size: 11px;
+.listRow + .listRow {
+  margin-top: 2px;
+  padding-top: 18px;
+  border-top: 1px solid #eeeeee;
+}
+
+.rowLabel {
+  color: #222;
+  font-size: 15px;
   font-weight: 800;
-  white-space: nowrap;
+}
+
+.rowValue,
+.rowValueGroup {
+  color: #222;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.rowValueGroup {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.rowValueGroup small {
+  color: #8a8a8a;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .priceSummaryList {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin-top: 18px;
 }
 
 .priceSummaryRow {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: #5f5f5f;
+  font-size: 15px;
+  line-height: 1.45;
 }
 
 .priceSummaryRow strong {
-  color: var(--text-primary);
+  color: #161616;
   font-size: 15px;
-}
-
-.priceSummaryRowStrong {
-  padding-top: 12px;
-  border-top: 1px solid rgba(201, 193, 183, 0.62);
-  color: var(--text-primary);
-}
-
-.priceSummaryRowStrong strong {
-  font-size: 20px;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .discountValue {
-  color: var(--accent-strong) !important;
+  color: #ff8c00 !important;
 }
 
-.accountBox {
-  display: grid;
-  gap: 6px;
-  margin-top: 18px;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-}
-
-.accountLabel {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.accountValue {
-  font-size: 18px;
-  line-height: 1.3;
-  letter-spacing: -0.03em;
-  overflow-wrap: anywhere;
-}
-
-.policyPanel {
-  margin-top: 18px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: #fff;
-}
-
-.policyTitle {
-  display: block;
-  font-size: 14px;
-}
-
-.policyList {
-  display: grid;
-  gap: 10px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.policyItem {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.policyItem strong {
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-.policyLinkRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.policyLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid rgba(201, 193, 183, 0.92);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--text-primary);
-  font-size: 12px;
+.priceSummaryRowStrong {
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid #eeeeee;
+  color: #161616;
   font-weight: 800;
 }
 
-.noticeBox {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-  padding: 14px 16px;
-  border: 1px solid rgba(243, 109, 33, 0.18);
-  border-radius: 16px;
-  background: #fff;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.65;
+.priceSummaryRowStrong strong {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
 }
 
-.noticeBox p {
-  margin: 0;
+.formField {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  color: #222;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.formField input,
+.formField select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid #dedede;
+  border-radius: 14px;
+  background: #f7f7f7;
+  color: #222;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .fieldset {
@@ -299,78 +222,23 @@
   border: 0;
 }
 
-.couponOptionList {
-  display: grid;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.couponOption {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.couponOptionSelected {
-  border-color: rgba(243, 109, 33, 0.46);
-  background: #fff;
-  box-shadow: 0 10px 18px rgba(243, 109, 33, 0.1);
-}
-
-.couponOptionInput {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--accent);
-}
-
-.couponOptionCopy {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.couponOptionName {
-  font-size: 15px;
-  line-height: 1.35;
-}
-
-.couponOptionMeta {
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.couponOptionAmount {
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  white-space: nowrap;
-}
-
 .checkboxList {
   display: grid;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .checkboxRow {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  padding: 15px 16px;
+  border: 1px solid #e1e1e1;
+  border-radius: 14px;
   background: #fff;
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 700;
+  color: #222;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1.5;
 }
 
@@ -378,15 +246,16 @@
   width: 18px;
   height: 18px;
   margin: 2px 0 0;
-  accent-color: var(--accent);
+  accent-color: #ff8c00;
   flex: 0 0 auto;
 }
 
 .warningText {
-  margin: 16px 0 0;
+  margin: 14px 0 0;
   color: var(--red-text);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .completeCard {
@@ -409,7 +278,7 @@
 
 .completeText {
   margin: 0;
-  color: var(--text-secondary);
+  color: #636363;
   font-size: 15px;
   line-height: 1.7;
 }
@@ -420,35 +289,30 @@
   bottom: 0;
   left: 0;
   z-index: 60;
-  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 30%, rgba(255, 255, 255, 0.98) 100%);
-  backdrop-filter: blur(14px);
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(
+    180deg,
+    rgba(245, 245, 245, 0) 0%,
+    rgba(245, 245, 245, 0.94) 24%,
+    #f5f5f5 100%
+  );
 }
 
 .actionBar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
+  gap: 10px;
   width: min(calc(100% - 4px), var(--content-max));
   margin: 0 auto;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 18px 36px rgba(17, 17, 17, 0.12);
-}
-
-.actionCopy strong {
-  display: block;
-  font-size: 15px;
+  padding: 0;
 }
 
 .actionCopy p {
-  margin: 6px 0 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.6;
+  margin: 0;
+  color: #8a8a8a;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .primaryButton,
@@ -456,74 +320,50 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 154px;
-  min-height: 54px;
+  width: 100%;
+  min-height: 56px;
   padding: 0 20px;
   border: 0;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+  background: #ff8c00;
   color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-  box-shadow: 0 16px 28px rgba(255, 107, 0, 0.24);
+  font-size: 17px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(255, 140, 0, 0.24);
   text-align: center;
 }
 
 .primaryButton:disabled {
-  background: #dad6cf;
-  color: #6d675f;
+  background: #d9d9d9;
+  color: #777;
   box-shadow: none;
   cursor: not-allowed;
 }
 
-@media (min-width: 900px) {
-  .contentGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 767px) {
   .page {
-    padding-top: 18px;
+    padding-top: 16px;
   }
 
-  .heroCard,
+  .topBanner {
+    min-height: 160px;
+    padding: 22px;
+  }
+
+  .bannerCopy {
+    max-width: 82%;
+  }
+
+  .bannerTime {
+    font-size: 28px;
+  }
+
   .card,
   .completeCard {
     padding: 20px;
-    border-radius: 20px;
   }
 
-  .heroTop,
-  .policyItem,
-  .actionBar {
-    grid-template-columns: 1fr;
-  }
-
-  .heroTop,
-  .policyItem {
-    display: grid;
-  }
-
-  .couponOption {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .couponOptionAmount {
-    grid-column: 2;
-  }
-
-  .price {
-    font-size: 34px;
-  }
-
-  .actionBar {
-    gap: 10px;
-  }
-
-  .primaryButton,
-  .primaryLink {
-    width: 100%;
-    min-width: 0;
+  .listRow {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   }
 }

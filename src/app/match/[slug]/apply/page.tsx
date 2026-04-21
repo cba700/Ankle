@@ -38,9 +38,6 @@ export default async function MatchApply({
     );
   }
 
-  const accountLabel =
-    user.email ??
-    (typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "카카오 계정");
   const supabase = await getSupabaseServerClient();
 
   if (!supabase) {
@@ -96,7 +93,6 @@ export default async function MatchApply({
 
   return (
     <MatchApplyPage
-      accountLabel={accountLabel}
       alreadyApplied={Boolean(existingApplication)}
       availableCoupons={couponOptions}
       canApply={match.canApply}
