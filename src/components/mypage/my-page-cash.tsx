@@ -284,7 +284,6 @@ export function MyPageCash({
         <section className={`${baseStyles.applicationSection} ${styles.detailSection}`}>
           <div className={baseStyles.sectionHeading}>
             <div>
-              <p className={baseStyles.sectionEyebrow}>실제 캐시 거래 기준</p>
               <h2 className={baseStyles.sectionTitle}>캐시 상세 내역</h2>
             </div>
             <span className={baseStyles.sectionCount}>{filteredTransactions.length}건</span>

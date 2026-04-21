@@ -209,9 +209,9 @@
 }
 
 .priceSummaryRowStrong strong {
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 900;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
 }
 
 .fieldset {
