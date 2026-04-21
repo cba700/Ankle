@@ -126,23 +126,6 @@ export function MyPageApplications({
           마이페이지로 돌아가기
         </AppLink>
 
-        <section className={styles.heroCard}>
-          <div className={styles.heroCopy}>
-            <span className={styles.heroBadge}>
-              <CalendarIcon className={styles.heroBadgeIcon} />
-              신청 캘린더
-            </span>
-            <h1 className={styles.heroTitle}>날짜별 매치 신청 내역</h1>
-          </div>
-
-          <div className={styles.heroStats}>
-            <div className={styles.heroStat}>
-              <span className={styles.heroStatLabel}>전체 신청</span>
-              <strong className={styles.heroStatValue}>{applications.length}건</strong>
-            </div>
-          </div>
-        </section>
-
         <div className={styles.contentGrid}>
           <section className={styles.calendarCard}>
             <div className={styles.calendarHeader}>
