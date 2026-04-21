@@ -96,6 +96,7 @@ export default async function MatchApply({
       alreadyApplied={Boolean(existingApplication)}
       availableCoupons={couponOptions}
       canApply={match.canApply}
+      cashBalanceAmount={cashBalance}
       cashBalanceLabel={`${formatMoney(cashBalance)}원`}
       priceSummary={{
         originalPriceAmount: match.price,

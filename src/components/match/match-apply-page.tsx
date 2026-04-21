@@ -17,6 +17,7 @@ type MatchApplyPageProps = {
   alreadyApplied: boolean;
   availableCoupons: MatchApplyCouponOption[];
   canApply: boolean;
+  cashBalanceAmount: number;
   cashBalanceLabel: string;
   priceSummary: {
     originalPriceAmount: number;
@@ -42,6 +43,7 @@ export function MatchApplyPage({
   alreadyApplied,
   availableCoupons,
   canApply,
+  cashBalanceAmount,
   cashBalanceLabel,
   priceSummary,
   view,
@@ -63,6 +65,14 @@ export function MatchApplyPage({
   const couponDiscountAmount = selectedCoupon?.discountAmount ?? 0;
   const finalChargeAmount = Math.max(priceSummary.originalPriceAmount - couponDiscountAmount, 0);
   const finalChargeLabel = `${formatMoney(finalChargeAmount)}원`;
+  const cashBalanceAfterApply = cashBalanceAmount - finalChargeAmount;
+  const cashBalanceAfterApplyLabel =
+    cashBalanceAfterApply >= 0
+      ? `${formatMoney(cashBalanceAfterApply)}원`
+      : `${formatMoney(Math.abs(cashBalanceAfterApply))}원 부족`;
+  const applyInfoItems = view.infoItems.filter((item) =>
+    ["level", "gender", "format", "participants"].includes(item.key),
+  );
 
   function toggleCheck(id: string) {
     setCheckedIds((current) =>
@@ -203,6 +213,10 @@ export function MatchApplyPage({
                     <span>캐시 사용</span>
                     <strong className={styles.discountValue}>-{finalChargeLabel}</strong>
                   </div>
+                  <div className={styles.priceSummaryRow}>
+                    <span>신청 후 예상 잔액</span>
+                    <strong>{cashBalanceAfterApplyLabel}</strong>
+                  </div>
                   <div className={`${styles.priceSummaryRow} ${styles.priceSummaryRowStrong}`}>
                     <span>최종 결제 금액</span>
                     <strong>0원</strong>
@@ -211,18 +225,27 @@ export function MatchApplyPage({
               </section>
 
               <section className={styles.card}>
-                <h2 className={styles.sectionTitle}>부가 정보</h2>
-                <label className={styles.formField}>
-                  <span>주차등록</span>
-                  <input placeholder="12가 1234" type="text" />
-                </label>
-                <label className={styles.formField}>
-                  <span>현금영수증</span>
-                  <select defaultValue="income">
-                    <option value="income">소득공제</option>
-                    <option value="none">신청 안 함</option>
-                  </select>
-                </label>
+                <h2 className={styles.sectionTitle}>참가 조건</h2>
+                <div className={styles.infoGrid}>
+                  {applyInfoItems.map((item) => (
+                    <div className={styles.infoItem} key={item.key}>
+                      <span>{getInfoLabel(item.key)}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <h2 className={styles.sectionTitle}>환불 기준</h2>
+                <ul className={styles.refundList}>
+                  {view.refundRows.map((row) => (
+                    <li className={styles.refundItem} key={row.condition}>
+                      <span>{row.condition}</span>
+                      <strong>{row.policy}</strong>
+                    </li>
+                  ))}
+                </ul>
               </section>
 
               <section className={styles.card}>
@@ -323,6 +346,26 @@ function getErrorMessage(code?: string) {
   }
 
   return "신청 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function getInfoLabel(key: string) {
+  if (key === "level") {
+    return "레벨";
+  }
+
+  if (key === "gender") {
+    return "성별";
+  }
+
+  if (key === "format") {
+    return "방식";
+  }
+
+  if (key === "participants") {
+    return "인원";
+  }
+
+  return "정보";
 }
 
 function buildSuccessMessage(payload?: {
