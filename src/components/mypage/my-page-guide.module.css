@@ -58,25 +58,11 @@
   min-width: 0;
 }
 
-.heroEyebrow {
-  margin: 18px 0 0;
-  color: var(--text-tertiary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .heroTitle {
-  margin: 8px 0 0;
-  font-size: clamp(30px, 4.4vw, 44px);
+  margin: 14px 0 0;
+  font-size: clamp(26px, 3.8vw, 38px);
   line-height: 1.08;
   letter-spacing: -0.05em;
-}
-
-.heroDescription {
-  margin: 12px 0 0;
-  color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.65;
 }
 
 .heroCallout {
@@ -117,7 +103,7 @@
 }
 
 .toneBasic {
-  --guide-accent: #d97706;
+  --guide-accent: #f4c542;
   --guide-surface: #fff7ed;
 }
 
