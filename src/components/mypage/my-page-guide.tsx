@@ -16,7 +16,6 @@ type MyPageGuideProps = {
 type GuideTone = "basic" | "middle" | "high" | "star";
 
 type GuideSection = {
-  description: string;
   entries: Array<{
     details: Array<{ label: string; text: string }>;
     name: string;
@@ -27,37 +26,9 @@ type GuideSection = {
   tone: GuideTone;
 };
 
-const LEVEL_STRUCTURE = [
-  {
-    audience: "농구를 처음 시작하는 입문자",
-    grade: "Basic",
-    subLevelLabel: "1 / 2 / 3",
-    tone: "basic",
-  },
-  {
-    audience: "기본기를 익혀가는 과정",
-    grade: "Middle",
-    subLevelLabel: "1 / 2 / 3",
-    tone: "middle",
-  },
-  {
-    audience: "실전 경험을 갖춘 플레이어",
-    grade: "High",
-    subLevelLabel: "1 / 2 / 3",
-    tone: "high",
-  },
-  {
-    audience: "선수 출신 또는 그에 준하는 수준",
-    grade: "Star",
-    subLevelLabel: "—",
-    tone: "star",
-  },
-] as const;
-
 const GUIDE_SECTIONS: GuideSection[] = [
   {
-    description: "농구를 처음 시작하는 단계부터 기본 패스와 움직임에 익숙해지는 과정을 설명합니다.",
-    eyebrow: "🟠 Basic",
+    eyebrow: "Basic",
     title: "농구에 친해지는 과정이에요",
     tone: "basic",
     entries: [
@@ -102,8 +73,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     ],
   },
   {
-    description: "기본 패스와 드리블, 슛을 익혀가며 가벼운 견제 속에서 플레이 범위를 넓혀가는 구간입니다.",
-    eyebrow: "🟡 Middle",
+    eyebrow: "Middle",
     title: "기본기를 익혀가는 과정이에요",
     tone: "middle",
     entries: [
@@ -176,8 +146,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     ],
   },
   {
-    description: "실전 경험을 바탕으로 압박 속에서도 안정감과 영향력을 보여주는 플레이어를 위한 구간입니다.",
-    eyebrow: "🔴 High",
+    eyebrow: "High",
     title: "실전 경험을 갖춘 플레이어예요",
     tone: "high",
     entries: [
@@ -266,8 +235,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     ],
   },
   {
-    description: "선수 출신 또는 그에 준하는 수준으로, 빠른 템포와 강한 압박 속에서도 경기를 주도할 수 있는 최상위 구간입니다.",
-    eyebrow: "⭐ Star",
+    eyebrow: "Star",
     title: "선수 출신 또는 그에 준하는 수준이에요",
     tone: "star",
     entries: [
@@ -360,31 +328,6 @@ export function MyPageGuide({ initialIsAdmin }: MyPageGuideProps) {
           </div>
         </section>
 
-        <section className={`${baseStyles.applicationSection} ${styles.structureSection}`}>
-          <div className={baseStyles.sectionHeading}>
-            <div>
-              <p className={baseStyles.sectionEyebrow}>한눈에 보기</p>
-              <h2 className={baseStyles.sectionTitle}>레벨 구조</h2>
-            </div>
-            <span className={baseStyles.sectionCount}>4개 등급</span>
-          </div>
-
-          <div className={styles.structureGrid}>
-            {LEVEL_STRUCTURE.map((level) => (
-              <article
-                className={`${styles.structureCard} ${TONE_CLASS_NAME[level.tone]}`}
-                key={level.grade}
-              >
-                <span className={styles.structureGrade}>{level.grade}</span>
-                <span className={styles.structureMetaLabel}>세부 레벨</span>
-                <strong className={styles.structureSubLevel}>{level.subLevelLabel}</strong>
-                <span className={styles.structureMetaLabel}>대상</span>
-                <p className={styles.structureAudience}>{level.audience}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
         <div className={styles.sectionList}>
           {GUIDE_SECTIONS.map((section) => (
             <section
@@ -392,9 +335,8 @@ export function MyPageGuide({ initialIsAdmin }: MyPageGuideProps) {
               key={section.eyebrow}
             >
               <div className={styles.sectionIntro}>
-                <p className={styles.sectionBadge}>{section.eyebrow}</p>
-                <h2 className={styles.sectionTitle}>{section.title}</h2>
-                <p className={styles.sectionDescription}>{section.description}</p>
+                <h2 className={styles.sectionBadge}>{section.eyebrow}</h2>
+                <p className={styles.sectionTitle}>{section.title}</p>
               </div>
 
               <div className={styles.levelList}>
