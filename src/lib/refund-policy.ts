@@ -27,8 +27,6 @@ export const CASH_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${CASH_REFUND_SECT
 
 export const CASH_REFUND_ELIGIBILITY_NOTICE =
   "실제 보유 캐시에 한해 환불 가능(쿠폰 할인분 제외)";
-export const CASH_VALIDITY_NOTICE =
-  "충전된 캐시의 이용기간과 환불가능기간은 결제시점으로부터 1년 이내로 제한됩니다.";
 export const CASH_REFUND_SCHEDULE_NOTICE =
   "환불은 매주 월요일, 목요일 저녁 5 - 6시 사이에 일괄 처리됩니다.";
 export const CASH_REFUND_HOLIDAY_NOTICE =
@@ -139,20 +137,10 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
       "충전 캐시 환불 방법, 환불 가능 조건, 처리 일정과 공휴일 대체 일정을 확인할 수 있습니다.",
     groups: [
       {
-        title: "충전 경로와 사용 경로",
-        items: [
-          "마이페이지 > 캐시 내역에서 충전 화면으로 이동할 수 있습니다.",
-          "매치 신청 중 보유 캐시가 부족하면 충전 화면으로 이동해 캐시를 충전할 수 있습니다.",
-          "충전한 캐시는 매치 참가 신청 시 참가비 결제에 사용됩니다.",
-          "매치 신청 화면에서 캐시가 차감되며, 마이페이지 > 캐시 내역에서 사용 내역을 확인할 수 있습니다.",
-        ],
-      },
-      {
         title: "환불 방법",
         items: [
           "[마이페이지] → [캐시 내역] → [캐시 환불 클릭]",
           CASH_REFUND_ELIGIBILITY_NOTICE,
-          CASH_VALIDITY_NOTICE,
         ],
       },
       {

@@ -327,51 +327,6 @@ export function CashChargePage({
               })}
             </div>
           </section>
-
-          <section className={styles.card}>
-            <h2 className={styles.sectionTitle}>포인트 사용 및 환불 안내</h2>
-            <p className={styles.sectionDescription}>
-              충전 경로, 사용 경로, 환불 정책을 한 화면에서 확인할 수 있습니다.
-            </p>
-
-            <div className={styles.infoBox}>
-              <strong className={styles.noticeTitle}>포인트 충전 경로</strong>
-              <p className={styles.noticeText}>
-                마이페이지 캐시 내역에서 이 화면으로 이동해 충전할 수 있고, 매치 신청 중 캐시가
-                부족하면 충전 화면으로 바로 이동합니다.
-              </p>
-            </div>
-
-            <div className={styles.infoBox}>
-              <strong className={styles.noticeTitle}>포인트 사용 경로</strong>
-              <p className={styles.noticeText}>
-                충전한 캐시는 매치 참가 신청 시 참가비 결제에 사용되며, 사용 내역은 마이페이지
-                캐시 내역에서 확인할 수 있습니다.
-              </p>
-            </div>
-
-            <div className={styles.policyBox}>
-              <strong className={styles.noticeTitle}>환불 및 이용기간</strong>
-              <p className={styles.noticeText}>
-                충전된 포인트의 이용기간과 환불가능기간은 결제시점으로부터 1년 이내로
-                제한됩니다.
-              </p>
-              <div className={styles.noticeLinkRow}>
-                <AppLink className={styles.noticeLink} href="/">
-                  매치 보러 가기
-                </AppLink>
-                <AppLink className={styles.noticeLink} href="/mypage/cash">
-                  캐시 내역 보기
-                </AppLink>
-                <AppLink className={styles.noticeLink} href="/refund">
-                  환불규정 보기
-                </AppLink>
-                <AppLink className={styles.noticeLink} href="/terms">
-                  이용약관 보기
-                </AppLink>
-              </div>
-            </div>
-          </section>
       </main>
 
       <div className={styles.actionWrap}>

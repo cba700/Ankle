@@ -213,41 +213,6 @@
   background: #fff;
 }
 
-.noticeTitle {
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.noticeText {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.noticeLinkRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.noticeLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .policyList,
 .orderList,
 .resultList {
