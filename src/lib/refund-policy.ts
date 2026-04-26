@@ -27,6 +27,8 @@ export const CASH_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${CASH_REFUND_SECT
 
 export const CASH_REFUND_ELIGIBILITY_NOTICE =
   "실제 보유 캐시에 한해 환불 가능(쿠폰 할인분 제외)";
+export const CASH_VALIDITY_NOTICE =
+  "충전된 캐시의 이용기간과 환불가능기간은 결제시점으로부터 1년 이내로 제한됩니다.";
 export const CASH_REFUND_SCHEDULE_NOTICE =
   "환불은 매주 월요일, 목요일 저녁 5 - 6시 사이에 일괄 처리됩니다.";
 export const CASH_REFUND_HOLIDAY_NOTICE =
@@ -141,6 +143,7 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
         items: [
           "[마이페이지] → [캐시 내역] → [캐시 환불 클릭]",
           CASH_REFUND_ELIGIBILITY_NOTICE,
+          CASH_VALIDITY_NOTICE,
         ],
       },
       {
