@@ -172,6 +172,18 @@
   min-width: 0;
 }
 
+.usageNotice {
+  margin: 16px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.inlineLink {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
 .tabList {
   margin-top: 18px;
   display: flex;

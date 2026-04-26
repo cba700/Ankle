@@ -17,6 +17,7 @@ import {
   CASH_REFUND_ELIGIBILITY_NOTICE,
   CASH_REFUND_HOLIDAY_NOTICE,
   CASH_REFUND_SCHEDULE_NOTICE,
+  CASH_VALIDITY_NOTICE,
 } from "@/lib/refund-policy";
 import {
   ArrowLeftIcon,
@@ -288,6 +289,13 @@ export function MyPageCash({
             </div>
             <span className={baseStyles.sectionCount}>{filteredTransactions.length}건</span>
           </div>
+
+          <p className={styles.usageNotice}>
+            충전한 캐시는 매치 참가 신청 시 참가비 결제에 사용됩니다. {CASH_VALIDITY_NOTICE}{" "}
+            <AppLink className={styles.inlineLink} href="/refund">
+              환불규정 보기
+            </AppLink>
+          </p>
 
           <div className={styles.tabList}>
             {CASH_HISTORY_TABS.map((tab) => {
