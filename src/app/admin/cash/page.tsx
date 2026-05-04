@@ -31,7 +31,10 @@ export default async function AdminCashPage() {
   const chargeOrderEventRows = buildAdminCashChargeOrderEventRows(
     data.chargeOrderEvents,
   );
-  const refundRequestRows = buildAdminCashRefundRequestRows(data.refundRequests);
+  const refundRequestRows = buildAdminCashRefundRequestRows(
+    data.refundRequests,
+    data.refundRequestPaymentMethodLabels,
+  );
 
   return (
     <AdminShell

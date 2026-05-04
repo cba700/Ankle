@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { MyPageCash } from "@/components/mypage/my-page-cash";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import {
-  getOriginalPaymentRefundableCashAmountByUserId,
+  getOriginalPaymentRefundableCashSummaryByUserId,
   getPendingCashRefundRequestByUserId,
 } from "@/lib/cash";
 import { formatCompactDateLabel, formatMoney, formatSeoulTime } from "@/lib/date";
@@ -56,9 +56,9 @@ export default async function MyPageCashRoute() {
 
   await assertCashRefundRequestSchemaReady(supabase);
 
-  const [pendingRefundRequest, refundableCashAmount] = await Promise.all([
+  const [pendingRefundRequest, refundableCashSummary] = await Promise.all([
     getPendingCashRefundRequestByUserId(supabase, user.id),
-    getOriginalPaymentRefundableCashAmountByUserId(supabase, user.id),
+    getOriginalPaymentRefundableCashSummaryByUserId(supabase, user.id),
   ]);
 
   return (
@@ -78,8 +78,9 @@ export default async function MyPageCashRoute() {
             }
           : null
       }
-      refundableCashAmount={refundableCashAmount}
-      refundableCashLabel={`${formatMoney(refundableCashAmount)}원`}
+      refundPaymentMethodLabel={refundableCashSummary.paymentMethodLabel}
+      refundableCashAmount={refundableCashSummary.amount}
+      refundableCashLabel={`${formatMoney(refundableCashSummary.amount)}원`}
     />
   );
 }

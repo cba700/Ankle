@@ -13,12 +13,7 @@ import {
   type CashChargePackage,
   CASH_CHARGE_PACKAGES,
 } from "@/lib/payments/toss";
-import {
-  CASH_REFUND_ELIGIBILITY_NOTICE,
-  CASH_REFUND_ORIGINAL_METHOD_NOTICE,
-  CASH_REFUND_POLICY_HREF,
-  CASH_VALIDITY_NOTICE,
-} from "@/lib/refund-policy";
+import { CASH_REFUND_POLICY_HREF } from "@/lib/refund-policy";
 import baseStyles from "@/components/mypage/my-page.module.css";
 import styles from "./cash-charge-page.module.css";
 
@@ -340,13 +335,13 @@ export function CashChargePage({
             <div className={styles.policyBox}>
               <ul className={styles.policyList}>
                 <li className={styles.policyItem}>
-                  <span>{CASH_REFUND_ORIGINAL_METHOD_NOTICE}</span>
+                  <span>환불은 신청 즉시 충전 시 사용한 결제수단으로 취소 요청됩니다.</span>
                 </li>
                 <li className={styles.policyItem}>
-                  <span>{CASH_REFUND_ELIGIBILITY_NOTICE}</span>
-                </li>
-                <li className={styles.policyItem}>
-                  <span>{CASH_VALIDITY_NOTICE}</span>
+                  <span>
+                    다만 실제 취소 완료 또는 환불 금액 반영까지는 결제수단 및
+                    카드사·은행 사정에 따라 영업일 기준 3~5일이 소요될 수 있습니다.
+                  </span>
                 </li>
               </ul>
 

@@ -10,6 +10,7 @@ import {
   listWithdrawalRequestLinksByRefundRequestIds,
 } from "@/lib/account-withdrawal";
 import {
+  listCashRefundRequestPaymentMethodLabels,
   listCashAccounts,
   listRecentCashChargeOrders,
   listRecentCashChargeOrderEvents,
@@ -178,6 +179,7 @@ export async function getAdminCashDashboardData() {
       chargeOrders: [],
       chargeOrderEvents: [],
       linkedWithdrawalRefundRequestIds: [],
+      refundRequestPaymentMethodLabels: new Map<string, string>(),
       refundRequests: [],
       transactions: [],
     };
@@ -191,6 +193,7 @@ export async function getAdminCashDashboardData() {
       chargeOrders: [],
       chargeOrderEvents: [],
       linkedWithdrawalRefundRequestIds: [],
+      refundRequestPaymentMethodLabels: new Map<string, string>(),
       refundRequests: [],
       transactions: [],
     };
@@ -215,12 +218,18 @@ export async function getAdminCashDashboardData() {
       )
     ).keys(),
   );
+  const refundRequestPaymentMethodLabels =
+    await listCashRefundRequestPaymentMethodLabels(
+      supabase,
+      refundRequests.map((request) => request.id),
+    );
 
   return {
     accounts,
     chargeOrders,
     chargeOrderEvents,
     linkedWithdrawalRefundRequestIds,
+    refundRequestPaymentMethodLabels,
     refundRequests,
     transactions,
   };

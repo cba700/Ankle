@@ -8,7 +8,6 @@ import { BrandLogo } from "@/components/branding/brand-logo";
 import {
   CASH_REFUND_ELIGIBILITY_NOTICE,
   CASH_REFUND_HOLIDAY_NOTICE,
-  CASH_REFUND_ORIGINAL_METHOD_NOTICE,
   CASH_REFUND_SCHEDULE_NOTICE,
 } from "@/lib/refund-policy";
 import {
@@ -32,6 +31,7 @@ type MyPageCashProps = {
   cashTransactions: MyPageCashTransaction[];
   initialIsAdmin: boolean;
   pendingRefundRequest: PendingCashRefundRequest | null;
+  refundPaymentMethodLabel: string;
   refundableCashAmount: number;
   refundableCashLabel: string;
 };
@@ -58,6 +58,7 @@ export function MyPageCash({
   cashTransactions,
   initialIsAdmin,
   pendingRefundRequest,
+  refundPaymentMethodLabel,
   refundableCashAmount,
   refundableCashLabel,
 }: MyPageCashProps) {
@@ -240,7 +241,9 @@ export function MyPageCash({
               </div>
               <div className={styles.requestSummaryRow}>
                 <span className={styles.requestSummaryLabel}>환불 방식</span>
-                <strong className={styles.requestSummaryValue}>결제했던 수단</strong>
+                <strong className={styles.requestSummaryValue}>
+                  {refundPaymentMethodLabel}
+                </strong>
               </div>
               <div className={styles.requestSummaryRow}>
                 <span className={styles.requestSummaryLabel}>접수 시각</span>
@@ -322,6 +325,7 @@ export function MyPageCash({
           onClose={handleCloseRefundRequest}
           onSubmit={handleSubmitRefundRequest}
           onToggleScheduleAgreement={() => setAgreedToSchedule((current) => !current)}
+          refundPaymentMethodLabel={refundPaymentMethodLabel}
           requestedAmountLabel={refundableCashLabel}
           scheduleAgreed={agreedToSchedule}
           submitDisabled={!canSubmitRefundRequest}
@@ -339,6 +343,7 @@ function CashRefundRequestDialog({
   onClose,
   onSubmit,
   onToggleScheduleAgreement,
+  refundPaymentMethodLabel,
   requestedAmountLabel,
   scheduleAgreed,
   submitDisabled,
@@ -348,6 +353,7 @@ function CashRefundRequestDialog({
   onClose: () => void;
   onSubmit: () => void | Promise<void>;
   onToggleScheduleAgreement: () => void;
+  refundPaymentMethodLabel: string;
   requestedAmountLabel: string;
   scheduleAgreed: boolean;
   submitDisabled: boolean;
@@ -404,7 +410,9 @@ function CashRefundRequestDialog({
 
           <div className={styles.refundReadonlyField}>
             <span className={styles.refundFieldLabel}>환불 방식</span>
-            <strong className={styles.refundAmountValue}>결제했던 수단</strong>
+            <strong className={styles.refundAmountValue}>
+              {refundPaymentMethodLabel}
+            </strong>
           </div>
 
           <label className={styles.refundCheckboxRow}>
@@ -415,8 +423,8 @@ function CashRefundRequestDialog({
               type="checkbox"
             />
             <span className={styles.refundCheckboxLabel}>
-              충전 캐시 환불 안내를 확인했습니다. {CASH_REFUND_ORIGINAL_METHOD_NOTICE}{" "}
-              {CASH_REFUND_HOLIDAY_NOTICE}
+              충전 캐시 환불 안내를 확인했습니다. 환불은 신청 즉시{" "}
+              {refundPaymentMethodLabel} 결제 취소로 요청됩니다. {CASH_REFUND_HOLIDAY_NOTICE}
             </span>
           </label>
 

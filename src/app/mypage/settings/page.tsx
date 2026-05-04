@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { MyPageSettings } from "@/components/mypage/my-page-settings";
 import { buildLoginHref } from "@/lib/auth/redirect";
 import { getAccountWithdrawalPreview } from "@/lib/account-withdrawal";
-import { getPendingCashRefundRequestByUserId } from "@/lib/cash";
+import {
+  getOriginalPaymentRefundableCashSummaryByUserId,
+  getPendingCashRefundRequestByUserId,
+} from "@/lib/cash";
 import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
 import { getMyPageData } from "@/lib/mypage";
 import { getServerAuthState } from "@/lib/supabase/auth";
@@ -68,9 +71,14 @@ export default async function MyPageSettingsRoute({
         .eq("id", user.id)
         .maybeSingle()
     : { data: null };
-  const [withdrawalPreview, pendingRefundRequest] = await Promise.all([
+  const [
+    withdrawalPreview,
+    pendingRefundRequest,
+    refundableCashSummary,
+  ] = await Promise.all([
     getAccountWithdrawalPreview(supabase, user.id),
     getPendingCashRefundRequestByUserId(supabase, user.id),
+    getOriginalPaymentRefundableCashSummaryByUserId(supabase, user.id),
   ]);
   const initialActiveDialog =
     readFirstSearchParam(resolvedSearchParams.edit) === "displayName"
@@ -98,6 +106,7 @@ export default async function MyPageSettingsRoute({
         pendingRefundRequestedAmountLabel: pendingRefundRequest
           ? `${pendingRefundRequest.requestedAmount.toLocaleString("ko-KR")}원`
           : null,
+        refundPaymentMethodLabel: refundableCashSummary.paymentMethodLabel,
       }}
     />
   );

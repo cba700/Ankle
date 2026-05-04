@@ -42,6 +42,7 @@ type WithdrawalPreview = {
   futureMatchCount: number;
   pendingChargeOrderCount: number;
   pendingRefundRequestedAmountLabel: string | null;
+  refundPaymentMethodLabel: string;
 };
 
 type DialogKind = "accountWithdrawal" | "displayName" | "temporaryLevel";
@@ -572,8 +573,9 @@ function AccountWithdrawalDialog({
               <div className={styles.withdrawalInlineCard}>
                 <strong className={styles.withdrawalInlineTitle}>캐시 환불 안내</strong>
                 <p className={styles.withdrawalInlineBody}>
-                  보유 캐시 {preview.cashBalanceLabel}는 탈퇴 처리 중 결제했던 수단으로
-                  환불됩니다. {CASH_REFUND_ELIGIBILITY_NOTICE}
+                  보유 캐시 {preview.cashBalanceLabel}는 탈퇴 처리 중{" "}
+                  {preview.refundPaymentMethodLabel} 결제 취소로 환불됩니다.{" "}
+                  {CASH_REFUND_ELIGIBILITY_NOTICE}
                 </p>
               </div>
             </>
