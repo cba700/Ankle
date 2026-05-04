@@ -2,19 +2,13 @@
 
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import {
-  isValidCashRefundAccountHolder,
-  isValidCashRefundAccountNumber,
-  normalizeCashRefundAccountHolder,
-  normalizeCashRefundAccountNumber,
-  CASH_REFUND_BANK_OPTIONS,
-} from "@/lib/cash-refunds";
 import type { MyPageProfile } from "@/lib/mypage";
 import {
   DISPLAY_NAME_MAX_LENGTH,
   getDisplayNameValidationMessage,
 } from "@/lib/signup-profile";
 import { BrandLogo } from "@/components/branding/brand-logo";
+import { CASH_REFUND_ELIGIBILITY_NOTICE } from "@/lib/refund-policy";
 import {
   formatTemporaryLevel,
   TEMPORARY_LEVEL_OPTIONS,
@@ -272,7 +266,6 @@ export function MyPageSettings({
 
       {activeDialog === "accountWithdrawal" ? (
         <AccountWithdrawalDialog
-          displayName={profile.displayName}
           onClose={() => setActiveDialog(null)}
           preview={withdrawalPreview}
         />
@@ -425,33 +418,24 @@ function TemporaryLevelDialog({
 }
 
 function AccountWithdrawalDialog({
-  displayName,
   onClose,
   preview,
 }: {
-  displayName: string;
   onClose: () => void;
   preview: WithdrawalPreview;
 }) {
   const hasBlockingReason =
     preview.futureMatchCount > 0 || preview.pendingChargeOrderCount > 0;
   const hasPendingRefundRequest = Boolean(preview.pendingRefundRequestedAmountLabel);
-  const requiresRefundAccount =
+  const requiresOriginalPaymentRefund =
     preview.cashBalanceAmount > 0 && !hasPendingRefundRequest;
-  const [selectedBankName, setSelectedBankName] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [accountHolder, setAccountHolder] = useState(displayName);
   const [agreedToWarnings, setAgreedToWarnings] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const canSubmit =
     !isSubmitting &&
     !hasBlockingReason &&
-    agreedToWarnings &&
-    (!requiresRefundAccount ||
-      (selectedBankName.length > 0 &&
-        isValidCashRefundAccountNumber(accountNumber) &&
-        isValidCashRefundAccountHolder(accountHolder)));
+    agreedToWarnings;
 
   async function handleSubmit() {
     if (!canSubmit) {
@@ -468,10 +452,7 @@ function AccountWithdrawalDialog({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          accountHolder,
-          accountNumber,
           agreedToWarnings,
-          bankName: selectedBankName,
         }),
       });
       const payload =
@@ -586,62 +567,15 @@ function AccountWithdrawalDialog({
             </div>
           ) : null}
 
-          {requiresRefundAccount ? (
+          {requiresOriginalPaymentRefund ? (
             <>
               <div className={styles.withdrawalInlineCard}>
-                <strong className={styles.withdrawalInlineTitle}>캐시 환불 계좌 입력</strong>
+                <strong className={styles.withdrawalInlineTitle}>캐시 환불 안내</strong>
                 <p className={styles.withdrawalInlineBody}>
-                  보유 캐시 {preview.cashBalanceLabel}는 환불 계좌가 확인된 뒤 탈퇴와 함께
-                  처리됩니다.
+                  보유 캐시 {preview.cashBalanceLabel}는 탈퇴 처리 중 결제했던 수단으로
+                  환불됩니다. {CASH_REFUND_ELIGIBILITY_NOTICE}
                 </p>
               </div>
-
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>은행</span>
-                <select
-                  className={styles.selectInput}
-                  onChange={(event) => setSelectedBankName(event.target.value)}
-                  value={selectedBankName}
-                >
-                  <option value="">은행 선택</option>
-                  {CASH_REFUND_BANK_OPTIONS.map((bankName) => (
-                    <option key={bankName} value={bankName}>
-                      {bankName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>계좌번호</span>
-                <input
-                  className={styles.textInput}
-                  inputMode="numeric"
-                  onChange={(event) =>
-                    setAccountNumber(
-                      normalizeCashRefundAccountNumber(event.target.value),
-                    )
-                  }
-                  placeholder="숫자만 입력"
-                  type="text"
-                  value={accountNumber}
-                />
-              </label>
-
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>예금주</span>
-                <input
-                  className={styles.textInput}
-                  onChange={(event) =>
-                    setAccountHolder(
-                      normalizeCashRefundAccountHolder(event.target.value),
-                    )
-                  }
-                  placeholder="예금주명을 입력해 주세요"
-                  type="text"
-                  value={accountHolder}
-                />
-              </label>
             </>
           ) : null}
 
@@ -789,7 +723,7 @@ function getAccountWithdrawalSubmitLabel(
   }
 
   if (preview.cashBalanceAmount > 0) {
-    return "환불 요청 후 탈퇴하기";
+    return "환불 후 탈퇴하기";
   }
 
   return "탈퇴하기";

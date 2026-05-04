@@ -76,9 +76,9 @@ export type CashChargeOrderEventEntity = {
 };
 
 export type CashRefundRequestEntity = {
-  accountHolder: string;
-  accountNumber: string;
-  bankName: string;
+  accountHolder: string | null;
+  accountNumber: string | null;
+  bankName: string | null;
   createdAt: string;
   decisionNote: string | null;
   holdTransactionId: string | null;
@@ -139,9 +139,9 @@ type CashChargeOrderEventRow = {
 };
 
 type CashRefundRequestRow = {
-  account_holder: string;
-  account_number: string;
-  bank_name: string;
+  account_holder: string | null;
+  account_number: string | null;
+  bank_name: string | null;
   created_at: string;
   decision_note: string | null;
   hold_transaction_id: string | null;
@@ -158,6 +158,11 @@ type CashRefundRequestRow = {
 type SupabaseServerClient = NonNullable<
   Awaited<ReturnType<typeof getSupabaseServerClient>>
 >;
+
+type RefundableChargeOrderRow = {
+  amount: number;
+  refunded_amount: number | null;
+};
 
 export async function getCashAccountByUserId(
   supabase: SupabaseServerClient,
@@ -181,6 +186,37 @@ export async function getCashAccountByUserId(
         userId: row.user_id,
       }
     : null;
+}
+
+export async function getOriginalPaymentRefundableCashAmountByUserId(
+  supabase: SupabaseServerClient,
+  userId: string,
+) {
+  const [cashAccount, chargeOrdersResult] = await Promise.all([
+    getCashAccountByUserId(supabase, userId),
+    supabase
+      .from("cash_charge_orders")
+      .select("amount, refunded_amount")
+      .eq("user_id", userId)
+      .eq("status", "paid")
+      .not("toss_payment_key", "is", null),
+  ]);
+
+  if (chargeOrdersResult.error) {
+    throw new Error(
+      `Failed to load refundable charge orders: ${chargeOrdersResult.error.message}`,
+    );
+  }
+
+  const refundableChargeAmount = (
+    (chargeOrdersResult.data ?? []) as RefundableChargeOrderRow[]
+  ).reduce(
+    (total, order) =>
+      total + Math.max(order.amount - (order.refunded_amount ?? 0), 0),
+    0,
+  );
+
+  return Math.min(cashAccount?.balance ?? 0, refundableChargeAmount);
 }
 
 export async function listCashTransactionsByUserId(

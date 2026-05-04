@@ -13,6 +13,12 @@ import {
   type CashChargePackage,
   CASH_CHARGE_PACKAGES,
 } from "@/lib/payments/toss";
+import {
+  CASH_REFUND_ELIGIBILITY_NOTICE,
+  CASH_REFUND_ORIGINAL_METHOD_NOTICE,
+  CASH_REFUND_POLICY_HREF,
+  CASH_VALIDITY_NOTICE,
+} from "@/lib/refund-policy";
 import baseStyles from "@/components/mypage/my-page.module.css";
 import styles from "./cash-charge-page.module.css";
 
@@ -135,13 +141,14 @@ export function CashChargePage({
 }: CashChargePageProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreedToRefundPolicy, setAgreedToRefundPolicy] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<CashChargePackage>(10000);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<ChargePaymentMethod>("CARD");
   const currentChargePath = nextPath
     ? `/cash/charge?next=${encodeURIComponent(nextPath)}`
     : "/cash/charge";
 
-  const canSubmit = !isSubmitting;
+  const canSubmit = !isSubmitting && agreedToRefundPolicy;
 
   async function handleCharge() {
     if (!canSubmit) {
@@ -325,6 +332,36 @@ export function CashChargePage({
                   </button>
                 );
               })}
+            </div>
+          </section>
+
+          <section className={styles.card}>
+            <h2 className={styles.sectionTitle}>환불 정책 확인</h2>
+            <div className={styles.policyBox}>
+              <ul className={styles.policyList}>
+                <li className={styles.policyItem}>
+                  <span>{CASH_REFUND_ORIGINAL_METHOD_NOTICE}</span>
+                </li>
+                <li className={styles.policyItem}>
+                  <span>{CASH_REFUND_ELIGIBILITY_NOTICE}</span>
+                </li>
+                <li className={styles.policyItem}>
+                  <span>{CASH_VALIDITY_NOTICE}</span>
+                </li>
+              </ul>
+
+              <label className={styles.policyCheckboxRow}>
+                <input
+                  checked={agreedToRefundPolicy}
+                  className={styles.policyCheckbox}
+                  onChange={(event) => setAgreedToRefundPolicy(event.target.checked)}
+                  type="checkbox"
+                />
+                <span className={styles.policyCheckboxLabel}>
+                  충전 캐시 환불 정책을 확인했습니다.{" "}
+                  <AppLink href={CASH_REFUND_POLICY_HREF}>환불정책 보기</AppLink>
+                </span>
+              </label>
             </div>
           </section>
       </main>

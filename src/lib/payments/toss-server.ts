@@ -8,6 +8,13 @@ type TossConfirmParams = {
   paymentKey: string;
 };
 
+type TossCancelParams = {
+  cancelAmount: number;
+  cancelReason: string;
+  idempotencyKey: string;
+  paymentKey: string;
+};
+
 type TossPaymentSummary = {
   method?: string | null;
   orderId?: string | null;
@@ -75,6 +82,42 @@ export async function getTossPayment(paymentKey: string) {
       headers: {
         Authorization: buildTossAuthorizationHeader(env.secretKey),
       },
+      cache: "no-store",
+    },
+  );
+
+  return {
+    ok: response.ok,
+    payload: (await response.json().catch(() => null)) as Record<string, unknown> | null,
+    status: response.status,
+  };
+}
+
+export async function cancelTossPayment({
+  cancelAmount,
+  cancelReason,
+  idempotencyKey,
+  paymentKey,
+}: TossCancelParams) {
+  const env = getTossPaymentsServerEnv();
+
+  if (!env) {
+    throw new Error("TOSS_NOT_CONFIGURED");
+  }
+
+  const response = await fetch(
+    `https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}/cancel`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: buildTossAuthorizationHeader(env.secretKey),
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify({
+        cancelAmount,
+        cancelReason,
+      }),
       cache: "no-store",
     },
   );

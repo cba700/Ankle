@@ -6,16 +6,9 @@ import { createPortal } from "react-dom";
 import type { MyPageCashTransaction } from "@/lib/mypage";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import {
-  CASH_REFUND_BANK_OPTIONS,
-  isValidCashRefundAccountHolder,
-  isValidCashRefundAccountNumber,
-  normalizeCashRefundAccountHolder,
-  normalizeCashRefundAccountNumber,
-} from "@/lib/cash-refunds";
-import {
-  CASH_REFUND_CUTOFF_NOTICE,
   CASH_REFUND_ELIGIBILITY_NOTICE,
   CASH_REFUND_HOLIDAY_NOTICE,
+  CASH_REFUND_ORIGINAL_METHOD_NOTICE,
   CASH_REFUND_SCHEDULE_NOTICE,
 } from "@/lib/refund-policy";
 import {
@@ -30,19 +23,17 @@ import baseStyles from "./my-page.module.css";
 import styles from "./my-page-cash.module.css";
 
 type PendingCashRefundRequest = {
-  accountHolder: string;
-  accountNumberLabel: string;
   createdAtLabel: string;
   requestedAmountLabel: string;
 };
 
 type MyPageCashProps = {
-  cashBalanceAmount: number;
   cashBalanceLabel: string;
   cashTransactions: MyPageCashTransaction[];
-  displayName: string;
   initialIsAdmin: boolean;
   pendingRefundRequest: PendingCashRefundRequest | null;
+  refundableCashAmount: number;
+  refundableCashLabel: string;
 };
 
 type CashHistoryTab = "all" | "charge" | "refund" | "usage";
@@ -63,19 +54,16 @@ const CASH_HISTORY_TABS: Array<{ id: CashHistoryTab; label: string }> = [
 ];
 
 export function MyPageCash({
-  cashBalanceAmount,
   cashBalanceLabel,
   cashTransactions,
-  displayName,
   initialIsAdmin,
   pendingRefundRequest,
+  refundableCashAmount,
+  refundableCashLabel,
 }: MyPageCashProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<CashHistoryTab>("all");
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
-  const [selectedBankName, setSelectedBankName] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [accountHolder, setAccountHolder] = useState(displayName);
   const [agreedToSchedule, setAgreedToSchedule] = useState(false);
   const [refundErrorMessage, setRefundErrorMessage] = useState<string | null>(null);
   const [isSubmittingRefundRequest, setIsSubmittingRefundRequest] = useState(false);
@@ -83,13 +71,10 @@ export function MyPageCash({
     () => cashTransactions.filter((transaction) => matchesCashHistoryTab(transaction, activeTab)),
     [activeTab, cashTransactions],
   );
-  const canOpenRefundRequest = !pendingRefundRequest && cashBalanceAmount > 0;
+  const canOpenRefundRequest = !pendingRefundRequest && refundableCashAmount > 0;
   const canSubmitRefundRequest =
     !isSubmittingRefundRequest &&
     canOpenRefundRequest &&
-    selectedBankName.length > 0 &&
-    isValidCashRefundAccountNumber(accountNumber) &&
-    isValidCashRefundAccountHolder(accountHolder) &&
     agreedToSchedule;
 
   useEffect(() => {
@@ -129,10 +114,7 @@ export function MyPageCash({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          accountHolder,
-          accountNumber,
-          agreedToSchedule,
-          bankName: selectedBankName,
+          agreedToPolicy: agreedToSchedule,
         }),
       });
 
@@ -154,7 +136,7 @@ export function MyPageCash({
         return;
       }
 
-      resetRefundForm(displayName);
+      resetRefundForm();
       setIsRefundModalOpen(false);
       router.refresh();
     } catch {
@@ -182,17 +164,14 @@ export function MyPageCash({
     setRefundErrorMessage(null);
   }
 
-  function resetRefundForm(nextDisplayName: string) {
-    setSelectedBankName("");
-    setAccountNumber("");
-    setAccountHolder(nextDisplayName);
+  function resetRefundForm() {
     setAgreedToSchedule(false);
     setRefundErrorMessage(null);
   }
 
   const refundButtonLabel = pendingRefundRequest
-    ? "처리 대기 중"
-    : cashBalanceAmount > 0
+    ? "환불 처리 중"
+    : refundableCashAmount > 0
       ? "캐시 환불"
       : "환불 가능 금액 없음";
 
@@ -260,16 +239,8 @@ export function MyPageCash({
                 </strong>
               </div>
               <div className={styles.requestSummaryRow}>
-                <span className={styles.requestSummaryLabel}>신청 계좌</span>
-                <strong className={styles.requestSummaryValue}>
-                  {pendingRefundRequest.accountNumberLabel}
-                </strong>
-              </div>
-              <div className={styles.requestSummaryRow}>
-                <span className={styles.requestSummaryLabel}>예금주</span>
-                <strong className={styles.requestSummaryValue}>
-                  {pendingRefundRequest.accountHolder}
-                </strong>
+                <span className={styles.requestSummaryLabel}>환불 방식</span>
+                <strong className={styles.requestSummaryValue}>결제했던 수단</strong>
               </div>
               <div className={styles.requestSummaryRow}>
                 <span className={styles.requestSummaryLabel}>접수 시각</span>
@@ -346,22 +317,12 @@ export function MyPageCash({
 
       {isRefundModalOpen ? (
         <CashRefundRequestDialog
-          accountHolder={accountHolder}
-          accountNumber={accountNumber}
-          bankName={selectedBankName}
           errorMessage={refundErrorMessage}
           isSubmitting={isSubmittingRefundRequest}
-          onAccountHolderChange={(value) =>
-            setAccountHolder(normalizeCashRefundAccountHolder(value))
-          }
-          onAccountNumberChange={(value) =>
-            setAccountNumber(normalizeCashRefundAccountNumber(value))
-          }
-          onBankNameChange={setSelectedBankName}
           onClose={handleCloseRefundRequest}
           onSubmit={handleSubmitRefundRequest}
           onToggleScheduleAgreement={() => setAgreedToSchedule((current) => !current)}
-          requestedAmountLabel={cashBalanceLabel}
+          requestedAmountLabel={refundableCashLabel}
           scheduleAgreed={agreedToSchedule}
           submitDisabled={!canSubmitRefundRequest}
         />
@@ -373,14 +334,8 @@ export function MyPageCash({
 }
 
 function CashRefundRequestDialog({
-  accountHolder,
-  accountNumber,
-  bankName,
   errorMessage,
   isSubmitting,
-  onAccountHolderChange,
-  onAccountNumberChange,
-  onBankNameChange,
   onClose,
   onSubmit,
   onToggleScheduleAgreement,
@@ -388,14 +343,8 @@ function CashRefundRequestDialog({
   scheduleAgreed,
   submitDisabled,
 }: {
-  accountHolder: string;
-  accountNumber: string;
-  bankName: string;
   errorMessage: string | null;
   isSubmitting: boolean;
-  onAccountHolderChange: (value: string) => void;
-  onAccountNumberChange: (value: string) => void;
-  onBankNameChange: (value: string) => void;
   onClose: () => void;
   onSubmit: () => void | Promise<void>;
   onToggleScheduleAgreement: () => void;
@@ -453,44 +402,10 @@ function CashRefundRequestDialog({
             <strong className={styles.refundAmountValue}>{requestedAmountLabel}</strong>
           </div>
 
-          <label className={styles.refundField}>
-            <span className={styles.refundFieldLabel}>환불 계좌 은행</span>
-            <select
-              className={styles.refundSelect}
-              onChange={(event) => onBankNameChange(event.target.value)}
-              value={bankName}
-            >
-              <option value="">은행을 선택해 주세요</option>
-              {CASH_REFUND_BANK_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.refundField}>
-            <span className={styles.refundFieldLabel}>환불 계좌 번호</span>
-            <input
-              className={styles.refundInput}
-              inputMode="numeric"
-              onChange={(event) => onAccountNumberChange(event.target.value)}
-              placeholder="숫자만 입력"
-              type="text"
-              value={accountNumber}
-            />
-          </label>
-
-          <label className={styles.refundField}>
-            <span className={styles.refundFieldLabel}>환불 계좌 예금주</span>
-            <input
-              className={styles.refundInput}
-              onChange={(event) => onAccountHolderChange(event.target.value)}
-              placeholder="예금주명 입력"
-              type="text"
-              value={accountHolder}
-            />
-          </label>
+          <div className={styles.refundReadonlyField}>
+            <span className={styles.refundFieldLabel}>환불 방식</span>
+            <strong className={styles.refundAmountValue}>결제했던 수단</strong>
+          </div>
 
           <label className={styles.refundCheckboxRow}>
             <input
@@ -500,7 +415,8 @@ function CashRefundRequestDialog({
               type="checkbox"
             />
             <span className={styles.refundCheckboxLabel}>
-              {CASH_REFUND_SCHEDULE_NOTICE} {CASH_REFUND_HOLIDAY_NOTICE} {CASH_REFUND_CUTOFF_NOTICE}
+              충전 캐시 환불 안내를 확인했습니다. {CASH_REFUND_ORIGINAL_METHOD_NOTICE}{" "}
+              {CASH_REFUND_HOLIDAY_NOTICE}
             </span>
           </label>
 
@@ -548,6 +464,7 @@ function matchesCashHistoryTab(
     return (
       transaction.type === "match_refund" ||
       transaction.type === "charge_refund" ||
+      transaction.type === "refund_hold" ||
       transaction.type === "refund_release"
     );
   }
@@ -574,7 +491,7 @@ function getCashHistoryEmptyDescription(tab: CashHistoryTab) {
     case "charge":
       return "캐시를 충전하면 이 탭에서 완료된 적립 내역을 바로 확인할 수 있습니다.";
     case "refund":
-      return "매치 환급, 충전 환불, 환불 신청 반려가 반영되면 이 탭에서 확인할 수 있습니다.";
+      return "매치 환급, 충전 환불, 환불되지 않은 캐시 반환 내역을 이 탭에서 확인할 수 있습니다.";
     case "usage":
       return "매치 신청으로 캐시가 차감되면 이 탭에 사용 내역이 추가됩니다.";
     case "all":
