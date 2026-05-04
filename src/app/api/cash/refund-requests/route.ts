@@ -152,7 +152,7 @@ function mapRefundRequestError(message: string) {
       return {
         body: {
           code: "NO_REFUNDABLE_CASH",
-          message: "결제했던 수단으로 환불 가능한 캐시가 없습니다.",
+          message: "충전 시 사용한 결제수단으로 환불 가능한 캐시가 없습니다.",
         },
         status: 400,
       };

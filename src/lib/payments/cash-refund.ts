@@ -111,7 +111,7 @@ export async function processOriginalPaymentCashRefund(
       httpStatus: refundedAmount > 0 ? undefined : 409,
       message:
         refundedAmount >= requestedAmount
-          ? "환불이 결제했던 수단으로 접수되었습니다."
+          ? "환불이 결제 취소로 접수되었습니다."
           : "환불 가능한 결제 내역을 모두 처리하지 못했습니다.",
       processedAmount: refundedAmount,
       refundRequestId,

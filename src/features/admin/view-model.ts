@@ -339,11 +339,14 @@ export function buildAdminCashChargeOrderEventRows(
 
 export function buildAdminCashRefundRequestRows(
   requests: CashRefundRequestEntity[],
+  paymentMethodLabels = new Map<string, string>(),
 ): AdminCashRefundRequestRow[] {
   return requests.map((request) => ({
     id: request.id,
     metaLabel: formatCompactDateLabel(new Date(request.createdAt)),
-    refundMethodLabel: request.bankName ? "계좌 환불" : "결제했던 수단",
+    refundMethodLabel:
+      paymentMethodLabels.get(request.id) ??
+      (request.bankName ? "계좌 환불" : "충전 시 사용한 결제수단"),
     requestedAmountLabel: `${formatMoney(request.requestedAmount)}원`,
     statusLabel: getRefundRequestStatusLabel(request.status),
     statusTone: getRefundRequestStatusTone(request.status),

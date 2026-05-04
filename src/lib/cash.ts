@@ -161,7 +161,13 @@ type SupabaseServerClient = NonNullable<
 
 type RefundableChargeOrderRow = {
   amount: number;
+  provider_snapshot: Record<string, unknown> | null;
   refunded_amount: number | null;
+};
+
+type RefundCancellationMethodRow = {
+  provider_snapshot: Record<string, unknown> | null;
+  refund_request_id: string;
 };
 
 export async function getCashAccountByUserId(
@@ -192,11 +198,23 @@ export async function getOriginalPaymentRefundableCashAmountByUserId(
   supabase: SupabaseServerClient,
   userId: string,
 ) {
+  const summary = await getOriginalPaymentRefundableCashSummaryByUserId(
+    supabase,
+    userId,
+  );
+
+  return summary.amount;
+}
+
+export async function getOriginalPaymentRefundableCashSummaryByUserId(
+  supabase: SupabaseServerClient,
+  userId: string,
+) {
   const [cashAccount, chargeOrdersResult] = await Promise.all([
     getCashAccountByUserId(supabase, userId),
     supabase
       .from("cash_charge_orders")
-      .select("amount, refunded_amount")
+      .select("amount, refunded_amount, provider_snapshot")
       .eq("user_id", userId)
       .eq("status", "paid")
       .not("toss_payment_key", "is", null),
@@ -208,15 +226,58 @@ export async function getOriginalPaymentRefundableCashAmountByUserId(
     );
   }
 
-  const refundableChargeAmount = (
+  const refundableOrders = (
     (chargeOrdersResult.data ?? []) as RefundableChargeOrderRow[]
-  ).reduce(
-    (total, order) =>
-      total + Math.max(order.amount - (order.refunded_amount ?? 0), 0),
+  ).filter((order) => order.amount - (order.refunded_amount ?? 0) > 0);
+  const refundableChargeAmount = refundableOrders.reduce(
+    (total, order) => total + order.amount - (order.refunded_amount ?? 0),
     0,
   );
 
-  return Math.min(cashAccount?.balance ?? 0, refundableChargeAmount);
+  return {
+    amount: Math.min(cashAccount?.balance ?? 0, refundableChargeAmount),
+    paymentMethodLabel: formatPaymentMethodLabels(
+      refundableOrders.map((order) =>
+        getPaymentMethodLabelFromProviderSnapshot(order.provider_snapshot),
+      ),
+    ),
+  };
+}
+
+export async function listCashRefundRequestPaymentMethodLabels(
+  supabase: SupabaseServerClient,
+  refundRequestIds: string[],
+) {
+  if (refundRequestIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await supabase
+    .from("cash_refund_request_cancellations")
+    .select("refund_request_id, provider_snapshot")
+    .in("refund_request_id", refundRequestIds)
+    .eq("status", "succeeded");
+
+  if (error) {
+    throw new Error(
+      `Failed to load refund payment methods: ${error.message}`,
+    );
+  }
+
+  const labelsByRequestId = new Map<string, string[]>();
+
+  for (const row of (data ?? []) as RefundCancellationMethodRow[]) {
+    const labels = labelsByRequestId.get(row.refund_request_id) ?? [];
+    labels.push(getPaymentMethodLabelFromProviderSnapshot(row.provider_snapshot));
+    labelsByRequestId.set(row.refund_request_id, labels);
+  }
+
+  return new Map(
+    Array.from(labelsByRequestId.entries()).map(([requestId, labels]) => [
+      requestId,
+      formatPaymentMethodLabels(labels),
+    ]),
+  );
 }
 
 export async function listCashTransactionsByUserId(
@@ -437,4 +498,58 @@ function mapCashRefundRequest(row: CashRefundRequestRow): CashRefundRequestEntit
     updatedAt: row.updated_at,
     userId: row.user_id,
   };
+}
+
+export function getPaymentMethodLabelFromProviderSnapshot(
+  snapshot: Record<string, unknown> | null,
+) {
+  if (!snapshot) {
+    return "충전 시 사용한 결제수단";
+  }
+
+  const easyPay = getRecordValue(snapshot, "easyPay");
+  const easyPayProvider = getStringValue(easyPay, "provider");
+
+  if (easyPayProvider) {
+    return easyPayProvider;
+  }
+
+  const method = getStringValue(snapshot, "method");
+
+  if (method) {
+    return method;
+  }
+
+  return "충전 시 사용한 결제수단";
+}
+
+function formatPaymentMethodLabels(labels: string[]) {
+  const uniqueLabels = Array.from(
+    new Set(labels.map((label) => label.trim()).filter(Boolean)),
+  );
+
+  if (uniqueLabels.length === 0) {
+    return "충전 시 사용한 결제수단";
+  }
+
+  if (uniqueLabels.length === 1) {
+    return uniqueLabels[0];
+  }
+
+  return `${uniqueLabels[0]} 외 ${uniqueLabels.length - 1}개 결제수단`;
+}
+
+function getRecordValue(
+  record: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> | null {
+  const value = record[key];
+  return typeof value === "object" && value !== null
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function getStringValue(record: Record<string, unknown> | null, key: string) {
+  const value = record?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }

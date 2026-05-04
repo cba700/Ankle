@@ -294,7 +294,7 @@ function mapAccountWithdrawalError(message: string) {
   if (normalizedMessage.includes("NO_REFUNDABLE_CASH")) {
     return {
       code: "NO_REFUNDABLE_CASH",
-      message: "결제했던 수단으로 환불 가능한 캐시가 없어 탈퇴를 진행할 수 없습니다.",
+      message: "충전 시 사용한 결제수단으로 환불 가능한 캐시가 없어 탈퇴를 진행할 수 없습니다.",
     };
   }
 
