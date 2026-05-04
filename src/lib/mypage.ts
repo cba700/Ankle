@@ -10,6 +10,7 @@ import {
 } from "@/lib/date";
 import {
   listCashTransactionsByUserId,
+  listCashRefundRequestPaymentMethodLabels,
   getCashAccountByUserId,
   type CashTransactionEntity,
   type CashTransactionType,
@@ -86,6 +87,7 @@ type CashRefundRequestContextRow = {
 type CashTransactionSourceContext = {
   chargeOrdersById: Map<string, CashChargeOrderContextRow>;
   matchApplicationsById: Map<string, CouponMatchRow>;
+  refundPaymentMethodLabelsByRequestId: Map<string, string>;
   refundRequestsById: Map<string, CashRefundRequestContextRow>;
 };
 
@@ -527,15 +529,22 @@ async function getCashTransactionSourceContext(
   const matchApplicationIds = getTransactionSourceIds(transactions, "match_application");
   const refundRequestIds = getTransactionSourceIds(transactions, "refund_request");
 
-  const [chargeOrdersById, matchApplicationsById, refundRequestsById] = await Promise.all([
+  const [
+    chargeOrdersById,
+    matchApplicationsById,
+    refundRequestsById,
+    refundPaymentMethodLabelsByRequestId,
+  ] = await Promise.all([
     getCashChargeOrderContextById(supabase, userId, chargeOrderIds),
     getCashMatchApplicationContextById(supabase, userId, matchApplicationIds),
     getCashRefundRequestContextById(supabase, userId, refundRequestIds),
+    listCashRefundRequestPaymentMethodLabels(supabase, refundRequestIds),
   ]);
 
   return {
     chargeOrdersById,
     matchApplicationsById,
+    refundPaymentMethodLabelsByRequestId,
     refundRequestsById,
   };
 }
@@ -771,7 +780,10 @@ function getRefundHoldTitle(
 
   switch (refundRequest?.status) {
     case "processed":
-      return "캐시 환불 완료";
+      return withPaymentMethodLabel(
+        "캐시 환불 완료",
+        getRefundPaymentMethodLabel(transaction, sourceContext),
+      );
     case "rejected":
       return "캐시 환불 반려";
     case "cancelled":
@@ -780,6 +792,24 @@ function getRefundHoldTitle(
     default:
       return "캐시 환불 신청";
   }
+}
+
+function getRefundPaymentMethodLabel(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+) {
+  if (!transaction.sourceId) {
+    return null;
+  }
+
+  return (
+    sourceContext.refundPaymentMethodLabelsByRequestId.get(transaction.sourceId) ??
+    null
+  );
+}
+
+function withPaymentMethodLabel(title: string, paymentMethodLabel: string | null) {
+  return paymentMethodLabel ? `${title}(${paymentMethodLabel})` : title;
 }
 
 function getTossPaymentMethodLabel(providerSnapshot: Record<string, unknown> | null) {
