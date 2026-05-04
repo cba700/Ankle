@@ -665,7 +665,7 @@ function getCashTransactionTitle(
       return "운영 보정";
     case "match_debit":
     default:
-      return "매치 신청";
+      return "매치 신청(캐시 사용)";
   }
 }
 
@@ -703,7 +703,7 @@ function getCashTransactionMetaDetail(
   }
 
   if (transaction.type === "charge" && title !== "캐시 충전") {
-    return "캐시 충전";
+    return "충전 완료";
   }
 
   return transaction.memo || title;
@@ -715,10 +715,13 @@ function getMatchTransactionMetaDetail(
 ) {
   const title = match.title?.trim() || "매치 정보 확인 불가";
   const venueName = match.venue_name?.trim();
-  const prefix = type === "match_refund" ? "매치 환급" : "캐시 사용";
   const matchLabel = venueName ? `${title} · ${venueName}` : title;
 
-  return `${prefix} · ${matchLabel}`;
+  if (type === "match_refund") {
+    return `환급 대상 · ${matchLabel}`;
+  }
+
+  return matchLabel;
 }
 
 function getRefundRequestMetaDetail(
@@ -753,7 +756,7 @@ function getChargePaymentTitle(
   const chargeOrder = sourceContext.chargeOrdersById.get(transaction.sourceId);
   const paymentMethodLabel = getTossPaymentMethodLabel(chargeOrder?.provider_snapshot ?? null);
 
-  return paymentMethodLabel ? `${paymentMethodLabel} 결제` : "캐시 충전";
+  return paymentMethodLabel ? `캐시 충전(${paymentMethodLabel})` : "캐시 충전";
 }
 
 function getRefundHoldTitle(
