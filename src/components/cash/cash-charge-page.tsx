@@ -13,6 +13,7 @@ import {
   type CashChargePackage,
   CASH_CHARGE_PACKAGES,
 } from "@/lib/payments/toss";
+import { CASH_REFUND_POLICY_HREF } from "@/lib/refund-policy";
 import baseStyles from "@/components/mypage/my-page.module.css";
 import styles from "./cash-charge-page.module.css";
 
@@ -135,13 +136,14 @@ export function CashChargePage({
 }: CashChargePageProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreedToRefundPolicy, setAgreedToRefundPolicy] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<CashChargePackage>(10000);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<ChargePaymentMethod>("CARD");
   const currentChargePath = nextPath
     ? `/cash/charge?next=${encodeURIComponent(nextPath)}`
     : "/cash/charge";
 
-  const canSubmit = !isSubmitting;
+  const canSubmit = !isSubmitting && agreedToRefundPolicy;
 
   async function handleCharge() {
     if (!canSubmit) {
@@ -325,6 +327,36 @@ export function CashChargePage({
                   </button>
                 );
               })}
+            </div>
+          </section>
+
+          <section className={styles.card}>
+            <h2 className={styles.sectionTitle}>환불 정책 확인</h2>
+            <div className={styles.policyBox}>
+              <ul className={styles.policyList}>
+                <li className={styles.policyItem}>
+                  <span>환불은 신청 즉시 충전 시 사용한 결제수단으로 취소 요청됩니다.</span>
+                </li>
+                <li className={styles.policyItem}>
+                  <span>
+                    다만 실제 취소 완료 또는 환불 금액 반영까지는 결제수단 및
+                    카드사·은행 사정에 따라 영업일 기준 3~5일이 소요될 수 있습니다.
+                  </span>
+                </li>
+              </ul>
+
+              <label className={styles.policyCheckboxRow}>
+                <input
+                  checked={agreedToRefundPolicy}
+                  className={styles.policyCheckbox}
+                  onChange={(event) => setAgreedToRefundPolicy(event.target.checked)}
+                  type="checkbox"
+                />
+                <span className={styles.policyCheckboxLabel}>
+                  충전 캐시 환불 정책을 확인했습니다.{" "}
+                  <AppLink href={CASH_REFUND_POLICY_HREF}>환불정책 보기</AppLink>
+                </span>
+              </label>
             </div>
           </section>
       </main>

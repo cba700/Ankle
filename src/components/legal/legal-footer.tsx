@@ -6,6 +6,7 @@ import styles from "./legal-footer.module.css";
 const LEGAL_LINKS = [
   { href: "/terms", label: "이용약관", newTab: true },
   { href: "/privacy", label: "개인정보처리방침", newTab: true },
+  { href: "/refund", label: "환불정책", newTab: true },
 ] as const;
 
 export function LegalFooter() {

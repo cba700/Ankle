@@ -1,22 +1,23 @@
 import { NextResponse } from "next/server";
 import { clearSingleSessionCookie } from "@/lib/auth/single-session";
-import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
 import {
-  isCashRefundBankName,
-  isValidCashRefundAccountHolder,
-  isValidCashRefundAccountNumber,
-  normalizeCashRefundAccountHolder,
-  normalizeCashRefundAccountNumber,
-} from "@/lib/cash-refunds";
+  getOriginalPaymentRefundableCashAmountByUserId,
+  getPendingCashRefundRequestByUserId,
+} from "@/lib/cash";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
+import { processOriginalPaymentCashRefund } from "@/lib/payments/cash-refund";
 import { getServerUserState } from "@/lib/supabase/auth";
-import { assertAccountWithdrawalSchemaReady } from "@/lib/supabase/schema";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  assertAccountWithdrawalSchemaReady,
+  assertCashRefundRequestSchemaReady,
+} from "@/lib/supabase/schema";
+import {
+  getSupabaseServerClient,
+  getSupabaseServiceRoleClient,
+} from "@/lib/supabase/server";
 
 type AccountWithdrawalBody = {
-  accountHolder?: unknown;
-  accountNumber?: unknown;
   agreedToWarnings?: unknown;
-  bankName?: unknown;
 };
 
 type AccountWithdrawalRpcResult = {
@@ -79,16 +80,10 @@ export async function POST(request: Request) {
   }
 
   await assertAccountWithdrawalSchemaReady(supabase);
+  await assertCashRefundRequestSchemaReady(supabase);
 
   const body = (await request.json().catch(() => null)) as AccountWithdrawalBody | null;
   const agreedToWarnings = body?.agreedToWarnings === true;
-  const bankName = typeof body?.bankName === "string" ? body.bankName.trim() : "";
-  const accountNumber = normalizeCashRefundAccountNumber(
-    typeof body?.accountNumber === "string" ? body.accountNumber : "",
-  );
-  const accountHolder = normalizeCashRefundAccountHolder(
-    typeof body?.accountHolder === "string" ? body.accountHolder : "",
-  );
 
   if (!agreedToWarnings) {
     return NextResponse.json(
@@ -100,40 +95,29 @@ export async function POST(request: Request) {
     );
   }
 
-  if (bankName && !isCashRefundBankName(bankName)) {
-    return NextResponse.json(
-      {
-        code: "INVALID_BANK_NAME",
-        message: "환불 은행을 다시 확인해 주세요.",
-      },
-      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
-    );
-  }
+  const admin = getSupabaseServiceRoleClient() as any;
 
-  if (accountNumber && !isValidCashRefundAccountNumber(accountNumber)) {
-    return NextResponse.json(
-      {
-        code: "INVALID_ACCOUNT_NUMBER",
-        message: "환불 계좌번호를 다시 확인해 주세요.",
-      },
-      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
-    );
-  }
+  if (!admin) {
+    const [pendingRefundRequest, refundableCashAmount] = await Promise.all([
+      getPendingCashRefundRequestByUserId(supabase, user.id),
+      getOriginalPaymentRefundableCashAmountByUserId(supabase, user.id),
+    ]);
 
-  if (accountHolder && !isValidCashRefundAccountHolder(accountHolder)) {
-    return NextResponse.json(
-      {
-        code: "INVALID_ACCOUNT_HOLDER",
-        message: "예금주명을 다시 확인해 주세요.",
-      },
-      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
-    );
+    if (pendingRefundRequest || refundableCashAmount > 0) {
+      return NextResponse.json(
+        {
+          code: "SERVICE_ROLE_NOT_CONFIGURED",
+          message: "회원 탈퇴와 환불 처리를 위한 서버 설정이 완료되지 않았습니다.",
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
+      );
+    }
   }
 
   const { data, error } = await supabase.rpc("begin_account_withdrawal", {
-    p_account_holder: accountHolder || null,
-    p_account_number: accountNumber || null,
-    p_bank_name: bankName || null,
+    p_account_holder: null,
+    p_account_number: null,
+    p_bank_name: null,
   });
 
   if (error) {
@@ -146,9 +130,107 @@ export async function POST(request: Request) {
     );
   }
 
-  await supabase.auth.signOut();
-
   const result = (data ?? {}) as AccountWithdrawalRpcResult;
+
+  if (result.refundRequestId && (result.requestedAmount ?? 0) > 0) {
+    if (!admin) {
+      return NextResponse.json(
+        {
+          code: "SERVICE_ROLE_NOT_CONFIGURED",
+          message: "회원 탈퇴와 환불 처리를 위한 서버 설정이 완료되지 않았습니다.",
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
+      );
+    }
+
+    const refundResult = await processOriginalPaymentCashRefund(admin, {
+      refundRequestId: result.refundRequestId,
+      requestedAmount: result.requestedAmount ?? 0,
+      userId: user.id,
+    });
+
+    if (!refundResult.ok) {
+      if (result.withdrawalRequestId) {
+        const cancelError = await cancelPendingWithdrawal(
+          admin,
+          result.withdrawalRequestId,
+        );
+
+        if (cancelError) {
+          return NextResponse.json(
+            {
+              code: "ACCOUNT_WITHDRAWAL_CANCEL_FAILED",
+              message: "환불 실패 후 탈퇴 요청을 되돌리지 못했습니다.",
+            },
+            { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
+          );
+        }
+      }
+
+      return NextResponse.json(
+        {
+          code: refundResult.code ?? "ACCOUNT_WITHDRAWAL_REFUND_FAILED",
+          message: refundResult.message,
+        },
+        {
+          headers: PRIVATE_NO_STORE_HEADERS,
+          status: refundResult.httpStatus ?? 502,
+        },
+      );
+    }
+
+    if (refundResult.refundedAmount < (result.requestedAmount ?? 0)) {
+      if (result.withdrawalRequestId) {
+        const cancelError = await cancelPendingWithdrawal(
+          admin,
+          result.withdrawalRequestId,
+        );
+
+        if (cancelError) {
+          return NextResponse.json(
+            {
+              code: "ACCOUNT_WITHDRAWAL_CANCEL_FAILED",
+              message: "부분 환불 후 탈퇴 요청을 되돌리지 못했습니다.",
+            },
+            { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
+          );
+        }
+      }
+
+      return NextResponse.json(
+        {
+          code: refundResult.code ?? "ACCOUNT_WITHDRAWAL_REFUND_PARTIAL",
+          message: "일부 캐시가 환불되지 않아 회원 탈퇴를 완료하지 않았습니다.",
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+      );
+    }
+
+    if (result.withdrawalRequestId) {
+      const { data: finalizedData, error: finalizeError } = await admin.rpc(
+        "finalize_account_withdrawal",
+        {
+          p_withdrawal_request_id: result.withdrawalRequestId,
+        },
+      );
+
+      if (finalizeError) {
+        return NextResponse.json(
+          {
+            code: "ACCOUNT_WITHDRAWAL_FINALIZE_FAILED",
+            message: "환불은 접수됐지만 회원 탈퇴 완료 처리에 실패했습니다.",
+          },
+          { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
+        );
+      }
+
+      const finalized = (finalizedData ?? {}) as AccountWithdrawalRpcResult;
+      result.blockedUntil = finalized.blockedUntil ?? result.blockedUntil ?? null;
+      result.status = "withdrawn";
+    }
+  }
+
+  await supabase.auth.signOut();
 
   const response = NextResponse.json(
     {
@@ -165,6 +247,17 @@ export async function POST(request: Request) {
   clearSingleSessionCookie(response);
 
   return response;
+}
+
+async function cancelPendingWithdrawal(
+  admin: any,
+  withdrawalRequestId: string,
+) {
+  const { error } = await admin.rpc("cancel_account_withdrawal", {
+    p_withdrawal_request_id: withdrawalRequestId,
+  });
+
+  return error;
 }
 
 function mapAccountWithdrawalError(message: string) {
@@ -198,24 +291,10 @@ function mapAccountWithdrawalError(message: string) {
     };
   }
 
-  if (normalizedMessage.includes("INVALID_BANK_NAME")) {
+  if (normalizedMessage.includes("NO_REFUNDABLE_CASH")) {
     return {
-      code: "INVALID_BANK_NAME",
-      message: "환불 은행을 다시 확인해 주세요.",
-    };
-  }
-
-  if (normalizedMessage.includes("INVALID_ACCOUNT_NUMBER")) {
-    return {
-      code: "INVALID_ACCOUNT_NUMBER",
-      message: "환불 계좌번호를 다시 확인해 주세요.",
-    };
-  }
-
-  if (normalizedMessage.includes("INVALID_ACCOUNT_HOLDER")) {
-    return {
-      code: "INVALID_ACCOUNT_HOLDER",
-      message: "예금주명을 다시 확인해 주세요.",
+      code: "NO_REFUNDABLE_CASH",
+      message: "충전 시 사용한 결제수단으로 환불 가능한 캐시가 없어 탈퇴를 진행할 수 없습니다.",
     };
   }
 
@@ -240,17 +319,10 @@ function getAccountWithdrawalErrorStatus(message: string) {
     normalizedMessage.includes("UPCOMING_MATCH_APPLICATIONS_EXIST") ||
     normalizedMessage.includes("PENDING_CHARGE_ORDER_EXISTS") ||
     normalizedMessage.includes("PENDING_REFUND_REQUEST_EXISTS") ||
+    normalizedMessage.includes("NO_REFUNDABLE_CASH") ||
     normalizedMessage.includes("ACCOUNT_NOT_ACTIVE")
   ) {
     return 409;
-  }
-
-  if (
-    normalizedMessage.includes("INVALID_BANK_NAME") ||
-    normalizedMessage.includes("INVALID_ACCOUNT_NUMBER") ||
-    normalizedMessage.includes("INVALID_ACCOUNT_HOLDER")
-  ) {
-    return 400;
   }
 
   return 500;

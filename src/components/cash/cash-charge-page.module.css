@@ -241,6 +241,31 @@
   font-size: 14px;
 }
 
+.policyCheckboxRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.policyCheckbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.policyCheckboxLabel a {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .orderTitle {
   font-weight: 800;
   color: var(--text-primary);

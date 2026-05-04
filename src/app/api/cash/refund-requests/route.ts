@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
-import {
-  isCashRefundBankName,
-  isValidCashRefundAccountHolder,
-  isValidCashRefundAccountNumber,
-  normalizeCashRefundAccountHolder,
-  normalizeCashRefundAccountNumber,
-} from "@/lib/cash-refunds";
 import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http";
+import { processOriginalPaymentCashRefund } from "@/lib/payments/cash-refund";
 import { assertCashRefundRequestSchemaReady } from "@/lib/supabase/schema";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getSupabaseServerClient,
+  getSupabaseServiceRoleClient,
+} from "@/lib/supabase/server";
 
 type SubmitCashRefundRequestBody = {
-  accountHolder?: unknown;
-  accountNumber?: unknown;
+  agreedToPolicy?: unknown;
   agreedToSchedule?: unknown;
-  bankName?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -46,17 +41,10 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as SubmitCashRefundRequestBody | null;
-  const bankName =
-    typeof body?.bankName === "string" ? body.bankName.trim() : "";
-  const accountNumber = normalizeCashRefundAccountNumber(
-    typeof body?.accountNumber === "string" ? body.accountNumber : "",
-  );
-  const accountHolder = normalizeCashRefundAccountHolder(
-    typeof body?.accountHolder === "string" ? body.accountHolder : "",
-  );
-  const agreedToSchedule = body?.agreedToSchedule === true;
+  const agreedToPolicy =
+    body?.agreedToPolicy === true || body?.agreedToSchedule === true;
 
-  if (!agreedToSchedule) {
+  if (!agreedToPolicy) {
     return NextResponse.json(
       {
         code: "REFUND_SCHEDULE_CONFIRM_REQUIRED",
@@ -66,40 +54,21 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!isCashRefundBankName(bankName)) {
-    return NextResponse.json(
-      { code: "INVALID_BANK_NAME", message: "은행을 선택해 주세요." },
-      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
-    );
-  }
+  const admin = getSupabaseServiceRoleClient();
 
-  if (!isValidCashRefundAccountNumber(accountNumber)) {
+  if (!admin) {
     return NextResponse.json(
       {
-        code: "INVALID_ACCOUNT_NUMBER",
-        message: "계좌번호를 다시 확인해 주세요.",
+        code: "SERVICE_ROLE_NOT_CONFIGURED",
+        message: "환불 처리를 위한 서버 설정이 완료되지 않았습니다.",
       },
-      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
-    );
-  }
-
-  if (!isValidCashRefundAccountHolder(accountHolder)) {
-    return NextResponse.json(
-      {
-        code: "INVALID_ACCOUNT_HOLDER",
-        message: "예금주명을 입력해 주세요.",
-      },
-      { headers: PRIVATE_NO_STORE_HEADERS, status: 400 },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 503 },
     );
   }
 
   await assertCashRefundRequestSchemaReady(supabase);
 
-  const { data, error } = await supabase.rpc("submit_cash_refund_request", {
-    p_account_holder: accountHolder,
-    p_account_number: accountNumber,
-    p_bank_name: bankName,
-  });
+  const { data, error } = await supabase.rpc("submit_cash_refund_request");
 
   if (error) {
     const mappedError = mapRefundRequestError(error.message);
@@ -110,9 +79,46 @@ export async function POST(request: Request) {
     );
   }
 
+  const payload = (data ?? {}) as {
+    requestId?: unknown;
+    requestedAmount?: unknown;
+  };
+  const refundRequestId =
+    typeof payload.requestId === "string" ? payload.requestId : "";
+  const requestedAmount =
+    typeof payload.requestedAmount === "number"
+      ? payload.requestedAmount
+      : Number(payload.requestedAmount);
+
+  if (!refundRequestId || !Number.isFinite(requestedAmount) || requestedAmount <= 0) {
+    return NextResponse.json(
+      {
+        code: "CASH_REFUND_REQUEST_INVALID",
+        message: "환불 요청 정보를 확인하지 못했습니다.",
+      },
+      { headers: PRIVATE_NO_STORE_HEADERS, status: 500 },
+    );
+  }
+
+  const refundResult = await processOriginalPaymentCashRefund(admin, {
+    refundRequestId,
+    requestedAmount,
+    userId: user.id,
+  });
+
   return NextResponse.json(
-    { ...(data ?? {}), ok: true },
-    { headers: PRIVATE_NO_STORE_HEADERS },
+    {
+      ...(data ?? {}),
+      code: refundResult.code,
+      message: refundResult.message,
+      ok: refundResult.ok,
+      refundedAmount: refundResult.refundedAmount,
+      requestedAmount: refundResult.requestedAmount,
+    },
+    {
+      headers: PRIVATE_NO_STORE_HEADERS,
+      status: refundResult.ok ? 200 : refundResult.httpStatus ?? 502,
+    },
   );
 }
 
@@ -138,7 +144,7 @@ function mapRefundRequestError(message: string) {
       return {
         body: {
           code: "PENDING_REFUND_REQUEST_EXISTS",
-          message: "이미 처리 대기 중인 환불 신청이 있습니다.",
+          message: "이미 진행 중인 환불 신청이 있습니다.",
         },
         status: 409,
       };
@@ -146,31 +152,7 @@ function mapRefundRequestError(message: string) {
       return {
         body: {
           code: "NO_REFUNDABLE_CASH",
-          message: "현재 환불 신청 가능한 캐시가 없습니다.",
-        },
-        status: 400,
-      };
-    case "INVALID_BANK_NAME":
-      return {
-        body: {
-          code: "INVALID_BANK_NAME",
-          message: "은행을 다시 선택해 주세요.",
-        },
-        status: 400,
-      };
-    case "INVALID_ACCOUNT_NUMBER":
-      return {
-        body: {
-          code: "INVALID_ACCOUNT_NUMBER",
-          message: "계좌번호를 다시 확인해 주세요.",
-        },
-        status: 400,
-      };
-    case "INVALID_ACCOUNT_HOLDER":
-      return {
-        body: {
-          code: "INVALID_ACCOUNT_HOLDER",
-          message: "예금주명을 다시 확인해 주세요.",
+          message: "충전 시 사용한 결제수단으로 환불 가능한 캐시가 없습니다.",
         },
         status: 400,
       };

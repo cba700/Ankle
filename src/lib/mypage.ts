@@ -69,6 +69,26 @@ type CouponMatchRow = {
   match: MatchRow | MatchRow[] | null;
 };
 
+type CashChargeOrderContextRow = {
+  id: string;
+  provider_snapshot: Record<string, unknown> | null;
+  status: string | null;
+};
+
+type CashRefundRequestContextRow = {
+  created_at: string;
+  id: string;
+  processed_at: string | null;
+  rejected_at: string | null;
+  status: string;
+};
+
+type CashTransactionSourceContext = {
+  chargeOrdersById: Map<string, CashChargeOrderContextRow>;
+  matchApplicationsById: Map<string, CouponMatchRow>;
+  refundRequestsById: Map<string, CashRefundRequestContextRow>;
+};
+
 export type MyPageApplicationStatus =
   | "confirmed"
   | "cancelled_by_user"
@@ -212,12 +232,19 @@ export async function getMyPageData({
       couponMatchesByApplicationId.get(coupon.usedMatchApplicationId ?? "") ?? null,
     ),
   );
+  const cashTransactionSourceContext = await getCashTransactionSourceContext(
+    supabase,
+    user.id,
+    cashTransactions,
+  );
 
   return {
     applications: ((applications ?? []) as ApplicationRow[]).map(mapApplication),
     cashBalanceAmount: cashAccount?.balance ?? 0,
     cashBalanceLabel: `${formatMoney(cashAccount?.balance ?? 0)}원`,
-    cashTransactions: cashTransactions.map(mapCashTransaction),
+    cashTransactions: cashTransactions.map((transaction) =>
+      mapCashTransaction(transaction, cashTransactionSourceContext),
+    ),
     coupons,
     couponCount: userCoupons.filter((coupon) => coupon.status === "available").length,
     profile: {
@@ -253,16 +280,20 @@ function mapApplication(application: ApplicationRow): MyPageApplication {
   };
 }
 
-function mapCashTransaction(transaction: CashTransactionEntity): MyPageCashTransaction {
+function mapCashTransaction(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+): MyPageCashTransaction {
   const amount = Math.abs(transaction.deltaAmount);
   const isPositive = transaction.deltaAmount > 0;
+  const title = getCashTransactionTitle(transaction, sourceContext);
 
   return {
     amountLabel: `${isPositive ? "+" : "-"}${formatMoney(amount)}원`,
     balanceLabel: `잔액 ${formatMoney(transaction.balanceAfter)}원`,
     id: transaction.id,
-    metaLabel: `${formatCompactDateLabel(new Date(transaction.createdAt))} · ${transaction.memo || getCashTransactionTitle(transaction.type)}`,
-    title: getCashTransactionTitle(transaction.type),
+    metaLabel: getCashTransactionMetaLabel(transaction, sourceContext, title),
+    title,
     tone: getCashTransactionTone(transaction.type, transaction.deltaAmount),
     type: transaction.type,
   };
@@ -487,24 +518,344 @@ function getCouponStatusTone(status: UserCouponEntity["status"]) {
   return "accent";
 }
 
-function getCashTransactionTitle(type: CashTransactionEntity["type"]) {
-  switch (type) {
+async function getCashTransactionSourceContext(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  userId: string,
+  transactions: CashTransactionEntity[],
+): Promise<CashTransactionSourceContext> {
+  const chargeOrderIds = getTransactionSourceIds(transactions, "charge_order");
+  const matchApplicationIds = getTransactionSourceIds(transactions, "match_application");
+  const refundRequestIds = getTransactionSourceIds(transactions, "refund_request");
+
+  const [chargeOrdersById, matchApplicationsById, refundRequestsById] = await Promise.all([
+    getCashChargeOrderContextById(supabase, userId, chargeOrderIds),
+    getCashMatchApplicationContextById(supabase, userId, matchApplicationIds),
+    getCashRefundRequestContextById(supabase, userId, refundRequestIds),
+  ]);
+
+  return {
+    chargeOrdersById,
+    matchApplicationsById,
+    refundRequestsById,
+  };
+}
+
+function getTransactionSourceIds(
+  transactions: CashTransactionEntity[],
+  sourceType: CashTransactionEntity["sourceType"],
+) {
+  return Array.from(
+    new Set(
+      transactions
+        .filter((transaction) => transaction.sourceType === sourceType)
+        .map((transaction) => transaction.sourceId)
+        .filter((sourceId): sourceId is string => Boolean(sourceId)),
+    ),
+  );
+}
+
+async function getCashChargeOrderContextById(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  userId: string,
+  ids: string[],
+) {
+  const contextById = new Map<string, CashChargeOrderContextRow>();
+
+  if (ids.length === 0) {
+    return contextById;
+  }
+
+  const { data, error } = await supabase
+    .from("cash_charge_orders")
+    .select("id, provider_snapshot, status")
+    .eq("user_id", userId)
+    .in("id", ids);
+
+  if (error) {
+    throw new Error(`Failed to load cash charge order context: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as CashChargeOrderContextRow[]) {
+    contextById.set(row.id, row);
+  }
+
+  return contextById;
+}
+
+async function getCashMatchApplicationContextById(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  userId: string,
+  ids: string[],
+) {
+  const contextById = new Map<string, CouponMatchRow>();
+
+  if (ids.length === 0) {
+    return contextById;
+  }
+
+  const { data, error } = await supabase
+    .from("match_applications")
+    .select(
+      `id, match:matches!match_applications_match_id_fkey (
+        public_id,
+        slug,
+        start_at,
+        title,
+        venue_name
+      )`,
+    )
+    .eq("user_id", userId)
+    .in("id", ids);
+
+  if (error) {
+    throw new Error(`Failed to load cash match application context: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as CouponMatchRow[]) {
+    contextById.set(row.id, row);
+  }
+
+  return contextById;
+}
+
+async function getCashRefundRequestContextById(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
+  userId: string,
+  ids: string[],
+) {
+  const contextById = new Map<string, CashRefundRequestContextRow>();
+
+  if (ids.length === 0) {
+    return contextById;
+  }
+
+  const { data, error } = await supabase
+    .from("cash_refund_requests")
+    .select("id, status, created_at, processed_at, rejected_at")
+    .eq("user_id", userId)
+    .in("id", ids);
+
+  if (error) {
+    throw new Error(`Failed to load cash refund request context: ${error.message}`);
+  }
+
+  for (const row of (data ?? []) as CashRefundRequestContextRow[]) {
+    contextById.set(row.id, row);
+  }
+
+  return contextById;
+}
+
+function getCashTransactionTitle(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+) {
+  switch (transaction.type) {
     case "charge":
-      return "캐시 충전";
+      return getChargePaymentTitle(transaction, sourceContext);
     case "charge_refund":
       return "충전 환불";
     case "match_refund":
       return "매치 환급";
     case "refund_hold":
-      return "캐시 환불 신청";
+      return getRefundHoldTitle(transaction, sourceContext);
     case "refund_release":
-      return "환불 신청 반려";
+      return "환불 미처리 금액 반환";
     case "adjustment":
       return "운영 보정";
     case "match_debit":
     default:
-      return "매치 신청 차감";
+      return "매치 신청(캐시 사용)";
   }
+}
+
+function getCashTransactionMetaLabel(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+  title: string,
+) {
+  const dateLabel = formatCompactDateLabel(new Date(transaction.createdAt));
+  const detail = getCashTransactionMetaDetail(transaction, sourceContext, title);
+
+  return `${dateLabel} · ${detail}`;
+}
+
+function getCashTransactionMetaDetail(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+  title: string,
+) {
+  if (transaction.sourceType === "match_application" && transaction.sourceId) {
+    const application = sourceContext.matchApplicationsById.get(transaction.sourceId);
+    const match = normalizeMatch(application?.match ?? null);
+
+    if (match) {
+      return getMatchTransactionMetaDetail(match, transaction.type);
+    }
+  }
+
+  if (transaction.sourceType === "refund_request" && transaction.sourceId) {
+    const refundRequest = sourceContext.refundRequestsById.get(transaction.sourceId);
+
+    if (refundRequest) {
+      return getRefundRequestMetaDetail(transaction.type, refundRequest);
+    }
+  }
+
+  if (transaction.type === "charge" && title !== "캐시 충전") {
+    return "충전 완료";
+  }
+
+  return transaction.memo || title;
+}
+
+function getMatchTransactionMetaDetail(
+  match: MatchRow,
+  type: CashTransactionEntity["type"],
+) {
+  const title = match.title?.trim() || "매치 정보 확인 불가";
+  const venueName = match.venue_name?.trim();
+  const matchLabel = venueName ? `${title} · ${venueName}` : title;
+
+  if (type === "match_refund") {
+    return `환급 대상 · ${matchLabel}`;
+  }
+
+  return matchLabel;
+}
+
+function getRefundRequestMetaDetail(
+  type: CashTransactionEntity["type"],
+  refundRequest: CashRefundRequestContextRow,
+) {
+  if (type === "refund_release") {
+    return "환불 신청 반려 · 캐시 반환";
+  }
+
+  switch (refundRequest.status) {
+    case "processed":
+      return "캐시 환불 완료";
+    case "rejected":
+      return "캐시 환불 반려";
+    case "cancelled":
+      return "캐시 환불 취소";
+    case "pending":
+    default:
+      return "캐시 환불 신청 접수";
+  }
+}
+
+function getChargePaymentTitle(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+) {
+  if (!transaction.sourceId) {
+    return "캐시 충전";
+  }
+
+  const chargeOrder = sourceContext.chargeOrdersById.get(transaction.sourceId);
+  const paymentMethodLabel = getTossPaymentMethodLabel(chargeOrder?.provider_snapshot ?? null);
+
+  return paymentMethodLabel ? `캐시 충전(${paymentMethodLabel})` : "캐시 충전";
+}
+
+function getRefundHoldTitle(
+  transaction: CashTransactionEntity,
+  sourceContext: CashTransactionSourceContext,
+) {
+  if (!transaction.sourceId) {
+    return "캐시 환불 신청";
+  }
+
+  const refundRequest = sourceContext.refundRequestsById.get(transaction.sourceId);
+
+  switch (refundRequest?.status) {
+    case "processed":
+      return "캐시 환불 완료";
+    case "rejected":
+      return "캐시 환불 반려";
+    case "cancelled":
+      return "캐시 환불 취소";
+    case "pending":
+    default:
+      return "캐시 환불 신청";
+  }
+}
+
+function getTossPaymentMethodLabel(providerSnapshot: Record<string, unknown> | null) {
+  const easyPay = getRecordValue(providerSnapshot, "easyPay");
+  const easyPayProvider = getStringValue(easyPay?.provider);
+
+  if (easyPayProvider) {
+    return getEasyPayProviderLabel(easyPayProvider);
+  }
+
+  const method = getStringValue(providerSnapshot?.method);
+
+  if (!method) {
+    return null;
+  }
+
+  return getPaymentMethodLabel(method);
+}
+
+function getEasyPayProviderLabel(provider: string) {
+  const normalizedProvider = provider.replace(/\s/g, "").toUpperCase();
+
+  switch (normalizedProvider) {
+    case "KAKAOPAY":
+    case "카카오페이":
+      return "카카오페이";
+    case "NAVERPAY":
+    case "네이버페이":
+      return "네이버페이";
+    case "TOSSPAY":
+    case "토스페이":
+      return "토스페이";
+    default:
+      return provider.trim();
+  }
+}
+
+function getPaymentMethodLabel(method: string) {
+  const normalizedMethod = method.replace(/\s/g, "").toUpperCase();
+
+  switch (normalizedMethod) {
+    case "CARD":
+    case "카드":
+      return "카드";
+    case "TRANSFER":
+    case "계좌이체":
+      return "계좌이체";
+    case "EASYPAY":
+    case "간편결제":
+      return "간편결제";
+    case "VIRTUALACCOUNT":
+    case "가상계좌":
+      return "가상계좌";
+    case "MOBILEPHONE":
+    case "휴대폰":
+      return "휴대폰";
+    default:
+      return method.trim();
+  }
+}
+
+function getRecordValue(
+  value: Record<string, unknown> | null | undefined,
+  key: string,
+) {
+  const nextValue = value?.[key];
+
+  return isRecord(nextValue) ? nextValue : null;
+}
+
+function getStringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function getCashTransactionTone(

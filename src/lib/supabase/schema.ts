@@ -19,7 +19,7 @@ const REQUIRED_WISHLIST_MIGRATION =
 const REQUIRED_PROFILE_ONBOARDING_MIGRATION =
   "20260414103000_add_profile_onboarding_preferences.sql";
 const REQUIRED_CASH_REFUND_REQUEST_MIGRATION =
-  "20260414170000_add_cash_refund_requests.sql";
+  "20260504120000_add_original_payment_cash_refunds.sql";
 const REQUIRED_PHONE_AUTH_MIGRATION =
   "20260414153000_add_phone_auth_and_email_login.sql";
 const REQUIRED_SIGNUP_PROFILE_MIGRATION =
@@ -470,6 +470,13 @@ async function runCashRefundRequestSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleCashRefundRequestSchemaError(cashRefundRequestCheck.error);
+
+  const refundCancellationCheck = await supabase
+    .from("cash_refund_request_cancellations")
+    .select("refund_request_id, charge_order_id, cancel_amount, status")
+    .limit(1);
+
+  handleCashRefundRequestSchemaError(refundCancellationCheck.error);
 }
 
 async function runSignupProfileSchemaCheck(supabase: SupabaseServerClient) {
