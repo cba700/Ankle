@@ -498,7 +498,7 @@ function getCashTransactionTitle(type: CashTransactionEntity["type"]) {
     case "refund_hold":
       return "캐시 환불 신청";
     case "refund_release":
-      return "환불 신청 반려";
+      return "환불 미처리 금액 반환";
     case "adjustment":
       return "운영 보정";
     case "match_debit":

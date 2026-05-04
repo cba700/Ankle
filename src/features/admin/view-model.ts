@@ -201,7 +201,7 @@ export function buildAdminCashOverviewCards({
       id: "cash-refund-pending",
       label: "환불 대기",
       value: `${pendingRefundRequests}건`,
-      helper: "운영 처리가 필요한 환불 신청",
+      helper: "결제 취소 처리 중인 환불 신청",
       tone: pendingRefundRequests > 0 ? "danger" : "neutral",
     },
   ];
@@ -341,11 +341,9 @@ export function buildAdminCashRefundRequestRows(
   requests: CashRefundRequestEntity[],
 ): AdminCashRefundRequestRow[] {
   return requests.map((request) => ({
-    accountHolder: request.accountHolder,
-    accountNumber: request.accountNumber,
-    bankName: request.bankName,
     id: request.id,
     metaLabel: formatCompactDateLabel(new Date(request.createdAt)),
+    refundMethodLabel: request.bankName ? "계좌 환불" : "결제했던 수단",
     requestedAmountLabel: `${formatMoney(request.requestedAmount)}원`,
     statusLabel: getRefundRequestStatusLabel(request.status),
     statusTone: getRefundRequestStatusTone(request.status),
@@ -616,7 +614,7 @@ function getCashTransactionTitle(transaction: CashTransactionEntity) {
     case "refund_hold":
       return "캐시 환불 신청";
     case "refund_release":
-      return "환불 신청 반려";
+      return "환불 미처리 금액 반환";
     case "match_refund":
       return "매치 환급";
     case "adjustment":

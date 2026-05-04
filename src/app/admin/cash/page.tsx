@@ -1,7 +1,5 @@
 import {
-  approveCashRefundRequestAction,
   adjustAdminCashBalanceAction,
-  rejectCashRefundRequestAction,
   retryPendingCashChargeOrderAction,
 } from "@/features/admin/actions";
 import { AdminOverviewCards } from "@/features/admin/components/admin-overview-cards";
@@ -84,9 +82,7 @@ export default async function AdminCashPage() {
                     <th className={ui.tableHeadCell}>구분</th>
                     <th className={ui.tableHeadCell}>사용자</th>
                     <th className={ui.tableHeadCell}>금액</th>
-                    <th className={ui.tableHeadCell}>은행</th>
-                    <th className={ui.tableHeadCell}>계좌번호</th>
-                    <th className={ui.tableHeadCell}>예금주</th>
+                    <th className={ui.tableHeadCell}>환불 방식</th>
                     <th className={ui.tableHeadCell}>상태</th>
                     <th className={ui.tableHeadCell}>처리</th>
                   </tr>
@@ -94,7 +90,7 @@ export default async function AdminCashPage() {
                 <tbody>
                   {refundRequestRows.length === 0 ? (
                     <tr>
-                      <td className={ui.tableCell} colSpan={9}>
+                      <td className={ui.tableCell} colSpan={7}>
                         표시할 환불 신청이 없습니다.
                       </td>
                     </tr>
@@ -111,42 +107,15 @@ export default async function AdminCashPage() {
                           <span className={styles.code}>{row.userId}</span>
                         </td>
                         <td className={ui.tableCell}>{row.requestedAmountLabel}</td>
-                        <td className={ui.tableCell}>{row.bankName}</td>
-                        <td className={ui.tableCell}>
-                          <span className={styles.code}>{row.accountNumber}</span>
-                        </td>
-                        <td className={ui.tableCell}>{row.accountHolder}</td>
+                        <td className={ui.tableCell}>{row.refundMethodLabel}</td>
                         <td className={ui.tableCell}>
                           <AdminStatusBadge label={row.statusLabel} tone={row.statusTone} />
                         </td>
                         <td className={ui.tableCell}>
                           {data.refundRequests[index]?.status === "pending" ? (
-                            <div className={styles.actionCluster}>
-                              <form action={approveCashRefundRequestAction}>
-                                <input name="requestId" type="hidden" value={row.id} />
-                                <button
-                                  className={`${ui.button} ${ui.buttonBrand} ${ui.buttonSmall}`}
-                                  type="submit"
-                                >
-                                  {withdrawalLinkedRefundRequestIds.has(row.id)
-                                    ? "승인 후 탈퇴 완료"
-                                    : "승인"}
-                                </button>
-                              </form>
-                              <form action={rejectCashRefundRequestAction}>
-                                <input name="requestId" type="hidden" value={row.id} />
-                                <button
-                                  className={`${ui.button} ${ui.buttonSmall}`}
-                                  type="submit"
-                                >
-                                  {withdrawalLinkedRefundRequestIds.has(row.id)
-                                    ? "반려 후 탈퇴 취소"
-                                    : "반려"}
-                                </button>
-                              </form>
-                            </div>
+                            <span className={ui.tertiary}>자동 처리 중</span>
                           ) : (
-                            <span className={ui.tertiary}>처리 완료</span>
+                            <span className={ui.tertiary}>처리 종료</span>
                           )}
                         </td>
                       </tr>

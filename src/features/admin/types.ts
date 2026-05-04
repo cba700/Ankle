@@ -172,11 +172,9 @@ export type AdminCashChargeOrderEventRow = {
 };
 
 export type AdminCashRefundRequestRow = {
-  accountHolder: string;
-  accountNumber: string;
-  bankName: string;
   id: string;
   metaLabel: string;
+  refundMethodLabel: string;
   requestedAmountLabel: string;
   statusLabel: string;
   statusTone: AdminBadgeTone;

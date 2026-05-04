@@ -26,15 +26,17 @@ export const RAIN_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${RAIN_REFUND_SECT
 export const CASH_REFUND_POLICY_HREF = `${REFUND_POLICY_HREF}#${CASH_REFUND_SECTION_ID}`;
 
 export const CASH_REFUND_ELIGIBILITY_NOTICE =
-  "실제 보유 캐시에 한해 환불 가능(쿠폰 할인분 제외)";
+  "환불 가능 금액은 보유 캐시 중 결제 취소가 가능한 충전 잔액으로 계산됩니다.";
+export const CASH_REFUND_ORIGINAL_METHOD_NOTICE =
+  "충전 캐시는 결제했던 수단으로만 환불됩니다.";
 export const CASH_VALIDITY_NOTICE =
-  "충전된 캐시의 이용기간과 환불가능기간은 결제시점으로부터 1년 이내로 제한됩니다.";
+  "카드사, 은행 또는 간편결제 정책에 따라 결제 취소 가능 기간이 지난 금액은 환불되지 않을 수 있습니다.";
 export const CASH_REFUND_SCHEDULE_NOTICE =
-  "환불은 매주 월요일, 목요일 저녁 5 - 6시 사이에 일괄 처리됩니다.";
+  "환불 신청이 완료되면 결제대행사를 통해 결제 취소가 자동으로 접수됩니다.";
 export const CASH_REFUND_HOLIDAY_NOTICE =
-  "공휴일은 월요일 대신 화요일 오전, 목요일 대신 금요일 오후에 환불됩니다.";
+  "실제 환불 반영 시점은 결제수단과 카드사, 은행 처리 기준에 따라 달라질 수 있습니다.";
 export const CASH_REFUND_CUTOFF_NOTICE =
-  "월, 금 17시 이후 환불 신청 시 다음 환불일에 처리됩니다.";
+  "매치 신청에 사용한 금액, 쿠폰 할인분, 이벤트·보너스 캐시는 환불 대상에 포함되지 않습니다.";
 
 export const MATCH_REFUND_SUMMARY_ROWS: RefundPolicyRow[] = [
   { condition: "매치 2일 전", policy: "무료 취소" },
@@ -136,12 +138,13 @@ export const REFUND_POLICY_SECTIONS: RefundPolicySection[] = [
     id: CASH_REFUND_SECTION_ID,
     title: "충전 캐시 환불",
     description:
-      "충전 캐시 환불 방법, 환불 가능 조건, 처리 일정과 공휴일 대체 일정을 확인할 수 있습니다.",
+      "충전 캐시의 환불 방식, 환불 가능 금액 기준, 실제 반영 시점을 확인할 수 있습니다.",
     groups: [
       {
         title: "환불 방법",
         items: [
           "[마이페이지] → [캐시 내역] → [캐시 환불 클릭]",
+          CASH_REFUND_ORIGINAL_METHOD_NOTICE,
           CASH_REFUND_ELIGIBILITY_NOTICE,
           CASH_VALIDITY_NOTICE,
         ],
