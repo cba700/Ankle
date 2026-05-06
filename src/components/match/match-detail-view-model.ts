@@ -12,9 +12,16 @@ type MatchDetailOverride = {
   views?: number;
   notice?: string;
   courtNotes?: string[];
-  howTo?: string[];
   refundRows?: MatchDetailRefundRow[];
 };
+
+const DEFAULT_MATCH_HOW_TO = [
+  "매니저가 매치 진행을 도와드려요",
+  "농구화 or 운동화와 개인 음료만 준비하세요",
+  "휴식을 공평하게 돌아가면서 해요",
+  "레벨을 기준으로 팀을 나눠요",
+  "친구끼리 와도 팀 실력이 맞지 않으면 다른 팀이 될 수 있어요",
+];
 
 const DETAIL_OVERRIDES: Record<string, MatchDetailOverride> = {
   "match-01": {
@@ -76,7 +83,7 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
     levelHint: levelSummary,
     courtNotes: override.courtNotes ?? buildCourtNotes(match),
     rules: match.rules,
-    howTo: override.howTo ?? buildHowTo(match),
+    howTo: DEFAULT_MATCH_HOW_TO,
     safetyNotes: match.safetyNotes,
     refundRows: override.refundRows ?? REFUND_POLICY.map((row) => ({
       condition: row.point,
@@ -104,15 +111,6 @@ function buildCourtNotes(match: MatchRecord) {
     .split("\n")
     .map((note) => note.trim())
     .filter(Boolean);
-}
-
-function buildHowTo(match: MatchRecord) {
-  return [
-    `${match.preparation}만 준비해 오면 됩니다.`,
-    "매니저가 출석 확인과 팀 밸런스 조정을 도와드립니다.",
-    `${match.levelCondition} 기준으로 코트 템포와 매치 경험을 맞춰 팀을 나눕니다.`,
-    "친구와 함께 와도 현장 상황에 맞춰 팀을 다시 조정할 수 있습니다.",
-  ];
 }
 
 function getDefaultNotice(match: MatchRecord) {
