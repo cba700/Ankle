@@ -2,14 +2,17 @@ create table if not exists public.home_banners (
   id uuid primary key default gen_random_uuid(),
   title text not null check (char_length(btrim(title)) > 0),
   image_url text not null check (char_length(btrim(image_url)) > 0),
-  href text not null check (href = '/' or (href like '/%' and href not like '//%')),
-  display_order integer not null default 100,
+  href text check (href is null or href = '/' or (href like '/%' and href not like '//%')),
+  display_order integer not null check (display_order > 0),
   is_active boolean not null default true,
   starts_at timestamptz,
   ends_at timestamptz,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
-  check (starts_at is null or ends_at is null or starts_at < ends_at)
+  check (
+    (starts_at is null and ends_at is null)
+    or (starts_at is not null and ends_at is not null and starts_at < ends_at)
+  )
 );
 
 create index if not exists home_banners_public_order_idx

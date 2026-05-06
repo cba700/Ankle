@@ -22,7 +22,7 @@ export type AdminHomeBannerRecord = {
   id: string;
   title: string;
   imageUrl: string;
-  href: string;
+  href: string | null;
   displayOrder: number;
   isActive: boolean;
   startsAt: string | null;

@@ -114,6 +114,11 @@
   box-shadow: 0 0 0 4px rgba(243, 109, 33, 0.12);
 }
 
+.field input:disabled {
+  background: #f4f1ed;
+  color: var(--text-tertiary);
+}
+
 .toggleField {
   display: inline-flex;
   align-items: center;
@@ -127,6 +132,27 @@
   width: 16px;
   height: 16px;
   accent-color: var(--accent);
+}
+
+.scheduleField {
+  display: grid;
+  gap: 8px;
+}
+
+.scheduleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scheduleInputs {
+  display: grid;
+  gap: 10px;
+}
+
+.scheduleMuted {
+  opacity: 0.58;
 }
 
 .bannerActionRow {
@@ -147,6 +173,10 @@
   .bannerForm {
     grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1.4fr) minmax(110px, 0.6fr);
     align-items: end;
+  }
+
+  .scheduleInputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

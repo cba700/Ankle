@@ -39,14 +39,21 @@ export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
       aria-roledescription="carousel"
       className={`${styles.hero} ${styles.carouselHero}`}
     >
-      <AppLink
-        aria-label={`${activeBanner.title} 페이지로 이동`}
-        className={styles.bannerLink}
-        href={activeBanner.href}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" className={styles.heroImage} src={activeBanner.imageUrl} />
-      </AppLink>
+      {activeBanner.href ? (
+        <AppLink
+          aria-label={`${activeBanner.title} 페이지로 이동`}
+          className={styles.bannerLink}
+          href={activeBanner.href}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt="" className={styles.heroImage} src={activeBanner.imageUrl} />
+        </AppLink>
+      ) : (
+        <div className={`${styles.bannerLink} ${styles.bannerStatic}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt={activeBanner.title} className={styles.heroImage} src={activeBanner.imageUrl} />
+        </div>
+      )}
 
       {hasMultipleBanners ? (
         <>

@@ -7,7 +7,7 @@ export type HomeBanner = {
   id: string;
   title: string;
   imageUrl: string;
-  href: string;
+  href: string | null;
   displayOrder: number;
   isActive: boolean;
   startsAt: string | null;
@@ -22,7 +22,7 @@ type HomeBannerRow = {
   id: string;
   title: string;
   image_url: string;
-  href: string;
+  href: string | null;
   display_order: number;
   is_active: boolean;
   starts_at: string | null;
@@ -62,7 +62,7 @@ export async function listPublicHomeBanners(): Promise<PublicHomeBanner[]> {
       imageUrl: row.image_url,
       title: row.title,
     }))
-    .filter((banner) => banner.imageUrl && banner.href && banner.title);
+    .filter((banner) => banner.imageUrl && banner.title);
 }
 
 export async function listAdminHomeBanners(supabase: any): Promise<HomeBanner[]> {

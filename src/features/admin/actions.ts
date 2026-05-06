@@ -119,12 +119,18 @@ type VenueWriteValues = {
 
 type HomeBannerFormValues = {
   title: string;
-  href: string;
-  displayOrder: number;
+  href: string | null;
+  displayOrder: number | null;
   isActive: boolean;
   startsAt: string | null;
   endsAt: string | null;
   imageFile: File | null;
+};
+
+type HomeBannerOrderRow = {
+  id: string;
+  display_order: number;
+  created_at: string;
 };
 
 type VenueImageOrderEntry =
@@ -508,9 +514,13 @@ export async function createAdminHomeBannerAction(formData: FormData) {
       bannerId,
       file: values.imageFile,
     });
+    const displayOrder = await getHomeBannerInsertDisplayOrder(
+      supabase,
+      values.displayOrder,
+    );
 
     const { error } = await ((supabase.from("home_banners" as any) as any).insert({
-      display_order: values.displayOrder,
+      display_order: displayOrder,
       ends_at: values.endsAt,
       href: values.href,
       id: bannerId,
@@ -528,6 +538,7 @@ export async function createAdminHomeBannerAction(formData: FormData) {
     throw error;
   }
 
+  await reorderAdminHomeBanners(supabase, bannerId, values.displayOrder);
   revalidateAdminHomeBannerPaths();
   redirect("/admin/banners");
 }
@@ -557,7 +568,6 @@ export async function updateAdminHomeBannerAction(bannerId: string, formData: Fo
 
     const { error } = await ((supabase.from("home_banners" as any) as any)
       .update({
-        display_order: values.displayOrder,
         ends_at: values.endsAt,
         href: values.href,
         image_url: nextImageUrl,
@@ -583,6 +593,7 @@ export async function updateAdminHomeBannerAction(bannerId: string, formData: Fo
     await safeDeleteHomeBannerImageUrls(admin, [currentBanner.imageUrl]);
   }
 
+  await reorderAdminHomeBanners(supabase, bannerId, values.displayOrder);
   revalidateAdminHomeBannerPaths();
   redirect("/admin/banners");
 }
@@ -609,6 +620,7 @@ export async function deleteAdminHomeBannerAction(bannerId: string, _formData: F
     await safeDeleteHomeBannerImageUrls(admin, [banner.imageUrl]);
   }
 
+  await normalizeAdminHomeBannerOrders(supabase);
   revalidateAdminHomeBannerPaths();
   redirect("/admin/banners");
 }
@@ -1469,8 +1481,13 @@ function readHomeBannerFormValues(
   { requireImage }: { requireImage: boolean },
 ): HomeBannerFormValues {
   const imageFile = getUploadedFiles(formData, "imageFile")[0] ?? null;
-  const startsAt = getOptionalSeoulDateTimeLocal(formData, "startsAt");
-  const endsAt = getOptionalSeoulDateTimeLocal(formData, "endsAt");
+  const alwaysVisible = formData.get("alwaysVisible") === "on";
+  const startsAt = alwaysVisible
+    ? null
+    : getRequiredSeoulDateTimeLocal(formData, "startsAt");
+  const endsAt = alwaysVisible
+    ? null
+    : getRequiredSeoulDateTimeLocal(formData, "endsAt");
 
   if (requireImage && !imageFile) {
     throw new Error("Missing required field: imageFile");
@@ -1481,9 +1498,9 @@ function readHomeBannerFormValues(
   }
 
   return {
-    displayOrder: getIntegerOrDefault(formData, "displayOrder", 100),
+    displayOrder: getOptionalPositiveInteger(formData, "displayOrder"),
     endsAt,
-    href: getInternalHref(getRequiredString(formData, "href")),
+    href: getOptionalInternalHref(getOptionalString(formData, "href")),
     imageFile,
     isActive: formData.get("isActive") === "on",
     startsAt,
@@ -1555,28 +1572,26 @@ function getOptionalPositiveInteger(formData: FormData, key: string) {
   return parsed;
 }
 
-function getIntegerOrDefault(formData: FormData, key: string, defaultValue: number) {
-  const value = getOptionalString(formData, key);
-
+function getOptionalInternalHref(value: string) {
   if (!value) {
-    return defaultValue;
+    return null;
   }
 
-  const parsed = Number.parseInt(value, 10);
-
-  if (!Number.isFinite(parsed)) {
-    throw new Error(`Invalid numeric field: ${key}`);
-  }
-
-  return parsed;
-}
-
-function getInternalHref(value: string) {
   if (value === "/" || (value.startsWith("/") && !value.startsWith("//"))) {
     return value;
   }
 
   throw new Error("배너 링크는 /로 시작하는 내부 경로만 입력할 수 있습니다.");
+}
+
+function getRequiredSeoulDateTimeLocal(formData: FormData, key: string) {
+  const value = getOptionalSeoulDateTimeLocal(formData, key);
+
+  if (!value) {
+    throw new Error(`Missing required field: ${key}`);
+  }
+
+  return value;
 }
 
 function getOptionalSeoulDateTimeLocal(formData: FormData, key: string) {
@@ -1820,6 +1835,76 @@ function revalidateAdminHomeBannerPaths() {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/banners");
+}
+
+async function getHomeBannerInsertDisplayOrder(
+  supabase: AdminSupabaseClient,
+  requestedDisplayOrder: number | null,
+) {
+  if (requestedDisplayOrder !== null) {
+    return requestedDisplayOrder;
+  }
+
+  const rows = await listHomeBannerOrderRows(supabase);
+  return rows.length + 1;
+}
+
+async function reorderAdminHomeBanners(
+  supabase: AdminSupabaseClient,
+  movedBannerId: string,
+  requestedDisplayOrder: number | null,
+) {
+  const rows = await listHomeBannerOrderRows(supabase);
+  const movedRow = rows.find((row) => row.id === movedBannerId);
+
+  if (!movedRow) {
+    return;
+  }
+
+  const orderedRows = rows.filter((row) => row.id !== movedBannerId);
+  const targetOrder = requestedDisplayOrder ?? rows.length;
+  const targetIndex = Math.min(Math.max(targetOrder, 1), rows.length) - 1;
+
+  orderedRows.splice(targetIndex, 0, movedRow);
+  await updateHomeBannerDisplayOrders(supabase, orderedRows);
+}
+
+async function normalizeAdminHomeBannerOrders(supabase: AdminSupabaseClient) {
+  await updateHomeBannerDisplayOrders(supabase, await listHomeBannerOrderRows(supabase));
+}
+
+async function listHomeBannerOrderRows(supabase: AdminSupabaseClient) {
+  const { data, error } = await ((supabase.from("home_banners" as any) as any)
+    .select("id, display_order, created_at")
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true }));
+
+  if (error) {
+    throw new Error(`Failed to load home banner order: ${error.message}`);
+  }
+
+  return (data ?? []) as HomeBannerOrderRow[];
+}
+
+async function updateHomeBannerDisplayOrders(
+  supabase: AdminSupabaseClient,
+  rows: HomeBannerOrderRow[],
+) {
+  for (const [index, row] of rows.entries()) {
+    const nextDisplayOrder = index + 1;
+
+    if (row.display_order === nextDisplayOrder) {
+      continue;
+    }
+
+    const { error } = await ((supabase.from("home_banners" as any) as any)
+      .update({ display_order: nextDisplayOrder })
+      .eq("id", row.id));
+
+    if (error) {
+      throw new Error(`Failed to update home banner order: ${error.message}`);
+    }
+  }
 }
 
 function isDeletePermissionError(error: { code?: string; message?: string | null }) {
