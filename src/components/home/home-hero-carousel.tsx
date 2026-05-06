@@ -10,7 +10,7 @@ type HomeHeroCarouselProps = {
   banners: HomeBannerSlide[];
 };
 
-const AUTO_SLIDE_INTERVAL_MS = 2000;
+const AUTO_SLIDE_INTERVAL_MS = 3000;
 
 export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
