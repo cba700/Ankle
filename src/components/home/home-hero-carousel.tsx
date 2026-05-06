@@ -10,9 +10,10 @@ type HomeHeroCarouselProps = {
   banners: HomeBannerSlide[];
 };
 
+const AUTO_SLIDE_INTERVAL_MS = 2000;
+
 export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeBanner = banners[activeIndex] ?? banners[0];
   const hasMultipleBanners = banners.length > 1;
 
   useEffect(() => {
@@ -21,7 +22,19 @@ export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
     }
   }, [activeIndex, banners.length]);
 
-  if (!activeBanner) {
+  useEffect(() => {
+    if (!hasMultipleBanners) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % banners.length);
+    }, AUTO_SLIDE_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [activeIndex, banners.length, hasMultipleBanners]);
+
+  if (banners.length === 0) {
     return null;
   }
 
@@ -39,21 +52,35 @@ export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
       aria-roledescription="carousel"
       className={`${styles.hero} ${styles.carouselHero}`}
     >
-      {activeBanner.href ? (
-        <AppLink
-          aria-label={`${activeBanner.title} 페이지로 이동`}
-          className={styles.bannerLink}
-          href={activeBanner.href}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" className={styles.heroImage} src={activeBanner.imageUrl} />
-        </AppLink>
-      ) : (
-        <div className={`${styles.bannerLink} ${styles.bannerStatic}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt={activeBanner.title} className={styles.heroImage} src={activeBanner.imageUrl} />
-        </div>
-      )}
+      <div
+        className={styles.carouselTrack}
+        style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+      >
+        {banners.map((banner, index) => (
+          <div
+            aria-hidden={index !== activeIndex}
+            className={styles.carouselSlide}
+            key={banner.id}
+          >
+            {banner.href ? (
+              <AppLink
+                aria-label={`${banner.title} 페이지로 이동`}
+                className={styles.bannerLink}
+                href={banner.href}
+                tabIndex={index === activeIndex ? undefined : -1}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img alt="" className={styles.heroImage} src={banner.imageUrl} />
+              </AppLink>
+            ) : (
+              <div className={`${styles.bannerLink} ${styles.bannerStatic}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img alt={banner.title} className={styles.heroImage} src={banner.imageUrl} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
       {hasMultipleBanners ? (
         <>
