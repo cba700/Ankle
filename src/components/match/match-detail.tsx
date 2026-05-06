@@ -1,5 +1,6 @@
 import type { MatchRecord } from "@/lib/matches";
 import { LegalFooter } from "@/components/legal/legal-footer";
+import { MatchCourtNotesSection } from "./match-court-notes-section";
 import { MatchDetailHeader } from "./match-detail-header";
 import { MatchDetailFeedbackProvider } from "./match-detail-feedback";
 import { MatchDetailHeroClient } from "./match-detail-hero-client";
@@ -37,6 +38,7 @@ export function MatchDetail({
           <div className={styles.contentColumn}>
             <MatchInfoSection infoItems={view.infoItems} />
             <MatchLevelSection distribution={view.levelDistribution} />
+            <MatchCourtNotesSection notes={view.courtNotes} />
             <MatchRulesSection howTo={view.howTo} rules={view.rules} />
             <MatchSafetySection items={view.safetyNotes} />
             <MatchRefundSection />
