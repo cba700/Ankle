@@ -53,6 +53,11 @@ const REFUND_EXCEPTION_ACTIONS: Array<{
   { label: "강수 안내", mode: "rain_notice" },
   { label: "강수 변동 안내", mode: "rain_change_notice" },
 ];
+const CAPACITY_BY_FORMAT: Record<string, string> = {
+  "3vs3": "9",
+  "4vs4": "12",
+  "5vs5": "15",
+};
 
 export function AdminMatchEditor({
   canDelete = false,
@@ -85,10 +90,18 @@ export function AdminMatchEditor({
   ) {
     const { name, value } = event.target;
 
-    setFormValues((currentValues) => ({
-      ...currentValues,
-      [name]: value,
-    }));
+    setFormValues((currentValues) => {
+      const nextValues = {
+        ...currentValues,
+        [name]: value,
+      };
+
+      if (name === "format" && CAPACITY_BY_FORMAT[value]) {
+        nextValues.capacity = CAPACITY_BY_FORMAT[value];
+      }
+
+      return nextValues;
+    });
   }
 
   function handleVenueModeChange(modeValue: AdminMatchFormValue["venueEntryMode"]) {
