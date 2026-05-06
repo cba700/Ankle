@@ -8,10 +8,11 @@ import {
   MapPinIcon,
   WalletIcon,
 } from "@/components/icons";
+import type { AdminShellNav } from "../types";
 import styles from "./admin-shell.module.css";
 
 type AdminShellProps = {
-  activeNav: "dashboard" | "matches" | "venues" | "cash" | "coupons" | "create";
+  activeNav: AdminShellNav;
   eyebrow: string;
   title: string;
   description?: string;
@@ -37,6 +38,12 @@ const NAV_ITEMS = [
     label: "경기장 관리",
     href: "/admin/venues",
     icon: MapPinIcon,
+  },
+  {
+    id: "banners",
+    label: "배너 관리",
+    href: "/admin/banners",
+    icon: BadgeIcon,
   },
   {
     id: "cash",

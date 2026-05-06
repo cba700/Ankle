@@ -13,9 +13,23 @@ export type AdminShellNav =
   | "dashboard"
   | "matches"
   | "venues"
+  | "banners"
   | "cash"
   | "coupons"
   | "create";
+
+export type AdminHomeBannerRecord = {
+  id: string;
+  title: string;
+  imageUrl: string;
+  href: string;
+  displayOrder: number;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type AdminVenueInfo = {
   directions: string;

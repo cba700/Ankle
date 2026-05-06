@@ -24,6 +24,24 @@
   height: 100%;
 }
 
+.carouselHero {
+  padding: 0;
+  background: #fff;
+}
+
+.bannerLink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .backgroundGlow {
   position: absolute;
   inset: 0;
@@ -31,6 +49,55 @@
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.18) 0%, transparent 28%),
     linear-gradient(180deg, rgba(15, 15, 15, 0.04) 0%, rgba(15, 15, 15, 0.4) 100%);
   pointer-events: none;
+}
+
+.carouselControls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.carouselButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.52);
+  color: #fff;
+}
+
+.carouselIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.carouselDots {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.carouselDot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.carouselDotActive {
+  width: 18px;
+  background: #fff;
 }
 
 .content {
@@ -68,6 +135,21 @@
 
   .title {
     font-size: 24px;
+  }
+
+  .carouselControls {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .carouselButton {
+    width: 30px;
+    height: 30px;
+  }
+
+  .carouselDots {
+    bottom: 15px;
+    left: 14px;
   }
 }
 

@@ -1,7 +1,17 @@
 import { HOME_HERO } from "./home-view-model";
+import { HomeHeroCarousel } from "./home-hero-carousel";
+import type { HomeBannerSlide } from "./home-types";
 import styles from "./home-hero.module.css";
 
-export function HomeHero() {
+type HomeHeroProps = {
+  banners: HomeBannerSlide[];
+};
+
+export function HomeHero({ banners }: HomeHeroProps) {
+  if (banners.length > 0) {
+    return <HomeHeroCarousel banners={banners} />;
+  }
+
   return (
     <section className={styles.hero}>
       <div className={styles.backgroundGlow} />

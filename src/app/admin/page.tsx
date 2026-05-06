@@ -21,6 +21,9 @@ export default async function AdminPage() {
           <AppLink className={ui.button} href="/admin/coupons">
             쿠폰 관리
           </AppLink>
+          <AppLink className={ui.button} href="/admin/banners">
+            배너 관리
+          </AppLink>
           <AppLink className={ui.button} href="/admin/venues">
             경기장 관리
           </AppLink>
