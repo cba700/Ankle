@@ -9,6 +9,7 @@ export type VenueEntity = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -28,10 +29,11 @@ type VenueRow = {
   name: string;
   district: string;
   address: string;
-  directions: string;
-  parking: string;
-  smoking: string;
-  shower_locker: string;
+  court_note: string | null;
+  directions: string | null;
+  parking: string | null;
+  smoking: string | null;
+  shower_locker: string | null;
   weather_grid_nx: number | null;
   weather_grid_ny: number | null;
   default_image_urls: string[] | null;
@@ -50,6 +52,7 @@ const VENUE_SELECT = `
   name,
   district,
   address,
+  court_note,
   directions,
   parking,
   smoking,
@@ -104,10 +107,11 @@ async function listVenueEntities(id?: string) {
     name: row.name,
     district: row.district,
     address: row.address,
-    directions: row.directions,
-    parking: row.parking,
-    smoking: row.smoking,
-    showerLocker: row.shower_locker,
+    courtNote: row.court_note?.trim() || buildLegacyCourtNote(row),
+    directions: row.directions ?? "",
+    parking: row.parking ?? "",
+    smoking: row.smoking ?? "",
+    showerLocker: row.shower_locker ?? "",
     weatherGridNx: row.weather_grid_nx,
     weatherGridNy: row.weather_grid_ny,
     defaultImageUrls: row.default_image_urls ?? [],
@@ -116,6 +120,25 @@ async function listVenueEntities(id?: string) {
     isActive: row.is_active,
     matchCount: matchCountMap.get(row.id) ?? 0,
   }));
+}
+
+function buildLegacyCourtNote({
+  directions,
+  parking,
+  smoking,
+  shower_locker,
+}: Pick<VenueRow, "directions" | "parking" | "smoking" | "shower_locker">) {
+  return [
+    ["찾아오는 길", directions],
+    ["주차", parking],
+    ["흡연", smoking],
+    ["보관/샤워", shower_locker],
+  ]
+    .flatMap(([label, value]) => {
+      const text = value?.trim();
+      return text ? [`${label}: ${text}`] : [];
+    })
+    .join("\n");
 }
 
 async function getMatchCountMap(

@@ -18,6 +18,7 @@ export type AdminShellNav =
   | "create";
 
 export type AdminVenueInfo = {
+  courtNote?: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -71,6 +72,7 @@ export type AdminVenueFormValue = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -270,6 +272,7 @@ export type AdminMatchFormValue = {
   summary: string;
   publicNotice: string;
   operatorNote: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;

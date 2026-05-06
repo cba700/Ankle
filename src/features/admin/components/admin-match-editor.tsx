@@ -128,10 +128,7 @@ export function AdminMatchEditor({
         {mode === "create" ? (
           <>
             <input name="district" type="hidden" value={formValues.district} />
-            <input name="directions" type="hidden" value={formValues.directions} />
-            <input name="parking" type="hidden" value={formValues.parking} />
-            <input name="smoking" type="hidden" value={formValues.smoking} />
-            <input name="showerLocker" type="hidden" value={formValues.showerLocker} />
+            <input name="courtNote" type="hidden" value={formValues.courtNote} />
             <input name="rulesText" type="hidden" value={formValues.rulesText} />
             <input name="safetyNotesText" type="hidden" value={formValues.safetyNotesText} />
           </>
@@ -504,42 +501,12 @@ export function AdminMatchEditor({
 
               <div className={styles.fieldGrid}>
                 <label className={`${styles.field} ${styles.fieldSpan}`}>
-                  <span className={styles.fieldLabel}>찾아오는 길</span>
+                  <span className={styles.fieldLabel}>코트 특이사항</span>
                   <textarea
-                    name="directions"
+                    name="courtNote"
                     onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.directions}
-                  />
-                </label>
-
-                <label className={`${styles.field} ${styles.fieldSpan}`}>
-                  <span className={styles.fieldLabel}>주차</span>
-                  <textarea
-                    name="parking"
-                    onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.parking}
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>흡연</span>
-                  <textarea
-                    name="smoking"
-                    onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.smoking}
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>보관/샤워</span>
-                  <textarea
-                    name="showerLocker"
-                    onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.showerLocker}
+                    rows={5}
+                    value={formValues.courtNote}
                   />
                 </label>
 

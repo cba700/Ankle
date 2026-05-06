@@ -62,6 +62,7 @@ import type {
 type VenueWriteResult = {
   id: string;
   slug: string;
+  courtNote: string | null;
   weatherGridNx: number | null;
   weatherGridNy: number | null;
 };
@@ -69,6 +70,7 @@ type VenueWriteResult = {
 type VenueWriteRow = {
   id: string;
   slug: string;
+  court_note: string | null;
   weather_grid_nx: number | null;
   weather_grid_ny: number | null;
 };
@@ -77,6 +79,7 @@ type VenueFormValues = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -94,6 +97,7 @@ type VenueWriteValues = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -170,10 +174,11 @@ export async function createAdminMatchAction(formData: FormData) {
       venue_name: values.venueName,
       district: values.district,
       address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
+      court_note: normalizeOptionalText(values.courtNote) ?? venue.courtNote,
+      directions: "",
+      parking: "",
+      smoking: "",
+      shower_locker: "",
       weather_grid_nx: values.weatherGridNx ?? venue.weatherGridNx,
       weather_grid_ny: values.weatherGridNy ?? venue.weatherGridNy,
       title: values.title,
@@ -234,10 +239,11 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
       venue_name: values.venueName,
       district: values.district,
       address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
+      court_note: normalizeOptionalText(values.courtNote),
+      directions: "",
+      parking: "",
+      smoking: "",
+      shower_locker: "",
       weather_grid_nx: values.weatherGridNx ?? venue.weatherGridNx,
       weather_grid_ny: values.weatherGridNy ?? venue.weatherGridNy,
       title: values.title,
@@ -331,10 +337,11 @@ export async function createAdminVenueAction(formData: FormData) {
     name: values.name,
     district: values.district,
     address: values.address,
-    directions: values.directions,
-    parking: values.parking,
-    smoking: values.smoking,
-    showerLocker: values.showerLocker,
+    courtNote: values.courtNote,
+    directions: "",
+    parking: "",
+    smoking: "",
+    showerLocker: "",
     weatherGridNx: values.weatherGridNx,
     weatherGridNy: values.weatherGridNy,
     defaultImageUrls: [],
@@ -395,10 +402,11 @@ export async function updateAdminVenueAction(venueId: string, formData: FormData
         name: values.name,
         district: values.district,
         address: values.address,
-        directions: values.directions,
-        parking: values.parking,
-        smoking: values.smoking,
-        shower_locker: values.showerLocker,
+        court_note: normalizeOptionalText(values.courtNote),
+        directions: "",
+        parking: "",
+        smoking: "",
+        shower_locker: "",
         weather_grid_nx: values.weatherGridNx,
         weather_grid_ny: values.weatherGridNy,
         default_image_urls: defaultImageUrls,
@@ -980,7 +988,7 @@ async function getManagedVenue(
 ) {
   const { data, error } = await supabase
     .from("venues")
-    .select("id, slug, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -997,7 +1005,7 @@ async function resolveManualVenue(
 ) {
   const { data: existingVenue, error: lookupError } = await supabase
     .from("venues")
-    .select("id, slug, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
     .eq("address", values.address)
     .maybeSingle();
 
@@ -1013,10 +1021,11 @@ async function resolveManualVenue(
     name: values.venueName,
     district: values.district,
     address: values.address,
-    directions: values.directions,
-    parking: values.parking,
-    smoking: values.smoking,
-    showerLocker: values.showerLocker,
+    courtNote: values.courtNote,
+    directions: "",
+    parking: "",
+    smoking: "",
+    showerLocker: "",
     weatherGridNx: values.weatherGridNx,
     weatherGridNy: values.weatherGridNy,
     defaultImageUrls: values.imageUrls,
@@ -1038,10 +1047,11 @@ async function createVenue(
       name: values.name,
       district: values.district,
       address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
+      court_note: normalizeOptionalText(values.courtNote),
+      directions: "",
+      parking: "",
+      smoking: "",
+      shower_locker: "",
       weather_grid_nx: values.weatherGridNx,
       weather_grid_ny: values.weatherGridNy,
       default_image_urls: values.defaultImageUrls,
@@ -1049,7 +1059,7 @@ async function createVenue(
       default_safety_notes: values.defaultSafetyNotes,
       is_active: values.isActive,
     })
-    .select("id, slug, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
     .single();
 
   if (error || !data) {
@@ -1181,6 +1191,7 @@ type MatchFormValues = {
   summary: string;
   publicNotice: string;
   operatorNote: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -1230,6 +1241,7 @@ function readCreateMatchFormValues(formData: FormData): MatchFormValues {
     summary: getOptionalString(formData, "summary"),
     publicNotice: getOptionalString(formData, "publicNotice"),
     operatorNote: getOptionalString(formData, "operatorNote"),
+    courtNote: getOptionalString(formData, "courtNote"),
     directions: getOptionalString(formData, "directions"),
     parking: getOptionalString(formData, "parking"),
     smoking: getOptionalString(formData, "smoking"),
@@ -1280,6 +1292,7 @@ function readUpdateMatchFormValues(formData: FormData): MatchFormValues {
     summary: getOptionalString(formData, "summary"),
     publicNotice: getOptionalString(formData, "publicNotice"),
     operatorNote: getOptionalString(formData, "operatorNote"),
+    courtNote: getOptionalString(formData, "courtNote"),
     directions: getOptionalString(formData, "directions"),
     parking: getOptionalString(formData, "parking"),
     smoking: getOptionalString(formData, "smoking"),
@@ -1296,10 +1309,11 @@ function readVenueFormValues(formData: FormData): VenueFormValues {
     name: getRequiredString(formData, "name"),
     district: getRequiredString(formData, "district"),
     address: getRequiredString(formData, "address"),
-    directions: getRequiredString(formData, "directions"),
-    parking: getRequiredString(formData, "parking"),
-    smoking: getRequiredString(formData, "smoking"),
-    showerLocker: getRequiredString(formData, "showerLocker"),
+    courtNote: getOptionalString(formData, "courtNote"),
+    directions: getOptionalString(formData, "directions"),
+    parking: getOptionalString(formData, "parking"),
+    smoking: getOptionalString(formData, "smoking"),
+    showerLocker: getOptionalString(formData, "showerLocker"),
     weatherGridNx: getOptionalPositiveInteger(formData, "weatherGridNx"),
     weatherGridNy: getOptionalPositiveInteger(formData, "weatherGridNy"),
     imageFiles: getUploadedFiles(formData, "imageFiles"),
@@ -1323,6 +1337,11 @@ function getRequiredString(formData: FormData, key: string) {
 function getOptionalString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeOptionalText(value: string) {
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : null;
 }
 
 function getPositiveInteger(formData: FormData, key: string) {
@@ -1542,6 +1561,7 @@ function mapVenueWriteResult(row: VenueWriteRow): VenueWriteResult {
   return {
     id: row.id,
     slug: row.slug,
+    courtNote: normalizeOptionalText(row.court_note ?? ""),
     weatherGridNx: row.weather_grid_nx,
     weatherGridNy: row.weather_grid_ny,
   };

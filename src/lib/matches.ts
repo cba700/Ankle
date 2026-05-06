@@ -45,6 +45,7 @@ export type MatchRecord = {
   status: MatchStatus;
   imageUrls: string[];
   venueInfo: {
+    courtNote: string;
     directions: string;
     parking: string;
     smoking: string;
@@ -75,7 +76,7 @@ type MatchTemplate = {
   preparation: string;
   price: number;
   imageUrls: string[];
-  venueInfo: MatchRecord["venueInfo"];
+  venueInfo: Omit<MatchRecord["venueInfo"], "courtNote">;
   rules: string[];
   safetyNotes: string[];
   levelDistribution: DistributionEntry[];
@@ -479,6 +480,10 @@ export function getMatches() {
       canApply: !isSoldOut && !isStarted,
       status: getMatchStatus(template.format, currentParticipants, template.capacity, isStarted),
       averageLevel: getAverageLevelText(template.levelDistribution),
+      venueInfo: {
+        ...template.venueInfo,
+        courtNote: buildLegacyCourtNote(template.venueInfo),
+      },
     };
   }).sort((a, b) => {
     const left = `${a.dateKey} ${a.time}`;
@@ -493,6 +498,25 @@ export function getMatchBySlug(slug: string) {
 
 export function getMatchByPublicId(publicId: string) {
   return getMatches().find((match) => match.publicId === publicId);
+}
+
+function buildLegacyCourtNote({
+  directions,
+  parking,
+  smoking,
+  showerLocker,
+}: Omit<MatchRecord["venueInfo"], "courtNote">) {
+  return [
+    ["찾아오는 길", directions],
+    ["주차", parking],
+    ["흡연", smoking],
+    ["보관/샤워", showerLocker],
+  ]
+    .flatMap(([label, value]) => {
+      const text = value.trim();
+      return text ? [`${label}: ${text}`] : [];
+    })
+    .join("\n");
 }
 
 function getMatchStatus(

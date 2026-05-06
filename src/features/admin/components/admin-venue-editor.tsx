@@ -81,23 +81,8 @@ export function AdminVenueEditor({
           </label>
 
           <label className={`${styles.field} ${styles.fieldSpan}`}>
-            <span className={styles.fieldLabel}>찾아오는 길</span>
-            <textarea defaultValue={values.directions} name="directions" rows={3} />
-          </label>
-
-          <label className={`${styles.field} ${styles.fieldSpan}`}>
-            <span className={styles.fieldLabel}>주차</span>
-            <textarea defaultValue={values.parking} name="parking" rows={3} />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>흡연</span>
-            <textarea defaultValue={values.smoking} name="smoking" rows={3} />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>보관/샤워</span>
-            <textarea defaultValue={values.showerLocker} name="showerLocker" rows={3} />
+            <span className={styles.fieldLabel}>코트 특이사항</span>
+            <textarea defaultValue={values.courtNote} name="courtNote" rows={5} />
           </label>
 
           <div className={`${styles.field} ${styles.fieldSpan}`}>

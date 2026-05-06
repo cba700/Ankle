@@ -100,12 +100,10 @@ function buildInfoItems(match: MatchRecord): MatchDetailInfoItem[] {
 }
 
 function buildCourtNotes(match: MatchRecord) {
-  return [
-    `찾아오는 길: ${match.venueInfo.directions}`,
-    `주차: ${match.venueInfo.parking}`,
-    `흡연: ${match.venueInfo.smoking}`,
-    `보관/샤워: ${match.venueInfo.showerLocker}`,
-  ];
+  return match.venueInfo.courtNote
+    .split("\n")
+    .map((note) => note.trim())
+    .filter(Boolean);
 }
 
 function buildHowTo(match: MatchRecord) {

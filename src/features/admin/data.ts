@@ -355,6 +355,7 @@ function mapEntityToAdminRecord(
     refundExceptionMode,
     participants,
     venueInfo: {
+      courtNote: entity.venue.courtNote,
       directions: entity.venue.directions,
       parking: entity.venue.parking,
       smoking: entity.venue.smoking,
@@ -453,6 +454,7 @@ function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
     weatherGridNx: entity.weatherGridNx,
     weatherGridNy: entity.weatherGridNy,
     venueInfo: {
+      courtNote: entity.courtNote,
       directions: entity.directions,
       parking: entity.parking,
       smoking: entity.smoking,
@@ -475,6 +477,7 @@ function mapVenueEntityToOption(entity: VenueEntity): AdminVenueOption {
     weatherGridNx: entity.weatherGridNx,
     weatherGridNy: entity.weatherGridNy,
     venueInfo: {
+      courtNote: entity.courtNote,
       directions: entity.directions,
       parking: entity.parking,
       smoking: entity.smoking,
