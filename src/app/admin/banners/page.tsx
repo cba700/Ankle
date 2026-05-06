@@ -11,6 +11,7 @@ import ui from "@/features/admin/components/admin-ui.module.css";
 import { getAdminHomeBanners } from "@/features/admin/data";
 import type { AdminHomeBannerRecord } from "@/features/admin/types";
 import { formatCompactDateLabel, formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
+import { BannerScheduleFields } from "./banner-schedule-fields";
 import styles from "./page.module.css";
 
 export default async function AdminBannersPage() {
@@ -29,7 +30,7 @@ export default async function AdminBannersPage() {
             <div className={styles.sectionCopy}>
               <h2 className={styles.sectionTitle}>새 배너</h2>
               <p className={styles.sectionDescription}>
-                이미지는 1176 x 391 비율을 권장합니다. 링크는 /로 시작하는 내부 경로만 입력할 수 있습니다.
+                이미지는 1176 x 391 비율을 권장합니다. 링크를 비워두면 배너가 클릭되지 않습니다.
               </p>
             </div>
           </div>
@@ -85,7 +86,7 @@ function BannerCard({ banner }: { banner: AdminHomeBannerRecord }) {
             <AdminStatusBadge label={status.label} tone={status.tone} />
           </div>
           <p className={styles.bannerMeta}>
-            순서 {banner.displayOrder} · {banner.href} · {formatBannerWindowLabel(banner)}
+            순서 {banner.displayOrder} · {banner.href ?? "이동 없음"} · {formatBannerWindowLabel(banner)}
           </p>
         </div>
       </div>
@@ -124,7 +125,6 @@ function BannerFields({ banner }: { banner?: AdminHomeBannerRecord }) {
         <input
           defaultValue={banner?.title ?? ""}
           name="title"
-          placeholder="예: 친구초대 이벤트"
           required
           type="text"
         />
@@ -135,8 +135,6 @@ function BannerFields({ banner }: { banner?: AdminHomeBannerRecord }) {
         <input
           defaultValue={banner?.href ?? ""}
           name="href"
-          placeholder="/events/friend-invite"
-          required
           type="text"
         />
       </label>
@@ -144,22 +142,18 @@ function BannerFields({ banner }: { banner?: AdminHomeBannerRecord }) {
       <label className={styles.field}>
         <span className={styles.fieldLabel}>노출 순서</span>
         <input
-          defaultValue={String(banner?.displayOrder ?? 100)}
+          defaultValue={banner ? String(banner.displayOrder) : undefined}
           inputMode="numeric"
+          min="1"
           name="displayOrder"
           type="number"
         />
       </label>
 
-      <label className={styles.field}>
-        <span className={styles.fieldLabel}>시작 시각</span>
-        <input defaultValue={formatDateTimeInput(banner?.startsAt)} name="startsAt" type="datetime-local" />
-      </label>
-
-      <label className={styles.field}>
-        <span className={styles.fieldLabel}>종료 시각</span>
-        <input defaultValue={formatDateTimeInput(banner?.endsAt)} name="endsAt" type="datetime-local" />
-      </label>
+      <BannerScheduleFields
+        endsAt={formatDateTimeInput(banner?.endsAt)}
+        startsAt={formatDateTimeInput(banner?.startsAt)}
+      />
 
       <label className={styles.toggleField}>
         <input defaultChecked={banner?.isActive ?? true} name="isActive" type="checkbox" />

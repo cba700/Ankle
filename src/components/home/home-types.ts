@@ -36,7 +36,7 @@ export type HomeFilterState = {
 };
 
 export type HomeBannerSlide = {
-  href: string;
+  href: string | null;
   id: string;
   imageUrl: string;
   title: string;
