@@ -41,6 +41,42 @@ import type {
   AdminVenueRow,
 } from "./types";
 
+const DEFAULT_VENUE_RULES_TEXT = [
+  "쿼터 당 시간은 10분이에요",
+  "공격제한시간 · 3초룰 · 팀파울 · 5반칙 퇴장 은 적용되지 않아요",
+  "일반 파울은 경기를 멈추고, 사이드 라인 스로인으로 진행해요",
+  "강한 파울은 구두 경고 후 자유투 진행해요",
+].join("\n");
+
+const DEFAULT_VENUE_SAFETY_NOTES_TEXT = `✔️ 건강 상태 확인
+최근 심장·호흡기 질환, 근육·관절 통증이 있다면 매치 참여를 삼가 주세요.
+음주, 과로, 임신 중, 고혈압·저혈압 등 신체적 부담이 큰 상태에서는 신청하지 말아 주세요.
+경기 중 몸에 이상이 느껴지면 즉시 플레이를 멈추고 앵클베스킷 매니저 또는 주변 참가자에게 알려 주세요.
+개인 건강 상태로 인한 사고에 대해서는 앵클베스킷이 책임지지 않습니다.
+
+✔️ 복장 및 장비 확인
+농구화 또는 운동화를 착용해 주세요. 크록스·슬리퍼 등은 착용이 불가해요.
+충돌 시 부상 위험이 있는 시계, 반지, 귀걸이 등 장신구는 모두 제거해 주세요.
+스포츠 안경, 발목 보호대 등 개인 보호 장비는 본인 상태에 맞게 준비해 주세요.
+
+✔️ 구장 시설 및 환경 확인
+경기 전 미끄러운 구간, 파손 구간, 조명 상태 등을 미리 확인해 주세요.
+야외 구장은 주변 경사나 구조물에 유의해 주세요.
+폭우·폭염·한파 등 기상 상황이 좋지 않을 때는 각별히 주의해 주세요.
+현장 기상 상황이 좋지 않을 경우 앵클베스킷 매니저와 소통하여 진행 여부를 함께 판단해요.
+
+✔️ 매너 플레이
+거친 몸싸움, 밀기, 잡기 등 위험한 플레이는 삼가 주세요.
+충돌 가능성이 있는 상황에서는 반드시 속도를 줄여 주세요.
+앵클베스킷 매니저의 안내에 적극 협조하고, 참가자 간 불필요한 분쟁이 생기지 않도록 유의해 주세요.
+
+✔️ 비상 상황 대응
+응급 상황 발생 시 주변과 앵클베스킷 매니저에게 즉시 알리고, 필요시 119에 신고해 주세요.
+경기장 내 대피로를 미리 파악해 두세요.
+
+앵클베스킷 매치는 참가자의 자율적인 판단 아래 신청·진행되는 활동입니다.
+개인 건강 문제 및 본인 귀책 사유로 인한 사고 발생 시, 앵클베스킷은 법적 책임을 지지 않습니다.`;
+
 export function getAdminStatusMeta(status: AdminMatchStatus) {
   if (status === "open") {
     return {
@@ -448,8 +484,8 @@ export function buildAdminVenueFormValue(venue?: AdminVenueRecord): AdminVenueFo
       weatherGridNx: "",
       weatherGridNy: "",
       defaultImageUrls: [],
-      defaultRulesText: "",
-      defaultSafetyNotesText: "",
+      defaultRulesText: DEFAULT_VENUE_RULES_TEXT,
+      defaultSafetyNotesText: DEFAULT_VENUE_SAFETY_NOTES_TEXT,
       isActive: true,
     };
   }
