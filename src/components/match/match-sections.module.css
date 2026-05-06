@@ -128,39 +128,6 @@
   font-weight: 800;
 }
 
-.facilityGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 20px;
-}
-
-.facilityItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.facilityItemOff {
-  color: var(--text-tertiary);
-}
-
-.facilityKey {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgba(201, 193, 183, 0.72);
-  border-radius: 999px;
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 900;
-  flex-shrink: 0;
-}
-
-.notesTitle,
 .subTitle {
   margin: 22px 0 10px;
   color: var(--text-primary);
@@ -168,7 +135,6 @@
   font-weight: 800;
 }
 
-.noteList,
 .bulletList {
   display: grid;
   gap: 10px;
@@ -177,7 +143,6 @@
   list-style: none;
 }
 
-.noteItem,
 .bulletItem {
   color: var(--text-secondary);
   font-size: 14px;
@@ -390,8 +355,7 @@
     padding-top: 12px;
   }
 
-  .infoGrid,
-  .facilityGrid {
+  .infoGrid {
     grid-template-columns: 1fr;
   }
 
