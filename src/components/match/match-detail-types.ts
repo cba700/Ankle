@@ -51,6 +51,7 @@ export type MatchDetailViewModel = {
   levelDistribution: MatchDetailDistributionItem[];
   averageLevel: string;
   levelHint: string;
+  courtNotes: string[];
   rules: string[];
   howTo: string[];
   safetyNotes: string[];

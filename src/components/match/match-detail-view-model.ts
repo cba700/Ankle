@@ -11,6 +11,7 @@ type MatchDetailOverride = {
   likes?: number;
   views?: number;
   notice?: string;
+  courtNotes?: string[];
   howTo?: string[];
   refundRows?: MatchDetailRefundRow[];
 };
@@ -73,6 +74,7 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
     levelDistribution: match.levelDistribution,
     averageLevel: levelSummary,
     levelHint: levelSummary,
+    courtNotes: override.courtNotes ?? buildCourtNotes(match),
     rules: match.rules,
     howTo: override.howTo ?? buildHowTo(match),
     safetyNotes: match.safetyNotes,
@@ -94,6 +96,15 @@ function buildInfoItems(match: MatchRecord): MatchDetailInfoItem[] {
       key: "participants",
       value: `${match.currentParticipants}/${match.capacity}명`,
     },
+  ];
+}
+
+function buildCourtNotes(match: MatchRecord) {
+  return [
+    `찾아오는 길: ${match.venueInfo.directions}`,
+    `주차: ${match.venueInfo.parking}`,
+    `흡연: ${match.venueInfo.smoking}`,
+    `보관/샤워: ${match.venueInfo.showerLocker}`,
   ];
 }
 
