@@ -1,4 +1,6 @@
 .header {
+  position: relative;
+  z-index: 80;
   background: #fff;
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(201, 193, 183, 0.56);
