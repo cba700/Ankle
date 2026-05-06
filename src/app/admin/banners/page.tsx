@@ -39,7 +39,6 @@ export default async function AdminBannersPage() {
             <form
               action={createAdminHomeBannerAction}
               className={styles.bannerForm}
-              encType="multipart/form-data"
             >
               <BannerFields />
               <button className={`${ui.button} ${ui.buttonBrand}`} type="submit">
@@ -91,7 +90,7 @@ function BannerCard({ banner }: { banner: AdminHomeBannerRecord }) {
         </div>
       </div>
 
-      <form action={updateAction} className={styles.bannerForm} encType="multipart/form-data">
+      <form action={updateAction} className={styles.bannerForm}>
         <BannerFields banner={banner} />
         <button className={`${ui.button} ${ui.buttonPrimary}`} type="submit">
           저장
