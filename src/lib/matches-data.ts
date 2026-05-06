@@ -122,6 +122,7 @@ function mapEntityToMatchRecord(
         ? entity.venue.defaultImageUrls
         : DEFAULT_IMAGE_URLS,
     venueInfo: {
+      courtNote: entity.venue.courtNote,
       directions: entity.venue.directions,
       parking: entity.venue.parking,
       smoking: entity.venue.smoking,

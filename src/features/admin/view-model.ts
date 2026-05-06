@@ -35,6 +35,7 @@ import type {
   AdminMatchStatus,
   AdminOverviewCard,
   AdminVenueFormValue,
+  AdminVenueInfo,
   AdminVenueOption,
   AdminVenueRecord,
   AdminVenueRow,
@@ -439,6 +440,7 @@ export function buildAdminVenueFormValue(venue?: AdminVenueRecord): AdminVenueFo
       name: "",
       district: "",
       address: "",
+      courtNote: "",
       directions: "",
       parking: "",
       smoking: "",
@@ -456,6 +458,7 @@ export function buildAdminVenueFormValue(venue?: AdminVenueRecord): AdminVenueFo
     name: venue.name,
     district: venue.district,
     address: venue.address,
+    courtNote: buildCourtNoteFromVenueInfo(venue.venueInfo),
     directions: venue.venueInfo.directions,
     parking: venue.venueInfo.parking,
     smoking: venue.venueInfo.smoking,
@@ -495,6 +498,7 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
       summary: "",
       publicNotice: "",
       operatorNote: "",
+      courtNote: "",
       directions: "",
       parking: "",
       smoking: "",
@@ -530,6 +534,7 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
     summary: match.summary,
     publicNotice: match.publicNotice,
     operatorNote: match.operatorNote,
+    courtNote: buildCourtNoteFromVenueInfo(match.venueInfo),
     directions: match.venueInfo.directions,
     parking: match.venueInfo.parking,
     smoking: match.venueInfo.smoking,
@@ -554,6 +559,7 @@ export function applyVenueOptionToMatchFormValue(
     address: venue.address,
     weatherGridNx: venue.weatherGridNx ? String(venue.weatherGridNx) : "",
     weatherGridNy: venue.weatherGridNy ? String(venue.weatherGridNy) : "",
+    courtNote: buildCourtNoteFromVenueInfo(venue.venueInfo),
     directions: venue.venueInfo.directions,
     parking: venue.venueInfo.parking,
     smoking: venue.venueInfo.smoking,
@@ -562,6 +568,26 @@ export function applyVenueOptionToMatchFormValue(
     rulesText: venue.defaultRules.join("\n"),
     safetyNotesText: venue.defaultSafetyNotes.join("\n"),
   };
+}
+
+function buildCourtNoteFromVenueInfo(venueInfo: AdminVenueInfo) {
+  const courtNote = venueInfo.courtNote?.trim();
+
+  if (courtNote) {
+    return courtNote;
+  }
+
+  return [
+    ["찾아오는 길", venueInfo.directions],
+    ["주차", venueInfo.parking],
+    ["흡연", venueInfo.smoking],
+    ["보관/샤워", venueInfo.showerLocker],
+  ]
+    .flatMap(([label, value]) => {
+      const text = value.trim();
+      return text ? [`${label}: ${text}`] : [];
+    })
+    .join("\n");
 }
 
 export function getAdminBadgeMeta({

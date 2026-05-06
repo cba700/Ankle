@@ -38,7 +38,9 @@ export function MatchDetail({
           <div className={styles.contentColumn}>
             <MatchInfoSection infoItems={view.infoItems} />
             <MatchLevelSection distribution={view.levelDistribution} />
-            <MatchCourtNotesSection notes={view.courtNotes} />
+            {view.courtNotes.length > 0 ? (
+              <MatchCourtNotesSection notes={view.courtNotes} />
+            ) : null}
             <MatchRulesSection howTo={view.howTo} rules={view.rules} />
             <MatchSafetySection items={view.safetyNotes} />
             <MatchRefundSection />

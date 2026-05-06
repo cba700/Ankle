@@ -16,6 +16,7 @@ export type MatchVenueEntity = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -62,10 +63,11 @@ type MatchVenueRow = {
   name: string;
   district: string;
   address: string;
-  directions: string;
-  parking: string;
-  smoking: string;
-  shower_locker: string;
+  court_note: string | null;
+  directions: string | null;
+  parking: string | null;
+  smoking: string | null;
+  shower_locker: string | null;
   weather_grid_nx: number | null;
   weather_grid_ny: number | null;
   default_image_urls: string[] | null;
@@ -99,10 +101,11 @@ type MatchRow = {
   venue_name: string;
   district: string;
   address: string;
-  directions: string;
-  parking: string;
-  smoking: string;
-  shower_locker: string;
+  court_note: string | null;
+  directions: string | null;
+  parking: string | null;
+  smoking: string | null;
+  shower_locker: string | null;
   weather_grid_nx: number | null;
   weather_grid_ny: number | null;
   venue: MatchVenueRow | MatchVenueRow[] | null;
@@ -142,6 +145,7 @@ const MATCH_SELECT = `
   venue_name,
   district,
   address,
+  court_note,
   directions,
   parking,
   smoking,
@@ -154,6 +158,7 @@ const MATCH_SELECT = `
     name,
     district,
     address,
+    court_note,
     directions,
     parking,
     smoking,
@@ -300,10 +305,14 @@ async function listMatchEntities({
       const venueName = row.venue_name || venue.name;
       const district = row.district || venue.district;
       const address = row.address || venue.address;
-      const directions = row.directions || venue.directions;
-      const parking = row.parking || venue.parking;
-      const smoking = row.smoking || venue.smoking;
-      const showerLocker = row.shower_locker || venue.shower_locker;
+      const directions = row.directions || venue.directions || "";
+      const parking = row.parking || venue.parking || "";
+      const smoking = row.smoking || venue.smoking || "";
+      const showerLocker = row.shower_locker || venue.shower_locker || "";
+      const courtNote =
+        row.court_note?.trim() ||
+        venue.court_note?.trim() ||
+        buildLegacyCourtNote({ directions, parking, smoking, shower_locker: showerLocker });
       const weatherGridNx = row.weather_grid_nx ?? venue.weather_grid_nx ?? null;
       const weatherGridNy = row.weather_grid_ny ?? venue.weather_grid_ny ?? null;
 
@@ -340,6 +349,7 @@ async function listMatchEntities({
           name: venueName,
           district,
           address,
+          courtNote,
           directions,
           parking,
           smoking,
@@ -352,6 +362,30 @@ async function listMatchEntities({
       } satisfies MatchEntity;
     })
     .filter((match): match is MatchEntity => match !== null);
+}
+
+function buildLegacyCourtNote({
+  directions,
+  parking,
+  smoking,
+  shower_locker,
+}: {
+  directions: string;
+  parking: string;
+  smoking: string;
+  shower_locker: string;
+}) {
+  return [
+    ["찾아오는 길", directions],
+    ["주차", parking],
+    ["흡연", smoking],
+    ["보관/샤워", shower_locker],
+  ]
+    .flatMap(([label, value]) => {
+      const text = value.trim();
+      return text ? [`${label}: ${text}`] : [];
+    })
+    .join("\n");
 }
 
 async function getConfirmedCountMap(
