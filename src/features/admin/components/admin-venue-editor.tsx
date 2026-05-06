@@ -24,7 +24,7 @@ export function AdminVenueEditor({
   formAction,
 }: AdminVenueEditorProps) {
   return (
-    <form action={formAction} className={styles.form} encType="multipart/form-data">
+    <form action={formAction} className={styles.form}>
       <div className={styles.actionBar}>
         <div>
           <p className={styles.eyebrow}>경기장 기본값 관리</p>
