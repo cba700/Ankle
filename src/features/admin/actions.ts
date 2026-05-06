@@ -167,7 +167,7 @@ const REQUIRED_MATCH_VENUE_DELETE_MIGRATION =
   "20260420110000_allow_admin_delete_matches_and_venues.sql";
 
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
-const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
+const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "4vs4", "5vs5"];
 const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
 const MATCH_REFUND_EXCEPTION_MODES: AdminMatchRefundExceptionMode[] = [
   "none",

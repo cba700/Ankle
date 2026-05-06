@@ -8,7 +8,7 @@ import {
 import { assertVenueManagementSchemaReady } from "@/lib/supabase/schema";
 
 export type MatchEntityStatus = "draft" | "open" | "closed" | "cancelled";
-export type MatchEntityFormat = "3vs3" | "5vs5";
+export type MatchEntityFormat = "3vs3" | "4vs4" | "5vs5";
 
 export type MatchVenueEntity = {
   id: string;

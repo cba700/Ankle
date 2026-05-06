@@ -9,7 +9,7 @@ type WishlistStoreClient = NonNullable<
 >;
 
 type WishlistMatchRow = {
-  format: "3vs3" | "5vs5";
+  format: "3vs3" | "4vs4" | "5vs5";
   id: string;
   price: number;
   public_id: string | null;
@@ -143,5 +143,5 @@ function mapWishlistMatch(match: WishlistMatchRow): WishlistMatch {
 }
 
 function formatMatchFormat(format: WishlistMatchRow["format"]) {
-  return format === "5vs5" ? "5vs5" : "3vs3";
+  return format;
 }

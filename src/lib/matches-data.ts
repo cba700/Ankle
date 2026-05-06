@@ -177,6 +177,16 @@ function getPublicStatus(
     }
   }
 
+  if (entity.format === "4vs4") {
+    if (entity.confirmedCount >= 9) {
+      return { kind: "closingSoon", label: "마감 임박" };
+    }
+
+    if (entity.confirmedCount >= 5) {
+      return { kind: "confirmedSoon", label: "확정 임박" };
+    }
+  }
+
   if (entity.format === "5vs5") {
     if (entity.confirmedCount >= 12) {
       return { kind: "closingSoon", label: "마감 임박" };

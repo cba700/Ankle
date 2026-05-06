@@ -1,7 +1,7 @@
 import { addDays, formatDateLabel, formatMoney, getCalendarDates, getSeoulTodayStart, toDateKey } from "@/lib/date";
 import { MATCH_REFUND_SUMMARY_ROWS } from "@/lib/refund-policy";
 
-export type MatchFormat = "3vs3" | "5vs5";
+export type MatchFormat = "3vs3" | "4vs4" | "5vs5";
 export type MatchStatusKind = "open" | "confirmedSoon" | "closingSoon" | "closed";
 
 export type MatchStatus = {
@@ -535,6 +535,16 @@ function getMatchStatus(
     }
 
     if (currentParticipants >= 4) {
+      return { kind: "confirmedSoon", label: "확정 임박" };
+    }
+  }
+
+  if (format === "4vs4") {
+    if (currentParticipants >= 9) {
+      return { kind: "closingSoon", label: "마감 임박" };
+    }
+
+    if (currentParticipants >= 5) {
       return { kind: "confirmedSoon", label: "확정 임박" };
     }
   }

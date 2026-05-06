@@ -1440,8 +1440,16 @@ function getMatchTimeLabel(startAt: string | null, endAt: string | null) {
   return `${startTimeLabel} - ${formatSeoulTime(endDate)}`;
 }
 
-function getMatchConfirmedThreshold(format: "3vs3" | "5vs5") {
-  return format === "3vs3" ? 3 : 7;
+function getMatchConfirmedThreshold(format: "3vs3" | "4vs4" | "5vs5") {
+  if (format === "3vs3") {
+    return 3;
+  }
+
+  if (format === "4vs4") {
+    return 5;
+  }
+
+  return 7;
 }
 
 function getDisplayName(profile: ProfileNotificationRow | null) {
@@ -1524,7 +1532,7 @@ function normalizeMatchRelation(match: MatchRelation | MatchRelation[] | null) {
 }
 
 function normalizeMatchFormat(format: string | null) {
-  if (format === "3vs3" || format === "5vs5") {
+  if (format === "3vs3" || format === "4vs4" || format === "5vs5") {
     return format;
   }
 

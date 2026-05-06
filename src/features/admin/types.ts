@@ -1,5 +1,5 @@
 export type AdminMatchStatus = "draft" | "open" | "closed" | "cancelled";
-export type AdminMatchFormat = "3vs3" | "5vs5";
+export type AdminMatchFormat = "3vs3" | "4vs4" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
 export type AdminMatchRefundExceptionMode =

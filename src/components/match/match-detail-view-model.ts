@@ -138,5 +138,5 @@ function getStatusTone(kind: MatchRecord["status"]["kind"]): MatchDetailStatusTo
 }
 
 function formatMatchFormat(format: MatchRecord["format"]) {
-  return format === "5vs5" ? "5vs5" : "3vs3";
+  return format;
 }

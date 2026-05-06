@@ -332,6 +332,7 @@ export function AdminMatchEditor({
               <select name="format" onChange={handleFieldChange} required value={formValues.format}>
                 <option value="">경기 방식을 선택하세요</option>
                 <option value="3vs3">3vs3</option>
+                <option value="4vs4">4vs4</option>
                 <option value="5vs5">5vs5</option>
               </select>
             </label>
