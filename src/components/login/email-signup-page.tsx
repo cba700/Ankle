@@ -3,6 +3,10 @@
 import { useState, useTransition } from "react";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
 import {
+  isValidReferralCodeFormat,
+  normalizeReferralCode,
+} from "@/lib/referral-code";
+import {
   areRequiredSignupAgreementsAccepted,
   getDefaultSignupAgreementValues,
   isAtLeastAge,
@@ -24,6 +28,7 @@ import { SignupAgreementSection } from "./signup-agreement-section";
 import styles from "./login-page.module.css";
 
 type EmailSignupPageProps = {
+  initialReferralCode: string;
   nextPath: string;
 };
 
@@ -33,7 +38,10 @@ type VerifiedPhoneState = {
   verifiedAt: string;
 };
 
-export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
+export function EmailSignupPage({
+  initialReferralCode,
+  nextPath,
+}: EmailSignupPageProps) {
   const [agreements, setAgreements] = useState(getDefaultSignupAgreementValues());
   const [birthDateParts, setBirthDateParts] = useState(() => parseBirthDateParts(""));
   const [email, setEmail] = useState("");
@@ -42,6 +50,7 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [legalName, setLegalName] = useState("");
+  const [referralCode, setReferralCode] = useState(initialReferralCode);
   const [verifiedPhone, setVerifiedPhone] = useState<VerifiedPhoneState | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -101,6 +110,16 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
         return;
       }
 
+      const normalizedReferralCode = normalizeReferralCode(referralCode);
+
+      if (
+        normalizedReferralCode &&
+        !isValidReferralCodeFormat(normalizedReferralCode)
+      ) {
+        setInlineError("초대 코드는 영문과 숫자 5자리로 입력해 주세요.");
+        return;
+      }
+
       const response = await fetch("/api/auth/email-signup", {
         body: JSON.stringify({
           agreements,
@@ -109,6 +128,7 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
           gender,
           name: normalizedLegalName,
           password,
+          referralCode: normalizedReferralCode,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -261,6 +281,22 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
             </p>
           ) : null}
 
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>초대 코드 (선택)</span>
+            <input
+              autoComplete="off"
+              className={styles.textField}
+              maxLength={5}
+              onChange={(event) => setReferralCode(event.target.value)}
+              placeholder="예: 13NBg"
+              type="text"
+              value={referralCode}
+            />
+          </label>
+          <p className={styles.formHelperMessage}>
+            친구에게 받은 코드가 있으면 가입 완료 시 2,000원 쿠폰이 지급됩니다.
+          </p>
+
           <SignupAgreementSection
             disabled={isPending}
             onChange={setAgreements}
@@ -289,7 +325,10 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
 
           <div className={styles.linkRow}>
             <span className={styles.linkText}>이미 계정이 있나요?</span>
-            <AppLink className={styles.inlineLink} href={`/login/email${buildNextQuery(nextPath)}`}>
+            <AppLink
+              className={styles.inlineLink}
+              href={`/login/email${buildNextQuery(nextPath, referralCode)}`}
+            >
               로그인
             </AppLink>
           </div>
@@ -300,6 +339,18 @@ export function EmailSignupPage({ nextPath }: EmailSignupPageProps) {
   );
 }
 
-function buildNextQuery(nextPath: string) {
-  return nextPath === "/" ? "" : `?next=${encodeURIComponent(nextPath)}`;
+function buildNextQuery(nextPath: string, referralCode?: string) {
+  const params = new URLSearchParams();
+  const normalizedReferralCode = normalizeReferralCode(referralCode);
+
+  if (nextPath !== "/") {
+    params.set("next", nextPath);
+  }
+
+  if (normalizedReferralCode) {
+    params.set("ref", normalizedReferralCode);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
 }

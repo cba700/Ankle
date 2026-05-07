@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { formatMoney } from "@/lib/date";
 import {
   buildAdminVenueLabel,
@@ -72,6 +72,7 @@ export function AdminMatchEditor({
   refundExceptionAction,
 }: AdminMatchEditorProps) {
   const [formValues, setFormValues] = useState(values);
+  const refundExceptionModeInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedVenue = venueOptions.find((venue) => venue.id === formValues.selectedVenueId);
   const generatedTitle = buildGeneratedMatchTitle({
@@ -138,6 +139,15 @@ export function AdminMatchEditor({
         <input name="venueEntryMode" type="hidden" value={formValues.venueEntryMode} />
         <input name="selectedVenueId" type="hidden" value={formValues.selectedVenueId} />
         <input name="imageUrlsText" type="hidden" value={formValues.imageUrlsText} />
+        {mode === "edit" ? (
+          <input
+            name="refundExceptionMode"
+            readOnly
+            ref={refundExceptionModeInputRef}
+            type="hidden"
+            value={formValues.refundExceptionMode}
+          />
+        ) : null}
         {mode === "create" ? (
           <>
             <input name="district" type="hidden" value={formValues.district} />
@@ -238,29 +248,6 @@ export function AdminMatchEditor({
               />
             </label>
 
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>기상청 격자 X(nx)</span>
-              <input
-                inputMode="numeric"
-                name="weatherGridNx"
-                onChange={handleFieldChange}
-                placeholder="예: 60"
-                type="text"
-                value={formValues.weatherGridNx}
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>기상청 격자 Y(ny)</span>
-              <input
-                inputMode="numeric"
-                name="weatherGridNy"
-                onChange={handleFieldChange}
-                placeholder="예: 127"
-                type="text"
-                value={formValues.weatherGridNy}
-              />
-            </label>
           </div>
         </section>
 
@@ -296,7 +283,7 @@ export function AdminMatchEditor({
                   <option value="draft">임시 저장</option>
                   <option value="open">모집 중</option>
                   <option value="closed">마감</option>
-                  <option value="cancelled">운영 취소</option>
+                  <option value="cancelled">참가자 미달 취소</option>
                 </select>
               </label>
             ) : null}
@@ -460,9 +447,12 @@ export function AdminMatchEditor({
                     formAction={refundExceptionAction}
                     formNoValidate
                     key={action.mode}
-                    name="refundExceptionMode"
+                    onClick={() => {
+                      if (refundExceptionModeInputRef.current) {
+                        refundExceptionModeInputRef.current.value = action.mode;
+                      }
+                    }}
                     type="submit"
-                    value={action.mode}
                   >
                     {action.label}
                   </button>

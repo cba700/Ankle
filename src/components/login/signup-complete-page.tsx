@@ -3,6 +3,10 @@
 import { useState, useTransition } from "react";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
 import {
+  isValidReferralCodeFormat,
+  normalizeReferralCode,
+} from "@/lib/referral-code";
+import {
   areRequiredSignupAgreementsAccepted,
   isAtLeastAge,
   normalizeBirthDate,
@@ -27,6 +31,7 @@ type SignupCompletePageProps = {
   initialBirthDate: string;
   initialGender: ProfileGender | null;
   initialLegalName: string;
+  initialReferralCode: string;
   nextPath: string;
 };
 
@@ -36,6 +41,7 @@ export function SignupCompletePage({
   initialBirthDate,
   initialGender,
   initialLegalName,
+  initialReferralCode,
   nextPath,
 }: SignupCompletePageProps) {
   const [agreements, setAgreements] = useState(initialAgreements);
@@ -45,6 +51,7 @@ export function SignupCompletePage({
   const [gender, setGender] = useState<ProfileGender | null>(initialGender);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [legalName, setLegalName] = useState(initialLegalName);
+  const [referralCode, setReferralCode] = useState(initialReferralCode);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -83,12 +90,23 @@ export function SignupCompletePage({
         return;
       }
 
+      const normalizedReferralCode = normalizeReferralCode(referralCode);
+
+      if (
+        normalizedReferralCode &&
+        !isValidReferralCodeFormat(normalizedReferralCode)
+      ) {
+        setInlineError("초대 코드는 영문과 숫자 5자리로 입력해 주세요.");
+        return;
+      }
+
       const response = await fetch("/api/auth/signup-completion", {
         body: JSON.stringify({
           agreements,
           birthDate: normalizedBirthDate,
           gender,
           name: normalizedLegalName,
+          referralCode: normalizedReferralCode,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -181,6 +199,22 @@ export function SignupCompletePage({
             onChange={setAgreements}
             value={agreements}
           />
+
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>초대 코드 (선택)</span>
+            <input
+              autoComplete="off"
+              className={styles.textField}
+              maxLength={5}
+              onChange={(event) => setReferralCode(event.target.value)}
+              placeholder="예: 13NBg"
+              type="text"
+              value={referralCode}
+            />
+          </label>
+          <p className={styles.formHelperMessage}>
+            친구에게 받은 코드가 있으면 가입 완료 시 2,000원 쿠폰이 지급됩니다.
+          </p>
 
           <button
             className={styles.primaryButton}

@@ -1,0 +1,219 @@
+.page {
+  min-height: 100vh;
+  background: var(--user-page-background);
+}
+
+.main {
+  padding: 24px 0 40px;
+  display: grid;
+  gap: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.backIcon,
+.buttonIcon,
+.sectionIcon,
+.summaryBadgeIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 18px;
+  padding: 22px 24px;
+  border: 1px solid rgba(201, 193, 183, 0.78);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
+}
+
+.summaryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.codePanel {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.panelLabel {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.referralCode {
+  color: var(--text-primary);
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 800;
+  touch-action: manipulation;
+}
+
+.primaryButton {
+  border: 0;
+  background: linear-gradient(180deg, #ff7b1b 0%, #ff6b00 100%);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(255, 107, 0, 0.24);
+}
+
+.secondaryButton {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.detailSection {
+  min-width: 0;
+}
+
+.sectionIcon {
+  color: var(--accent-strong);
+  flex-shrink: 0;
+}
+
+.faqList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.faqItem {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.faqQuestion {
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.faqAnswer {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.copyDialogRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.copyDialogBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(17, 17, 17, 0.36);
+}
+
+.copyDialog {
+  position: relative;
+  width: min(100%, 320px);
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 24px 54px rgba(29, 24, 19, 0.18);
+}
+
+.copyDialogMessage {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.copyDialogButton {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 16px 0 36px;
+    gap: 12px;
+  }
+
+  .summaryCard {
+    padding: 18px;
+  }
+
+  .actionGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

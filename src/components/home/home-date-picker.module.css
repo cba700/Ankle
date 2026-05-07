@@ -101,6 +101,30 @@
   color: #d74949;
 }
 
+@media (max-width: 767px) {
+  .list {
+    padding-bottom: 8px;
+  }
+
+  .chip {
+    align-content: center;
+    gap: 2px;
+    min-height: 72px;
+    padding: 7px 4px;
+  }
+
+  .weekday {
+    line-height: 1;
+    font-size: 13px;
+  }
+
+  .todayTag {
+    min-height: 16px;
+    padding: 0 5px;
+    line-height: 1;
+  }
+}
+
 @media (min-width: 768px) {
   .section {
     --date-gap: 10px;

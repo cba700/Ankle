@@ -21,8 +21,6 @@ export type MatchVenueEntity = {
   parking: string;
   smoking: string;
   showerLocker: string;
-  weatherGridNx: number | null;
-  weatherGridNy: number | null;
   defaultImageUrls: string[];
   isActive: boolean;
 };
@@ -46,8 +44,6 @@ export type MatchEntity = {
   levelCondition: string;
   levelRange: string;
   preparation: string;
-  weatherGridNx: number | null;
-  weatherGridNy: number | null;
   tags: string[];
   imageUrls: string[];
   rules: string[];
@@ -68,8 +64,6 @@ type MatchVenueRow = {
   parking: string | null;
   smoking: string | null;
   shower_locker: string | null;
-  weather_grid_nx: number | null;
-  weather_grid_ny: number | null;
   default_image_urls: string[] | null;
   is_active: boolean;
 };
@@ -106,8 +100,6 @@ type MatchRow = {
   parking: string | null;
   smoking: string | null;
   shower_locker: string | null;
-  weather_grid_nx: number | null;
-  weather_grid_ny: number | null;
   venue: MatchVenueRow | MatchVenueRow[] | null;
 };
 
@@ -150,8 +142,6 @@ const MATCH_SELECT = `
   parking,
   smoking,
   shower_locker,
-  weather_grid_nx,
-  weather_grid_ny,
   venue:venues!matches_venue_id_fkey (
     id,
     slug,
@@ -163,8 +153,6 @@ const MATCH_SELECT = `
     parking,
     smoking,
     shower_locker,
-    weather_grid_nx,
-    weather_grid_ny,
     default_image_urls,
     is_active
   )
@@ -313,8 +301,6 @@ async function listMatchEntities({
         row.court_note?.trim() ||
         venue.court_note?.trim() ||
         buildLegacyCourtNote({ directions, parking, smoking, shower_locker: showerLocker });
-      const weatherGridNx = row.weather_grid_nx ?? venue.weather_grid_nx ?? null;
-      const weatherGridNy = row.weather_grid_ny ?? venue.weather_grid_ny ?? null;
 
       return {
         id: row.id,
@@ -335,8 +321,6 @@ async function listMatchEntities({
         levelCondition: row.level_condition,
         levelRange: row.level_range,
         preparation: row.preparation,
-        weatherGridNx,
-        weatherGridNy,
         tags: row.tags ?? [],
         imageUrls: row.image_urls ?? [],
         rules: row.rules ?? [],
@@ -354,8 +338,6 @@ async function listMatchEntities({
           parking,
           smoking,
           showerLocker,
-          weatherGridNx: venue.weather_grid_nx ?? null,
-          weatherGridNy: venue.weather_grid_ny ?? null,
           defaultImageUrls: venue.default_image_urls ?? [],
           isActive: venue.is_active,
         },

@@ -6,6 +6,7 @@ import {
   normalizePostAuthNextPath,
 } from "@/lib/auth/redirect";
 import { SignupCompletePage } from "@/components/login/signup-complete-page";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,6 +26,7 @@ export default async function SignupCompleteRoute({
   const nextPath = normalizePostAuthNextPath(
     toSearchParam(resolvedSearchParams.next),
   );
+  const referralCode = normalizeReferralCode(toSearchParam(resolvedSearchParams.ref));
   const { configured, user } = await getServerUserState();
 
   if (!configured || !user) {
@@ -65,6 +67,7 @@ export default async function SignupCompleteRoute({
           ? user.user_metadata.full_name
           : "")
       }
+      initialReferralCode={referralCode}
       nextPath={nextPath}
     />
   );

@@ -311,12 +311,26 @@ export function buildAdminCouponTemplateRows(
     id: template.id,
     isActive: template.isActive,
     issuedCountLabel: `${template.issuedCount}장`,
-    metaLabel: `신규가입 자동 지급 · ${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
+    metaLabel: `${getCouponTemplateTypeLabel(template.templateType)} · ${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
     name: template.name,
     statusLabel: template.isActive ? "활성" : "비활성",
     statusTone: template.isActive ? "accent" : "neutral",
     usedCountLabel: `${template.usedCount}장`,
   }));
+}
+
+function getCouponTemplateTypeLabel(
+  templateType: AdminCouponTemplateRecord["templateType"],
+) {
+  switch (templateType) {
+    case "referral_invitee":
+      return "친구 가입 보상";
+    case "referral_inviter":
+      return "친구 초대 보상";
+    case "signup_welcome":
+    default:
+      return "신규가입 자동 지급";
+  }
 }
 
 export function buildAdminCashAccountRows(
@@ -481,8 +495,6 @@ export function buildAdminVenueFormValue(venue?: AdminVenueRecord): AdminVenueFo
       parking: "",
       smoking: "",
       showerLocker: "",
-      weatherGridNx: "",
-      weatherGridNy: "",
       defaultImageUrls: [],
       defaultRulesText: DEFAULT_VENUE_RULES_TEXT,
       defaultSafetyNotesText: DEFAULT_VENUE_SAFETY_NOTES_TEXT,
@@ -499,8 +511,6 @@ export function buildAdminVenueFormValue(venue?: AdminVenueRecord): AdminVenueFo
     parking: venue.venueInfo.parking,
     smoking: venue.venueInfo.smoking,
     showerLocker: venue.venueInfo.showerLocker,
-    weatherGridNx: venue.weatherGridNx ? String(venue.weatherGridNx) : "",
-    weatherGridNy: venue.weatherGridNy ? String(venue.weatherGridNy) : "",
     defaultImageUrls: venue.defaultImageUrls,
     defaultRulesText: venue.defaultRules.join("\n"),
     defaultSafetyNotesText: venue.defaultSafetyNotes.join("\n"),
@@ -529,8 +539,6 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
       genderCondition: "",
       level: "",
       preparation: "",
-      weatherGridNx: "",
-      weatherGridNy: "",
       summary: "",
       publicNotice: "",
       operatorNote: "",
@@ -565,8 +573,6 @@ export function buildAdminMatchFormValue(match?: AdminMatchRecord): AdminMatchFo
     genderCondition: match.genderCondition,
     level: getMatchLevelPreset(match.levelCondition, match.levelRange),
     preparation: match.preparation,
-    weatherGridNx: match.weatherGridNx ? String(match.weatherGridNx) : "",
-    weatherGridNy: match.weatherGridNy ? String(match.weatherGridNy) : "",
     summary: match.summary,
     publicNotice: match.publicNotice,
     operatorNote: match.operatorNote,
@@ -593,8 +599,6 @@ export function applyVenueOptionToMatchFormValue(
     venueName: venue.name,
     district: venue.district,
     address: venue.address,
-    weatherGridNx: venue.weatherGridNx ? String(venue.weatherGridNx) : "",
-    weatherGridNy: venue.weatherGridNy ? String(venue.weatherGridNy) : "",
     courtNote: buildCourtNoteFromVenueInfo(venue.venueInfo),
     directions: venue.venueInfo.directions,
     parking: venue.venueInfo.parking,

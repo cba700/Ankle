@@ -6,6 +6,7 @@ import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
 import { getKakaoSyncOAuthOptions } from "@/lib/kakao-sync";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import styles from "./login-page.module.css";
@@ -13,6 +14,7 @@ import styles from "./login-page.module.css";
 type LoginPageProps = {
   errorCode?: string;
   nextPath: string;
+  referralCode: string;
 };
 
 type LoginStatus =
@@ -33,7 +35,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   supabase_not_configured: "Supabase 환경변수가 설정되지 않았습니다.",
 };
 
-export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
+export function LoginPage({
+  errorCode,
+  nextPath,
+  referralCode,
+}: LoginPageProps) {
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginStatus, setLoginStatus] = useState<LoginStatus>({ status: "loading" });
@@ -123,6 +129,12 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
         redirectTo.searchParams.set("next", nextPath);
       }
 
+      const normalizedReferralCode = normalizeReferralCode(referralCode);
+
+      if (normalizedReferralCode) {
+        redirectTo.searchParams.set("ref", normalizedReferralCode);
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         options: getKakaoSyncOAuthOptions(redirectTo.toString()),
         provider: "kakao",
@@ -143,8 +155,7 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
       return;
     }
 
-    window.location.href =
-      nextPath === "/" ? "/login/email" : `/login/email?next=${encodeURIComponent(nextPath)}`;
+    window.location.href = `/login/email${buildNextQuery(nextPath, referralCode)}`;
   }
 
   const serverError = errorCode ? ERROR_MESSAGES[errorCode] : null;
@@ -239,6 +250,22 @@ export function LoginPage({ errorCode, nextPath }: LoginPageProps) {
       <LegalFooter />
     </div>
   );
+}
+
+function buildNextQuery(nextPath: string, referralCode?: string) {
+  const params = new URLSearchParams();
+  const normalizedReferralCode = normalizeReferralCode(referralCode);
+
+  if (nextPath !== "/") {
+    params.set("next", nextPath);
+  }
+
+  if (normalizedReferralCode) {
+    params.set("ref", normalizedReferralCode);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
 }
 
 function KakaoIcon() {

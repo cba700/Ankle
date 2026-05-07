@@ -315,6 +315,7 @@ export async function getAdminCouponDashboardData() {
         isActive: template.isActive,
         issuedCount: usage.issuedCount,
         name: template.name,
+        templateType: template.templateType,
         updatedAt: template.updatedAt,
         usedCount: usage.usedCount,
       };
@@ -357,8 +358,6 @@ function mapEntityToAdminRecord(
     levelCondition: entity.levelCondition,
     levelRange: entity.levelRange,
     preparation: entity.preparation,
-    weatherGridNx: entity.weatherGridNx,
-    weatherGridNy: entity.weatherGridNy,
     summary: entity.summary,
     operatorNote: entity.operatorNote,
     publicNotice: entity.publicNotice,
@@ -465,8 +464,6 @@ function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
     address: entity.address,
     isActive: entity.isActive,
     matchCount: entity.matchCount,
-    weatherGridNx: entity.weatherGridNx,
-    weatherGridNy: entity.weatherGridNy,
     venueInfo: {
       courtNote: entity.courtNote,
       directions: entity.directions,
@@ -488,8 +485,6 @@ function mapVenueEntityToOption(entity: VenueEntity): AdminVenueOption {
     name: entity.name,
     district: entity.district,
     address: entity.address,
-    weatherGridNx: entity.weatherGridNx,
-    weatherGridNy: entity.weatherGridNy,
     venueInfo: {
       courtNote: entity.courtNote,
       directions: entity.directions,

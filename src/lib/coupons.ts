@@ -2,7 +2,10 @@ import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-export type CouponTemplateType = "signup_welcome";
+export type CouponTemplateType =
+  | "referral_invitee"
+  | "referral_inviter"
+  | "signup_welcome";
 export type UserCouponStatus = "available" | "used" | "expired";
 
 export type CouponTemplateEntity = {
