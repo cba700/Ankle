@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import {
   cancelAdminMatchForRainAction,
-  checkAdminMatchWeatherAction,
   deleteAdminMatchAction,
   sendAdminMatchRainAlertAction,
   setAdminMatchRefundExceptionAction,
@@ -33,7 +32,6 @@ export default async function AdminEditMatchPage({
   const formAction = updateAdminMatchAction.bind(null, id);
   const deleteAction = deleteAdminMatchAction.bind(null, id);
   const refundExceptionAction = setAdminMatchRefundExceptionAction.bind(null, id);
-  const checkWeatherAction = checkAdminMatchWeatherAction.bind(null, id);
   const sendRainAlertAction = sendAdminMatchRainAlertAction.bind(null, id);
   const cancelForRainAction = cancelAdminMatchForRainAction.bind(null, id);
 
@@ -50,7 +48,6 @@ export default async function AdminEditMatchPage({
     >
       <AdminMatchWeatherPanel
         cancelForRainAction={cancelForRainAction}
-        checkWeatherAction={checkWeatherAction}
         sendRainAlertAction={sendRainAlertAction}
         weather={weather}
       />
