@@ -205,6 +205,7 @@ export type AdminCouponTemplateRecord = {
   isActive: boolean;
   issuedCount: number;
   name: string;
+  templateType: "referral_invitee" | "referral_inviter" | "signup_welcome";
   updatedAt: string;
   usedCount: number;
 };

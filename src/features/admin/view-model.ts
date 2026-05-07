@@ -311,12 +311,26 @@ export function buildAdminCouponTemplateRows(
     id: template.id,
     isActive: template.isActive,
     issuedCountLabel: `${template.issuedCount}장`,
-    metaLabel: `신규가입 자동 지급 · ${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
+    metaLabel: `${getCouponTemplateTypeLabel(template.templateType)} · ${formatCompactDateLabel(new Date(template.updatedAt))} 수정`,
     name: template.name,
     statusLabel: template.isActive ? "활성" : "비활성",
     statusTone: template.isActive ? "accent" : "neutral",
     usedCountLabel: `${template.usedCount}장`,
   }));
+}
+
+function getCouponTemplateTypeLabel(
+  templateType: AdminCouponTemplateRecord["templateType"],
+) {
+  switch (templateType) {
+    case "referral_invitee":
+      return "친구 가입 보상";
+    case "referral_inviter":
+      return "친구 초대 보상";
+    case "signup_welcome":
+    default:
+      return "신규가입 자동 지급";
+  }
 }
 
 export function buildAdminCashAccountRows(

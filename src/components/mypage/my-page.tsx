@@ -48,6 +48,12 @@ export function MyPage({ data }: MyPageProps) {
       statusText: `${data.wishlistCount}건`,
     },
     {
+      href: "/mypage/referrals",
+      key: "referrals",
+      label: "친구 초대",
+      statusText: data.profile.referralCode,
+    },
+    {
       key: "settings",
       label: "설정",
       href: "/mypage/settings",

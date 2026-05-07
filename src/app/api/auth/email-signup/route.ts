@@ -18,6 +18,12 @@ import {
 } from "@/lib/signup-profile";
 import { saveSignupProfileData } from "@/lib/signup-profile-server";
 import { ensureAuthUserBootstrap } from "@/lib/auth/user-bootstrap";
+import {
+  getReferralErrorPayload,
+  recordReferralSignup,
+  validateReferralCodeForSignup,
+} from "@/lib/referrals";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 
@@ -28,6 +34,7 @@ type EmailSignupBody = {
   gender?: unknown;
   name?: unknown;
   password?: unknown;
+  referralCode?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -52,6 +59,7 @@ export async function POST(request: Request) {
   const gender = normalizeProfileGender(body?.gender);
   const legalName = normalizeLegalName(body?.name);
   const password = typeof body?.password === "string" ? body.password : "";
+  const referralCode = normalizeReferralCode(body?.referralCode);
   const cookieStore = await cookies();
   const verificationRequestId =
     cookieStore.get(getSignupPhoneVerificationCookieName())?.value ?? "";
@@ -104,6 +112,24 @@ export async function POST(request: Request) {
       },
       { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
     );
+  }
+
+  if (referralCode) {
+    try {
+      await validateReferralCodeForSignup(admin as any, {
+        referralCode,
+      });
+    } catch (error) {
+      const referralError = getReferralErrorPayload(error);
+
+      return NextResponse.json(
+        {
+          code: referralError.code,
+          message: referralError.message,
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: referralError.status },
+      );
+    }
   }
 
   let createdUserId: string | null = null;
@@ -196,6 +222,13 @@ export async function POST(request: Request) {
 
     await consumeVerifiedSignupPhoneVerification(admin, verificationRequestId);
 
+    if (referralCode) {
+      await recordReferralSignup(admin as any, {
+        inviteeId: createdUserId,
+        referralCode,
+      });
+    }
+
     const response = NextResponse.json(
       {
         email,
@@ -245,6 +278,18 @@ export async function POST(request: Request) {
       try {
         await admin.auth.admin.deleteUser(createdUserId);
       } catch {}
+    }
+
+    const referralError = getReferralErrorPayload(error);
+
+    if (referralError.code !== "REFERRAL_FAILED") {
+      return NextResponse.json(
+        {
+          code: referralError.code,
+          message: referralError.message,
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: referralError.status },
+      );
     }
 
     console.error("[email-signup]", {
