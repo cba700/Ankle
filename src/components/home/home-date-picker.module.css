@@ -109,12 +109,13 @@
   .chip {
     align-content: center;
     gap: 2px;
-    min-height: 64px;
-    padding: 6px 4px;
+    min-height: 72px;
+    padding: 7px 4px;
   }
 
   .weekday {
     line-height: 1;
+    font-size: 13px;
   }
 
   .todayTag {
