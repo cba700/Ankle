@@ -234,18 +234,33 @@
 
 .statRow {
   margin-top: 18px;
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
   border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
 }
 
 .statBox {
-  min-width: 136px;
+  min-width: 0;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.statBox + .statBox {
+  border-left: 1px solid var(--line);
+}
+
+.statBoxLink {
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.statBoxLink:hover {
+  background: rgba(243, 109, 33, 0.05);
 }
 
 .statLabel {

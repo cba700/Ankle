@@ -10,10 +10,15 @@ import styles from "./home-header.module.css";
 
 type HomeHeaderProps = {
   isAdmin: boolean;
+  resetBrandOnClick?: boolean;
 };
 
-export function HomeHeader({ isAdmin }: HomeHeaderProps) {
+export function HomeHeader({ isAdmin, resetBrandOnClick = true }: HomeHeaderProps) {
   function handleBrandClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!resetBrandOnClick) {
+      return;
+    }
+
     if (
       event.button !== 0 ||
       event.metaKey ||
