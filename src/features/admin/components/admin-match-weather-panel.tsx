@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import {
   formatSeoulDateShortLabel,
   formatSeoulTime,
@@ -7,18 +11,25 @@ import ui from "./admin-ui.module.css";
 import styles from "./admin-match-weather-panel.module.css";
 
 type AdminMatchWeatherPanelProps = {
-  onCancelForRain: () => Promise<void>;
-  onCheckWeather: () => Promise<void>;
-  onSendRainAlert: () => Promise<void>;
+  cancelForRainAction: () => Promise<void>;
+  checkWeatherAction: () => Promise<void>;
+  sendRainAlertAction: () => Promise<void>;
   weather: AdminMatchWeatherData | null;
 };
 
 export function AdminMatchWeatherPanel({
-  onCancelForRain,
-  onCheckWeather,
-  onSendRainAlert,
+  cancelForRainAction,
+  checkWeatherAction,
+  sendRainAlertAction,
   weather,
 }: AdminMatchWeatherPanelProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    tone: "error" | "success";
+  } | null>(null);
+
   if (!weather) {
     return null;
   }
@@ -33,6 +44,29 @@ export function AdminMatchWeatherPanel({
       : "-";
   const isWeatherConfigured = Boolean(weather.weatherGridNx && weather.weatherGridNy);
   const isCancelled = weather.status === "cancelled";
+  const isActionDisabled = !isWeatherConfigured || isCancelled || isPending;
+
+  const runAction = (
+    action: () => Promise<void>,
+    successMessage: string,
+  ) => {
+    setFeedback(null);
+    startTransition(async () => {
+      try {
+        await action();
+        setFeedback({
+          message: successMessage,
+          tone: "success",
+        });
+        router.refresh();
+      } catch (error) {
+        setFeedback({
+          message: error instanceof Error ? error.message : "작업을 완료하지 못했습니다.",
+          tone: "error",
+        });
+      }
+    });
+  };
 
   return (
     <section className={`${ui.sectionCard} ${styles.panel}`}>
@@ -45,13 +79,17 @@ export function AdminMatchWeatherPanel({
           </p>
         </div>
 
-        <form action={onCheckWeather}>
+        <form action={checkWeatherAction}>
           <button
             className={`${ui.button} ${ui.buttonPrimary}`}
-            disabled={!isWeatherConfigured}
+            disabled={!isWeatherConfigured || isPending}
+            onClick={(event) => {
+              event.preventDefault();
+              runAction(checkWeatherAction, "예보 점검을 완료했습니다.");
+            }}
             type="submit"
           >
-            예보 점검
+            {isPending ? "처리 중" : "예보 점검"}
           </button>
         </form>
       </div>
@@ -93,26 +131,45 @@ export function AdminMatchWeatherPanel({
       </div>
 
       <div className={styles.actions}>
-        <form action={onSendRainAlert}>
+        <form action={sendRainAlertAction}>
           <button
             className={ui.button}
-            disabled={!isWeatherConfigured || isCancelled}
+            disabled={isActionDisabled}
+            onClick={(event) => {
+              event.preventDefault();
+              runAction(sendRainAlertAction, "강수 알림을 발송했습니다.");
+            }}
             type="submit"
           >
             강수 알림 발송
           </button>
         </form>
 
-        <form action={onCancelForRain}>
+        <form action={cancelForRainAction}>
           <button
             className={`${ui.button} ${ui.buttonBrand}`}
-            disabled={!isWeatherConfigured || isCancelled}
+            disabled={isActionDisabled}
+            onClick={(event) => {
+              event.preventDefault();
+              runAction(cancelForRainAction, "강수 취소를 실행했습니다.");
+            }}
             type="submit"
           >
             3mm 취소 실행
           </button>
         </form>
       </div>
+
+      {feedback ? (
+        <p
+          className={`${styles.feedback} ${
+            feedback.tone === "success" ? styles.feedbackSuccess : styles.feedbackError
+          }`}
+          role={feedback.tone === "error" ? "alert" : "status"}
+        >
+          {feedback.message}
+        </p>
+      ) : null}
     </section>
   );
 }
