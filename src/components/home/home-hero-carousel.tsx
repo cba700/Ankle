@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type TouchEvent } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "@/components/icons";
 import { AppLink } from "@/components/navigation/app-link";
 import type { HomeBannerSlide } from "./home-types";
@@ -11,9 +11,13 @@ type HomeHeroCarouselProps = {
 };
 
 const AUTO_SLIDE_INTERVAL_MS = 3000;
+const SWIPE_THRESHOLD_PX = 40;
 
 export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const suppressClickTimeoutRef = useRef<number | null>(null);
+  const suppressNextClickRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const hasMultipleBanners = banners.length > 1;
 
   useEffect(() => {
@@ -34,6 +38,14 @@ export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
     return () => window.clearInterval(intervalId);
   }, [activeIndex, banners.length, hasMultipleBanners]);
 
+  useEffect(() => {
+    return () => {
+      if (suppressClickTimeoutRef.current !== null) {
+        window.clearTimeout(suppressClickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (banners.length === 0) {
     return null;
   }
@@ -46,11 +58,94 @@ export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
     setActiveIndex((current) => (current + 1) % banners.length);
   }
 
+  function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    if (!hasMultipleBanners) {
+      return;
+    }
+
+    const touch = event.touches[0];
+
+    if (!touch) {
+      return;
+    }
+
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+  }
+
+  function handleTouchEnd(event: TouchEvent<HTMLElement>) {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+
+    if (!hasMultipleBanners || !start) {
+      return;
+    }
+
+    const touch = event.changedTouches[0];
+
+    if (!touch) {
+      return;
+    }
+
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX || Math.abs(deltaX) <= Math.abs(deltaY)) {
+      return;
+    }
+
+    suppressNextClick();
+
+    if (deltaX < 0) {
+      showNextBanner();
+      return;
+    }
+
+    showPreviousBanner();
+  }
+
+  function handleTouchCancel() {
+    touchStartRef.current = null;
+  }
+
+  function handleClickCapture(event: MouseEvent<HTMLElement>) {
+    if (!suppressNextClickRef.current) {
+      return;
+    }
+
+    suppressNextClickRef.current = false;
+    if (suppressClickTimeoutRef.current !== null) {
+      window.clearTimeout(suppressClickTimeoutRef.current);
+      suppressClickTimeoutRef.current = null;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function suppressNextClick() {
+    suppressNextClickRef.current = true;
+
+    if (suppressClickTimeoutRef.current !== null) {
+      window.clearTimeout(suppressClickTimeoutRef.current);
+    }
+
+    suppressClickTimeoutRef.current = window.setTimeout(() => {
+      suppressNextClickRef.current = false;
+      suppressClickTimeoutRef.current = null;
+    }, 400);
+  }
+
   return (
     <section
       aria-label="홈 배너"
       aria-roledescription="carousel"
       className={`${styles.hero} ${styles.carouselHero}`}
+      onClickCapture={handleClickCapture}
+      onTouchCancel={handleTouchCancel}
+      onTouchEnd={handleTouchEnd}
+      onTouchStart={handleTouchStart}
     >
       <div
         className={styles.carouselTrack}
@@ -70,12 +165,17 @@ export function HomeHeroCarousel({ banners }: HomeHeroCarouselProps) {
                 tabIndex={index === activeIndex ? undefined : -1}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="" className={styles.heroImage} src={banner.imageUrl} />
+                <img alt="" className={styles.heroImage} draggable={false} src={banner.imageUrl} />
               </AppLink>
             ) : (
               <div className={`${styles.bannerLink} ${styles.bannerStatic}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt={banner.title} className={styles.heroImage} src={banner.imageUrl} />
+                <img
+                  alt={banner.title}
+                  className={styles.heroImage}
+                  draggable={false}
+                  src={banner.imageUrl}
+                />
               </div>
             )}
           </div>
