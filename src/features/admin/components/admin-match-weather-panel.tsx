@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import {
   formatSeoulDateShortLabel,
   formatSeoulTime,
@@ -17,6 +17,8 @@ type AdminMatchWeatherPanelProps = {
   weather: AdminMatchWeatherData | null;
 };
 
+type WeatherActionKey = "alert" | "cancel" | "check";
+
 export function AdminMatchWeatherPanel({
   cancelForRainAction,
   checkWeatherAction,
@@ -24,7 +26,7 @@ export function AdminMatchWeatherPanel({
   weather,
 }: AdminMatchWeatherPanelProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [pendingAction, setPendingAction] = useState<WeatherActionKey | null>(null);
   const [feedback, setFeedback] = useState<{
     message: string;
     tone: "error" | "success";
@@ -44,28 +46,32 @@ export function AdminMatchWeatherPanel({
       : "-";
   const isWeatherConfigured = Boolean(weather.weatherGridNx && weather.weatherGridNy);
   const isCancelled = weather.status === "cancelled";
+  const isPending = pendingAction !== null;
   const isActionDisabled = !isWeatherConfigured || isCancelled || isPending;
 
-  const runAction = (
+  const runAction = async (
+    key: WeatherActionKey,
     action: () => Promise<void>,
     successMessage: string,
   ) => {
     setFeedback(null);
-    startTransition(async () => {
-      try {
-        await action();
-        setFeedback({
-          message: successMessage,
-          tone: "success",
-        });
-        router.refresh();
-      } catch (error) {
-        setFeedback({
-          message: error instanceof Error ? error.message : "작업을 완료하지 못했습니다.",
-          tone: "error",
-        });
-      }
-    });
+    setPendingAction(key);
+
+    try {
+      await action();
+      setFeedback({
+        message: successMessage,
+        tone: "success",
+      });
+      router.refresh();
+    } catch (error) {
+      setFeedback({
+        message: error instanceof Error ? error.message : "작업을 완료하지 못했습니다.",
+        tone: "error",
+      });
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   return (
@@ -79,19 +85,14 @@ export function AdminMatchWeatherPanel({
           </p>
         </div>
 
-        <form action={checkWeatherAction}>
-          <button
-            className={`${ui.button} ${ui.buttonPrimary}`}
-            disabled={!isWeatherConfigured || isPending}
-            onClick={(event) => {
-              event.preventDefault();
-              runAction(checkWeatherAction, "예보 점검을 완료했습니다.");
-            }}
-            type="submit"
-          >
-            {isPending ? "처리 중" : "예보 점검"}
-          </button>
-        </form>
+        <button
+          className={`${ui.button} ${ui.buttonPrimary}`}
+          disabled={!isWeatherConfigured || isPending}
+          onClick={() => void runAction("check", checkWeatherAction, "예보 점검을 완료했습니다.")}
+          type="button"
+        >
+          {pendingAction === "check" ? "처리 중" : "예보 점검"}
+        </button>
       </div>
 
       <div className={styles.grid}>
@@ -131,33 +132,23 @@ export function AdminMatchWeatherPanel({
       </div>
 
       <div className={styles.actions}>
-        <form action={sendRainAlertAction}>
-          <button
-            className={ui.button}
-            disabled={isActionDisabled}
-            onClick={(event) => {
-              event.preventDefault();
-              runAction(sendRainAlertAction, "강수 알림을 발송했습니다.");
-            }}
-            type="submit"
-          >
-            강수 알림 발송
-          </button>
-        </form>
+        <button
+          className={ui.button}
+          disabled={isActionDisabled}
+          onClick={() => void runAction("alert", sendRainAlertAction, "강수 알림을 발송했습니다.")}
+          type="button"
+        >
+          {pendingAction === "alert" ? "처리 중" : "강수 알림 발송"}
+        </button>
 
-        <form action={cancelForRainAction}>
-          <button
-            className={`${ui.button} ${ui.buttonBrand}`}
-            disabled={isActionDisabled}
-            onClick={(event) => {
-              event.preventDefault();
-              runAction(cancelForRainAction, "강수 취소를 실행했습니다.");
-            }}
-            type="submit"
-          >
-            3mm 취소 실행
-          </button>
-        </form>
+        <button
+          className={`${ui.button} ${ui.buttonBrand}`}
+          disabled={isActionDisabled}
+          onClick={() => void runAction("cancel", cancelForRainAction, "강수 취소를 실행했습니다.")}
+          type="button"
+        >
+          {pendingAction === "cancel" ? "처리 중" : "3mm 취소 실행"}
+        </button>
       </div>
 
       {feedback ? (
