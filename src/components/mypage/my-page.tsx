@@ -20,10 +20,16 @@ type MenuItem = {
   statusText?: string;
 };
 
+type LevelBadge = {
+  className: string;
+  label: string;
+};
+
 export function MyPage({ data }: MyPageProps) {
   const initials = data.profile.displayName.slice(0, 1).toUpperCase() || "A";
   const kakaoChannelUrl = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_URL?.trim();
   const temporaryLevelLabel = formatTemporaryLevel(data.profile.temporaryLevel);
+  const levelBadge = getLevelBadge(data.profile.temporaryLevel);
   const myMenuItems: MenuItem[] = [
     {
       href: "/mypage/applications",
@@ -130,7 +136,9 @@ export function MyPage({ data }: MyPageProps) {
               <div className={styles.statBox}>
                 <span className={styles.statLabel}>레벨</span>
                 <strong className={styles.statValue}>
-                  <span className={styles.levelMarker} />
+                  <span className={`${styles.levelBadge} ${styles[levelBadge.className]}`}>
+                    {levelBadge.label}
+                  </span>
                   {temporaryLevelLabel}
                 </strong>
                 <AppLink className={styles.statLink} href="/mypage/guide">
@@ -140,10 +148,7 @@ export function MyPage({ data }: MyPageProps) {
               </div>
               <AppLink className={`${styles.statBox} ${styles.statBoxLink}`} href="/about">
                 <span className={styles.statLabel}>소개</span>
-                <strong className={styles.statValue}>
-                  <span className={styles.levelMarker} />
-                  앵클 서비스
-                </strong>
+                <strong className={styles.statValue}>앵클 서비스</strong>
                 <span className={styles.statLink}>
                   바로가기
                   <ArrowRightIcon className={styles.statLinkArrow} />
@@ -286,4 +291,43 @@ export function MyPage({ data }: MyPageProps) {
       <LegalFooter />
     </div>
   );
+}
+
+function getLevelBadge(level: MyPageData["profile"]["temporaryLevel"]): LevelBadge {
+  if (!level) {
+    return {
+      className: "levelBadgeFirst",
+      label: "0",
+    };
+  }
+
+  if (level.startsWith("Basic")) {
+    return {
+      className: "levelBadgeBasic",
+      label: getLevelNumber(level),
+    };
+  }
+
+  if (level.startsWith("Middle")) {
+    return {
+      className: "levelBadgeMiddle",
+      label: getLevelNumber(level),
+    };
+  }
+
+  if (level.startsWith("High")) {
+    return {
+      className: "levelBadgeHigh",
+      label: getLevelNumber(level),
+    };
+  }
+
+  return {
+    className: "levelBadgeStar",
+    label: "★",
+  };
+}
+
+function getLevelNumber(level: string) {
+  return level.match(/\d+/)?.[0] ?? "1";
 }
