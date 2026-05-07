@@ -11,17 +11,15 @@ import ui from "./admin-ui.module.css";
 import styles from "./admin-match-weather-panel.module.css";
 
 type AdminMatchWeatherPanelProps = {
-  cancelForRainAction: () => Promise<void>;
-  checkWeatherAction: () => Promise<void>;
-  sendRainAlertAction: () => Promise<void>;
+  cancelForRainAction: () => Promise<string>;
+  sendRainAlertAction: () => Promise<string>;
   weather: AdminMatchWeatherData | null;
 };
 
-type WeatherActionKey = "alert" | "cancel" | "check";
+type WeatherActionKey = "alert" | "cancel";
 
 export function AdminMatchWeatherPanel({
   cancelForRainAction,
-  checkWeatherAction,
   sendRainAlertAction,
   weather,
 }: AdminMatchWeatherPanelProps) {
@@ -44,23 +42,22 @@ export function AdminMatchWeatherPanel({
     typeof weather.lastPrecipitationMm === "number"
       ? `${formatPrecipitationAmount(weather.lastPrecipitationMm)}`
       : "-";
-  const isWeatherConfigured = Boolean(weather.weatherGridNx && weather.weatherGridNy);
   const isCancelled = weather.status === "cancelled";
   const isPending = pendingAction !== null;
-  const isActionDisabled = !isWeatherConfigured || isCancelled || isPending;
+  const isActionDisabled = isCancelled || isPending;
 
   const runAction = async (
     key: WeatherActionKey,
-    action: () => Promise<void>,
+    action: () => Promise<string>,
     successMessage: string,
   ) => {
     setFeedback(null);
     setPendingAction(key);
 
     try {
-      await action();
+      const message = await action();
       setFeedback({
-        message: successMessage,
+        message: message || successMessage,
         tone: "success",
       });
       router.refresh();
@@ -81,17 +78,16 @@ export function AdminMatchWeatherPanel({
           <p className={styles.eyebrow}>강우 운영</p>
           <h2 className={styles.title}>강수 예보 점검과 공지를 여기서 처리합니다.</h2>
           <p className={styles.description}>
-            기상청 격자값(nx, ny) 기준으로 매치 시간대 최대 시간당 강수량을 확인합니다.
+            예보 점검은 추후 개발 예정입니다. 알림과 취소는 관리자 판단으로 수동 실행합니다.
           </p>
         </div>
 
         <button
           className={`${ui.button} ${ui.buttonPrimary}`}
-          disabled={!isWeatherConfigured || isPending}
-          onClick={() => void runAction("check", checkWeatherAction, "예보 점검을 완료했습니다.")}
+          disabled
           type="button"
         >
-          {pendingAction === "check" ? "처리 중" : "예보 점검"}
+          예보 점검 (추후 개발)
         </button>
       </div>
 
