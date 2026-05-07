@@ -255,12 +255,20 @@
 }
 
 .statBoxLink {
+  justify-content: center;
   color: inherit;
   transition: background 0.15s ease;
 }
 
 .statBoxLink:hover {
   background: rgba(243, 109, 33, 0.05);
+}
+
+.statBoxTitle {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.35;
 }
 
 .statLabel {
