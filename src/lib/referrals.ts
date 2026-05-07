@@ -13,7 +13,6 @@ type ReferralProfileRow = {
 };
 
 export type ReferralPageData = {
-  invitedCount: number;
   referralCode: string;
 };
 
@@ -55,25 +54,14 @@ export async function getReferralPageData({
 }): Promise<ReferralPageData> {
   await assertReferralSchemaReady(supabase);
 
-  const [{ data: profile, error: profileError }, { count, error: countError }] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select("referral_code")
-        .eq("id", userId)
-        .maybeSingle(),
-      supabase
-        .from("referrals")
-        .select("id", { count: "exact", head: true })
-        .eq("inviter_id", userId),
-    ]);
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("referral_code")
+    .eq("id", userId)
+    .maybeSingle();
 
   if (profileError) {
     throw new Error(`Failed to load referral code: ${profileError.message}`);
-  }
-
-  if (countError) {
-    throw new Error(`Failed to load referral count: ${countError.message}`);
   }
 
   const referralCode = ((profile ?? null) as ReferralProfileRow | null)
@@ -84,7 +72,6 @@ export async function getReferralPageData({
   }
 
   return {
-    invitedCount: count ?? 0,
     referralCode,
   };
 }

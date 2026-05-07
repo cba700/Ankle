@@ -12,7 +12,6 @@ import styles from "./my-page-referrals.module.css";
 
 type MyPageReferralsProps = {
   initialIsAdmin: boolean;
-  invitedCount: number;
   referralCode: string;
   referralLink: string;
 };
@@ -37,7 +36,6 @@ const FAQ_ITEMS = [
 
 export function MyPageReferrals({
   initialIsAdmin,
-  invitedCount,
   referralCode,
   referralLink,
 }: MyPageReferralsProps) {
@@ -83,15 +81,9 @@ export function MyPageReferrals({
             친구 초대
           </span>
 
-          <div className={styles.summaryGrid}>
-            <div className={styles.codePanel}>
-              <p className={styles.panelLabel}>내 초대 코드</p>
-              <strong className={styles.referralCode}>{referralCode}</strong>
-            </div>
-            <div className={styles.statPanel}>
-              <p className={styles.panelLabel}>초대 가입</p>
-              <strong className={styles.statValue}>{invitedCount}</strong>
-            </div>
+          <div className={styles.codePanel}>
+            <p className={styles.panelLabel}>내 초대 코드</p>
+            <strong className={styles.referralCode}>{referralCode}</strong>
           </div>
 
           <p className={styles.description}>
@@ -118,9 +110,6 @@ export function MyPageReferrals({
             </button>
           </div>
 
-          {feedbackMessage ? (
-            <p className={styles.feedbackMessage}>{feedbackMessage}</p>
-          ) : null}
         </section>
 
         <section className={`${baseStyles.applicationSection} ${styles.detailSection}`}>
@@ -142,6 +131,31 @@ export function MyPageReferrals({
           </div>
         </section>
       </main>
+
+      {feedbackMessage ? (
+        <div className={styles.copyDialogRoot} role="presentation">
+          <button
+            aria-label="알림 닫기"
+            className={styles.copyDialogBackdrop}
+            onClick={() => setFeedbackMessage(null)}
+            type="button"
+          />
+          <div
+            aria-modal="true"
+            className={styles.copyDialog}
+            role="dialog"
+          >
+            <p className={styles.copyDialogMessage}>{feedbackMessage}</p>
+            <button
+              className={styles.copyDialogButton}
+              onClick={() => setFeedbackMessage(null)}
+              type="button"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <LegalFooter />
     </div>

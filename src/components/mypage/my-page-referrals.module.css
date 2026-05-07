@@ -55,14 +55,7 @@
   font-weight: 800;
 }
 
-.summaryGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(120px, 180px);
-  gap: 12px;
-}
-
-.codePanel,
-.statPanel {
+.codePanel {
   display: grid;
   gap: 8px;
   padding: 18px;
@@ -78,8 +71,7 @@
   font-weight: 700;
 }
 
-.referralCode,
-.statValue {
+.referralCode {
   color: var(--text-primary);
   font-size: clamp(30px, 5vw, 44px);
   font-weight: 900;
@@ -127,16 +119,6 @@
   color: var(--text-primary);
 }
 
-.feedbackMessage {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(11, 122, 63, 0.08);
-  color: #0b7a3f;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
 .detailSection {
   min-width: 0;
 }
@@ -174,6 +156,53 @@
   line-height: 1.7;
 }
 
+.copyDialogRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.copyDialogBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(17, 17, 17, 0.36);
+}
+
+.copyDialog {
+  position: relative;
+  width: min(100%, 320px);
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(201, 193, 183, 0.84);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 24px 54px rgba(29, 24, 19, 0.18);
+}
+
+.copyDialogMessage {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.copyDialogButton {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 @media (max-width: 767px) {
   .main {
     padding: 16px 0 36px;
@@ -184,7 +213,6 @@
     padding: 18px;
   }
 
-  .summaryGrid,
   .actionGrid {
     grid-template-columns: minmax(0, 1fr);
   }

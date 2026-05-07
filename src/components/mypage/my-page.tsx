@@ -51,7 +51,6 @@ export function MyPage({ data }: MyPageProps) {
       href: "/mypage/referrals",
       key: "referrals",
       label: "친구 초대",
-      statusText: data.profile.referralCode,
     },
     {
       key: "settings",

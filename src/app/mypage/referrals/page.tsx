@@ -52,7 +52,6 @@ export default async function MyPageReferralsRoute() {
   return (
     <MyPageReferrals
       initialIsAdmin={role === "admin"}
-      invitedCount={referralData.invitedCount}
       referralCode={referralData.referralCode}
       referralLink={resolveSiteUrl(
         `/login?ref=${encodeURIComponent(referralData.referralCode)}`,
