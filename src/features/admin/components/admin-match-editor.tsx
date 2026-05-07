@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { formatMoney } from "@/lib/date";
 import {
   buildAdminVenueLabel,
@@ -72,6 +72,7 @@ export function AdminMatchEditor({
   refundExceptionAction,
 }: AdminMatchEditorProps) {
   const [formValues, setFormValues] = useState(values);
+  const refundExceptionModeInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedVenue = venueOptions.find((venue) => venue.id === formValues.selectedVenueId);
   const generatedTitle = buildGeneratedMatchTitle({
@@ -138,6 +139,15 @@ export function AdminMatchEditor({
         <input name="venueEntryMode" type="hidden" value={formValues.venueEntryMode} />
         <input name="selectedVenueId" type="hidden" value={formValues.selectedVenueId} />
         <input name="imageUrlsText" type="hidden" value={formValues.imageUrlsText} />
+        {mode === "edit" ? (
+          <input
+            name="refundExceptionMode"
+            readOnly
+            ref={refundExceptionModeInputRef}
+            type="hidden"
+            value={formValues.refundExceptionMode}
+          />
+        ) : null}
         {mode === "create" ? (
           <>
             <input name="district" type="hidden" value={formValues.district} />
@@ -460,9 +470,12 @@ export function AdminMatchEditor({
                     formAction={refundExceptionAction}
                     formNoValidate
                     key={action.mode}
-                    name="refundExceptionMode"
+                    onClick={() => {
+                      if (refundExceptionModeInputRef.current) {
+                        refundExceptionModeInputRef.current.value = action.mode;
+                      }
+                    }}
                     type="submit"
-                    value={action.mode}
                   >
                     {action.label}
                   </button>
