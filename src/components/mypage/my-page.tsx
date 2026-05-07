@@ -140,6 +140,10 @@ export function MyPage({ data }: MyPageProps) {
               </div>
               <AppLink className={`${styles.statBox} ${styles.statBoxLink}`} href="/about">
                 <strong className={styles.statBoxTitle}>앵클 소개</strong>
+                <span className={styles.statLink}>
+                  바로가기
+                  <ArrowRightIcon className={styles.statLinkArrow} />
+                </span>
               </AppLink>
             </div>
           </article>
