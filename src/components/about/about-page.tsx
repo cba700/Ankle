@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { HomeHeader } from "@/components/home/home-header";
 import { AppLink } from "@/components/navigation/app-link";
 import styles from "./about-page.module.css";
@@ -116,7 +116,9 @@ export function AboutPage() {
 
   return (
     <div className={styles.page}>
-      <HomeHeader isAdmin={false} resetBrandOnClick={false} />
+      <Suspense fallback={<div className={styles.headerFallback} />}>
+        <HomeHeader isAdmin={false} resetBrandOnClick={false} />
+      </Suspense>
 
       <main>
         <section className={styles.ctaTopWrap}>

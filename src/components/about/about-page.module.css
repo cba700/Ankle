@@ -1,5 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&display=swap");
+
 .page {
-  --about-orange: var(--accent);
+  --about-orange: #ff5a00;
   --about-black: #111;
   --about-white: #fff;
   --about-bg: #fafafa;
@@ -10,6 +12,13 @@
   overflow-x: hidden;
   background: var(--about-white);
   color: var(--about-black);
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+.headerFallback {
+  min-height: 57px;
+  border-bottom: 1px solid rgba(201, 193, 183, 0.56);
+  background: #fff;
 }
 
 .ctaTopWrap {
@@ -77,8 +86,9 @@
   gap: 2px;
   margin: 0 0 24px;
   color: var(--about-black);
+  font-family: "Black Han Sans", sans-serif;
   font-size: clamp(44px, 5.5vw, 72px);
-  font-weight: 1000;
+  font-weight: 400;
   line-height: 1.05;
 }
 
@@ -90,7 +100,7 @@
   margin: 0;
   color: #555;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.85;
   word-break: keep-all;
 }
@@ -110,8 +120,9 @@
 
 .statNum {
   color: var(--about-orange);
+  font-family: "Black Han Sans", sans-serif;
   font-size: 13px;
-  font-weight: 1000;
+  font-weight: 400;
   letter-spacing: 0.1em;
   line-height: 1;
 }
@@ -130,8 +141,9 @@
 .sectionTitle {
   margin: 0;
   color: var(--about-black);
+  font-family: "Black Han Sans", sans-serif;
   font-size: clamp(26px, 3.5vw, 42px);
-  font-weight: 1000;
+  font-weight: 400;
   line-height: 1.15;
 }
 
@@ -187,8 +199,9 @@
 
 .stepNum {
   color: var(--about-orange);
+  font-family: "Black Han Sans", sans-serif;
   font-size: 28px;
-  font-weight: 1000;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -269,7 +282,7 @@
   margin: 0;
   color: #666;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.85;
   word-break: keep-all;
 }
@@ -348,7 +361,7 @@
   margin: 0;
   color: #555;
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.6;
   word-break: keep-all;
 }
@@ -363,8 +376,9 @@
 .bottomCta h2 {
   margin: 0 0 20px;
   color: var(--about-black);
+  font-family: "Black Han Sans", sans-serif;
   font-size: clamp(36px, 6vw, 68px);
-  font-weight: 1000;
+  font-weight: 400;
   line-height: 1.1;
 }
 
@@ -376,7 +390,7 @@
   margin: 0 0 44px;
   color: #999;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.5;
 }
 
@@ -414,8 +428,9 @@
 
 .footerLogo {
   color: #bbb;
+  font-family: "Black Han Sans", sans-serif;
   font-size: 16px;
-  font-weight: 1000;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -498,6 +513,12 @@
     gap: 12px;
     padding: 28px 20px;
     text-align: center;
+  }
+}
+
+@media (min-width: 768px) {
+  .headerFallback {
+    min-height: 63px;
   }
 }
 
