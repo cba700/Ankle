@@ -138,6 +138,14 @@ export function MyPage({ data }: MyPageProps) {
                   <ArrowRightIcon className={styles.statLinkArrow} />
                 </AppLink>
               </div>
+              <AppLink className={`${styles.statBox} ${styles.statBoxLink}`} href="/about">
+                <span className={styles.statLabel}>앵클 소개</span>
+                <strong className={styles.statValue}>서비스 보기</strong>
+                <span className={styles.statLink}>
+                  바로가기
+                  <ArrowRightIcon className={styles.statLinkArrow} />
+                </span>
+              </AppLink>
             </div>
           </article>
 
