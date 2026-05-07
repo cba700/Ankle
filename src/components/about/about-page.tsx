@@ -124,15 +124,7 @@ export function AboutPage() {
         <section className={styles.ctaTopWrap}>
           <div className={styles.ctaTop}>
             <div className={styles.ctaTopImg} aria-label="농구 매치 이미지 영역">
-              {/* 실제 사진을 넣을 때 이 영역을 img 태그로 교체하세요. 예: <img src="/about-hero.jpg" alt="농구 매치" /> */}
-              <div className={styles.imgPlaceholder}>
-                여기에 사진을 넣어주세요
-                <span>img 태그로 교체</span>
-              </div>
-              <div className={styles.statBadge}>
-                <div className={styles.statNum}>TODAY OPEN</div>
-                <div className={styles.statLabel}>오늘도 경기가 열립니다</div>
-              </div>
+              <img src="/about-hero.jpeg" alt="농구 매치" />
             </div>
 
             <div className={`${styles.ctaTopText} ${styles.fadeUp}`} data-about-fade>
