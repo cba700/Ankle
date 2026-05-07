@@ -49,9 +49,9 @@ export default async function AdminEditMatchPage({
       title={match.title}
     >
       <AdminMatchWeatherPanel
-        onCancelForRain={cancelForRainAction}
-        onCheckWeather={checkWeatherAction}
-        onSendRainAlert={sendRainAlertAction}
+        cancelForRainAction={cancelForRainAction}
+        checkWeatherAction={checkWeatherAction}
+        sendRainAlertAction={sendRainAlertAction}
         weather={weather}
       />
       <AdminMatchEditor
