@@ -58,28 +58,6 @@ export function AdminVenueEditor({
             <input defaultValue={values.address} name="address" type="text" />
           </label>
 
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>기상청 격자 X(nx)</span>
-            <input
-              defaultValue={values.weatherGridNx}
-              inputMode="numeric"
-              name="weatherGridNx"
-              placeholder="예: 60"
-              type="text"
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>기상청 격자 Y(ny)</span>
-            <input
-              defaultValue={values.weatherGridNy}
-              inputMode="numeric"
-              name="weatherGridNy"
-              placeholder="예: 127"
-              type="text"
-            />
-          </label>
-
           <label className={`${styles.field} ${styles.fieldSpan}`}>
             <span className={styles.fieldLabel}>코트 특이사항</span>
             <textarea defaultValue={values.courtNote} name="courtNote" rows={5} />

@@ -32,7 +32,6 @@ type NotificationEventType =
   | "rain_notice"
   | "rain_change_notice"
   | "rain_alert"
-  | "rain_alert_changed"
   | "rain_match_cancelled";
 
 type NotificationDispatchStatus =
@@ -58,7 +57,6 @@ type NotificationTemplateKey =
   | "rainNotice"
   | "rainChangeNotice"
   | "rainAlert"
-  | "rainAlertChanged"
   | "rainMatchCancelled";
 
 type NotificationDispatchRow = {
@@ -151,7 +149,6 @@ const TEMPLATE_KEY_BY_EVENT: Record<NotificationEventType, NotificationTemplateK
   rain_notice: "rainNotice",
   rain_change_notice: "rainChangeNotice",
   rain_alert: "rainAlert",
-  rain_alert_changed: "rainAlertChanged",
   rain_match_cancelled: "rainMatchCancelled",
 };
 
@@ -374,51 +371,26 @@ export async function sendAdminMatchCancelledNotification(applicationId: string)
   });
 }
 
-export async function sendRainAlertNotifications(
-  matchId: string,
-  precipitationMm: number,
-) {
+export async function sendRainAlertNotifications(matchId: string) {
   let summary = createEmptyNotificationSendSummary();
 
   await runNotificationTask("rain_alert", async (admin) => {
     summary = await sendRainNotificationsForMatch(admin, {
       eventType: "rain_alert",
       matchId,
-      precipitationMm,
     });
   });
 
   return summary;
 }
 
-export async function sendRainAlertChangedNotifications(
-  matchId: string,
-  precipitationMm: number,
-) {
-  let summary = createEmptyNotificationSendSummary();
-
-  await runNotificationTask("rain_alert_changed", async (admin) => {
-    summary = await sendRainNotificationsForMatch(admin, {
-      eventType: "rain_alert_changed",
-      matchId,
-      precipitationMm,
-    });
-  });
-
-  return summary;
-}
-
-export async function sendRainMatchCancelledNotifications(
-  matchId: string,
-  precipitationMm: number,
-) {
+export async function sendRainMatchCancelledNotifications(matchId: string) {
   let summary = createEmptyNotificationSendSummary();
 
   await runNotificationTask("rain_match_cancelled", async (admin) => {
     summary = await sendRainNotificationsForMatch(admin, {
       eventType: "rain_match_cancelled",
       matchId,
-      precipitationMm,
     });
   });
 
@@ -953,11 +925,9 @@ async function sendRainNotificationsForMatch(
   {
     eventType,
     matchId,
-    precipitationMm,
   }: {
-    eventType: "rain_alert" | "rain_alert_changed" | "rain_match_cancelled";
+    eventType: "rain_alert" | "rain_match_cancelled";
     matchId: string;
-    precipitationMm: number;
   },
 ) {
   const applicationIds = await listApplicationIdsByMatchId(admin, matchId, [
@@ -977,7 +947,6 @@ async function sendRainNotificationsForMatch(
       context?.match
         ? sendRainNotificationToContext(admin, context, {
             eventType,
-            precipitationMm,
           })
         : Promise.resolve<ImmediateNotificationResult>("skipped")
     ),
@@ -991,14 +960,11 @@ async function sendRainNotificationToContext(
   context: NotificationApplicationContext,
   {
     eventType,
-    precipitationMm,
   }: {
-    eventType: "rain_alert" | "rain_alert_changed" | "rain_match_cancelled";
-    precipitationMm: number;
+    eventType: "rain_alert" | "rain_match_cancelled";
   },
 ) {
   const payload = {
-    precipitationMm,
     refundedAmount:
       eventType === "rain_match_cancelled" ? context.application.refunded_amount : undefined,
   };
@@ -1010,11 +976,7 @@ async function sendRainNotificationToContext(
   const templateVariables: Record<string, string> =
     eventType === "rain_match_cancelled"
       ? buildAdminMatchCancelTemplateVariables(context, cashAccount?.balance ?? 0)
-      : buildRainTemplateVariables(context, precipitationMm);
-
-  if (eventType === "rain_match_cancelled") {
-    templateVariables["#{예보강수량}"] = formatPrecipitationAmount(precipitationMm);
-  }
+      : buildRainTemplateVariables(context);
 
   return sendImmediateKakaoNotification(admin, {
     applicationId: context.application.id,
@@ -1428,10 +1390,7 @@ function buildMatchTemplateVariables(context: NotificationApplicationContext) {
   };
 }
 
-function buildRainTemplateVariables(
-  context: NotificationApplicationContext,
-  precipitationMm: number,
-) {
+function buildRainTemplateVariables(context: NotificationApplicationContext) {
   return {
     ...buildMatchTemplateVariables(context),
     "#{고객명}": getDisplayName(context.profile),
@@ -1441,7 +1400,6 @@ function buildRainTemplateVariables(
       context.match?.end_at ?? null,
     ),
     "#{매치장소이름}": getMatchVenueName(context),
-    "#{예보강수량}": formatPrecipitationAmount(precipitationMm),
   };
 }
 
@@ -1638,8 +1596,4 @@ function normalizeMatchFormat(format: string | null) {
   }
 
   return null;
-}
-
-function formatPrecipitationAmount(precipitationMm: number) {
-  return `${Number.isInteger(precipitationMm) ? precipitationMm : precipitationMm.toFixed(1)}mm`;
 }
