@@ -1,7 +1,6 @@
 import { formatMoney } from "@/lib/date";
 import { REFUND_POLICY, type MatchRecord } from "@/lib/matches";
 import type {
-  MatchDetailFacility,
   MatchDetailInfoItem,
   MatchDetailRefundRow,
   MatchDetailStatusTone,
@@ -12,12 +11,17 @@ type MatchDetailOverride = {
   likes?: number;
   views?: number;
   notice?: string;
-  courtSize?: string;
-  snackAvailable?: boolean;
   courtNotes?: string[];
-  howTo?: string[];
   refundRows?: MatchDetailRefundRow[];
 };
+
+const DEFAULT_MATCH_HOW_TO = [
+  "매니저가 매치 진행을 도와드려요",
+  "농구화 or 운동화와 개인 음료만 준비하세요",
+  "휴식을 공평하게 돌아가면서 해요",
+  "레벨을 기준으로 팀을 나눠요",
+  "친구끼리 와도 팀 실력이 맞지 않으면 다른 팀이 될 수 있어요",
+];
 
 const DETAIL_OVERRIDES: Record<string, MatchDetailOverride> = {
   "match-01": {
@@ -43,7 +47,6 @@ const DETAIL_OVERRIDES: Record<string, MatchDetailOverride> = {
   "match-05": {
     likes: 8,
     views: 129,
-    courtSize: "28×15m",
   },
   "match-07": {
     likes: 6,
@@ -78,10 +81,9 @@ export function buildMatchDetailViewModel(match: MatchRecord): MatchDetailViewMo
     levelDistribution: match.levelDistribution,
     averageLevel: levelSummary,
     levelHint: levelSummary,
-    facilities: buildFacilities(match, override),
     courtNotes: override.courtNotes ?? buildCourtNotes(match),
     rules: match.rules,
-    howTo: override.howTo ?? buildHowTo(match),
+    howTo: DEFAULT_MATCH_HOW_TO,
     safetyNotes: match.safetyNotes,
     refundRows: override.refundRows ?? REFUND_POLICY.map((row) => ({
       condition: row.point,
@@ -104,58 +106,11 @@ function buildInfoItems(match: MatchRecord): MatchDetailInfoItem[] {
   ];
 }
 
-function buildFacilities(
-  match: MatchRecord,
-  override: MatchDetailOverride,
-): MatchDetailFacility[] {
-  return [
-    {
-      key: "size",
-      label: override.courtSize ?? (match.format === "5vs5" ? "28×15m" : "Half Court"),
-    },
-    {
-      key: "parking",
-      label: summarizeParking(match.venueInfo.parking),
-    },
-    {
-      key: "shower",
-      label: "샤워실",
-      available: hasFacility(match.venueInfo.showerLocker, ["샤워"], ["없"]),
-    },
-    {
-      key: "locker",
-      label: "락커/보관",
-      available: hasFacility(match.venueInfo.showerLocker, ["락커", "보관"], ["없"]),
-    },
-    {
-      key: "snack",
-      label: "간식/음료",
-      available: override.snackAvailable ?? false,
-    },
-    {
-      key: "toilet",
-      label: "화장실",
-      available: true,
-    },
-  ];
-}
-
 function buildCourtNotes(match: MatchRecord) {
-  return [
-    `찾아오는 길: ${match.venueInfo.directions}`,
-    `주차: ${match.venueInfo.parking}`,
-    `흡연: ${match.venueInfo.smoking}`,
-    `보관/샤워: ${match.venueInfo.showerLocker}`,
-  ];
-}
-
-function buildHowTo(match: MatchRecord) {
-  return [
-    `${match.preparation}만 준비해 오면 됩니다.`,
-    "매니저가 출석 확인과 팀 밸런스 조정을 도와드립니다.",
-    `${match.levelCondition} 기준으로 코트 템포와 매치 경험을 맞춰 팀을 나눕니다.`,
-    "친구와 함께 와도 현장 상황에 맞춰 팀을 다시 조정할 수 있습니다.",
-  ];
+  return match.venueInfo.courtNote
+    .split("\n")
+    .map((note) => note.trim())
+    .filter(Boolean);
 }
 
 function getDefaultNotice(match: MatchRecord) {
@@ -164,26 +119,6 @@ function getDefaultNotice(match: MatchRecord) {
   }
 
   return "입문자도 쉽게 적응할 수 있도록 첫 두 경기는 밸런스 중심으로 진행합니다.";
-}
-
-function summarizeParking(parking: string) {
-  if (parking.includes("혼잡") || parking.includes("정체") || parking.includes("만차")) {
-    return "주차 가능 / 혼잡 가능";
-  }
-
-  if (parking.includes("가능")) {
-    return "주차 가능";
-  }
-
-  return "주차 확인";
-}
-
-function hasFacility(source: string, includes: string[], excludes: string[]) {
-  if (excludes.some((keyword) => source.includes(keyword))) {
-    return false;
-  }
-
-  return includes.some((keyword) => source.includes(keyword));
 }
 
 function getStatusTone(kind: MatchRecord["status"]["kind"]): MatchDetailStatusTone {
@@ -203,5 +138,5 @@ function getStatusTone(kind: MatchRecord["status"]["kind"]): MatchDetailStatusTo
 }
 
 function formatMatchFormat(format: MatchRecord["format"]) {
-  return format === "5vs5" ? "5vs5" : "3vs3";
+  return format;
 }

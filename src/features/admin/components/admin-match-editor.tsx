@@ -53,6 +53,11 @@ const REFUND_EXCEPTION_ACTIONS: Array<{
   { label: "강수 안내", mode: "rain_notice" },
   { label: "강수 변동 안내", mode: "rain_change_notice" },
 ];
+const CAPACITY_BY_FORMAT: Record<string, string> = {
+  "3vs3": "9",
+  "4vs4": "12",
+  "5vs5": "15",
+};
 
 export function AdminMatchEditor({
   canDelete = false,
@@ -85,10 +90,18 @@ export function AdminMatchEditor({
   ) {
     const { name, value } = event.target;
 
-    setFormValues((currentValues) => ({
-      ...currentValues,
-      [name]: value,
-    }));
+    setFormValues((currentValues) => {
+      const nextValues = {
+        ...currentValues,
+        [name]: value,
+      };
+
+      if (name === "format" && CAPACITY_BY_FORMAT[value]) {
+        nextValues.capacity = CAPACITY_BY_FORMAT[value];
+      }
+
+      return nextValues;
+    });
   }
 
   function handleVenueModeChange(modeValue: AdminMatchFormValue["venueEntryMode"]) {
@@ -128,10 +141,7 @@ export function AdminMatchEditor({
         {mode === "create" ? (
           <>
             <input name="district" type="hidden" value={formValues.district} />
-            <input name="directions" type="hidden" value={formValues.directions} />
-            <input name="parking" type="hidden" value={formValues.parking} />
-            <input name="smoking" type="hidden" value={formValues.smoking} />
-            <input name="showerLocker" type="hidden" value={formValues.showerLocker} />
+            <input name="courtNote" type="hidden" value={formValues.courtNote} />
             <input name="rulesText" type="hidden" value={formValues.rulesText} />
             <input name="safetyNotesText" type="hidden" value={formValues.safetyNotesText} />
           </>
@@ -335,6 +345,7 @@ export function AdminMatchEditor({
               <select name="format" onChange={handleFieldChange} required value={formValues.format}>
                 <option value="">경기 방식을 선택하세요</option>
                 <option value="3vs3">3vs3</option>
+                <option value="4vs4">4vs4</option>
                 <option value="5vs5">5vs5</option>
               </select>
             </label>
@@ -504,42 +515,12 @@ export function AdminMatchEditor({
 
               <div className={styles.fieldGrid}>
                 <label className={`${styles.field} ${styles.fieldSpan}`}>
-                  <span className={styles.fieldLabel}>찾아오는 길</span>
+                  <span className={styles.fieldLabel}>코트 특이사항</span>
                   <textarea
-                    name="directions"
+                    name="courtNote"
                     onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.directions}
-                  />
-                </label>
-
-                <label className={`${styles.field} ${styles.fieldSpan}`}>
-                  <span className={styles.fieldLabel}>주차</span>
-                  <textarea
-                    name="parking"
-                    onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.parking}
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>흡연</span>
-                  <textarea
-                    name="smoking"
-                    onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.smoking}
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>보관/샤워</span>
-                  <textarea
-                    name="showerLocker"
-                    onChange={handleFieldChange}
-                    rows={3}
-                    value={formValues.showerLocker}
+                    rows={5}
+                    value={formValues.courtNote}
                   />
                 </label>
 

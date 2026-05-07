@@ -34,6 +34,7 @@ import {
   assertCashChargeOperationsSchemaReady,
   assertCouponSchemaReady,
   assertCashRefundRequestSchemaReady,
+  assertHomeBannerSchemaReady,
   assertNotificationDispatchSchemaReady,
   assertVenueManagementSchemaReady,
 } from "@/lib/supabase/schema";
@@ -41,6 +42,12 @@ import {
   getSupabaseServerClient,
   getSupabaseServiceRoleClient,
 } from "@/lib/supabase/server";
+import {
+  deleteHomeBannerImageUrls,
+  isManagedHomeBannerImageUrl,
+  uploadHomeBannerImageFile,
+} from "@/lib/banner-images";
+import { getAdminHomeBannerById } from "@/lib/home-banners";
 import {
   deleteVenueImageUrls,
   isManagedVenueImageUrl,
@@ -62,6 +69,7 @@ import type {
 type VenueWriteResult = {
   id: string;
   slug: string;
+  courtNote: string | null;
   weatherGridNx: number | null;
   weatherGridNy: number | null;
 };
@@ -69,6 +77,7 @@ type VenueWriteResult = {
 type VenueWriteRow = {
   id: string;
   slug: string;
+  court_note: string | null;
   weather_grid_nx: number | null;
   weather_grid_ny: number | null;
 };
@@ -77,6 +86,7 @@ type VenueFormValues = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -94,6 +104,7 @@ type VenueWriteValues = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -104,6 +115,22 @@ type VenueWriteValues = {
   defaultRules: string[];
   defaultSafetyNotes: string[];
   isActive: boolean;
+};
+
+type HomeBannerFormValues = {
+  title: string;
+  href: string | null;
+  displayOrder: number | null;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  imageFile: File | null;
+};
+
+type HomeBannerOrderRow = {
+  id: string;
+  display_order: number;
+  created_at: string;
 };
 
 type VenueImageOrderEntry =
@@ -140,7 +167,7 @@ const REQUIRED_MATCH_VENUE_DELETE_MIGRATION =
   "20260420110000_allow_admin_delete_matches_and_venues.sql";
 
 const MATCH_STATUSES: AdminMatchStatus[] = ["draft", "open", "closed", "cancelled"];
-const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "5vs5"];
+const MATCH_FORMATS: AdminMatchFormat[] = ["3vs3", "4vs4", "5vs5"];
 const MATCH_LEVELS: AdminMatchLevelPreset[] = ["all", "basic", "middle", "high"];
 const MATCH_REFUND_EXCEPTION_MODES: AdminMatchRefundExceptionMode[] = [
   "none",
@@ -170,10 +197,11 @@ export async function createAdminMatchAction(formData: FormData) {
       venue_name: values.venueName,
       district: values.district,
       address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
+      court_note: normalizeOptionalText(values.courtNote) ?? venue.courtNote,
+      directions: "",
+      parking: "",
+      smoking: "",
+      shower_locker: "",
       weather_grid_nx: values.weatherGridNx ?? venue.weatherGridNx,
       weather_grid_ny: values.weatherGridNy ?? venue.weatherGridNy,
       title: values.title,
@@ -234,10 +262,11 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
       venue_name: values.venueName,
       district: values.district,
       address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
+      court_note: normalizeOptionalText(values.courtNote),
+      directions: "",
+      parking: "",
+      smoking: "",
+      shower_locker: "",
       weather_grid_nx: values.weatherGridNx ?? venue.weatherGridNx,
       weather_grid_ny: values.weatherGridNy ?? venue.weatherGridNy,
       title: values.title,
@@ -331,10 +360,11 @@ export async function createAdminVenueAction(formData: FormData) {
     name: values.name,
     district: values.district,
     address: values.address,
-    directions: values.directions,
-    parking: values.parking,
-    smoking: values.smoking,
-    showerLocker: values.showerLocker,
+    courtNote: values.courtNote,
+    directions: "",
+    parking: "",
+    smoking: "",
+    showerLocker: "",
     weatherGridNx: values.weatherGridNx,
     weatherGridNy: values.weatherGridNy,
     defaultImageUrls: [],
@@ -395,10 +425,11 @@ export async function updateAdminVenueAction(venueId: string, formData: FormData
         name: values.name,
         district: values.district,
         address: values.address,
-        directions: values.directions,
-        parking: values.parking,
-        smoking: values.smoking,
-        shower_locker: values.showerLocker,
+        court_note: normalizeOptionalText(values.courtNote),
+        directions: "",
+        parking: "",
+        smoking: "",
+        shower_locker: "",
         weather_grid_nx: values.weatherGridNx,
         weather_grid_ny: values.weatherGridNy,
         default_image_urls: defaultImageUrls,
@@ -463,6 +494,135 @@ export async function deleteAdminVenueAction(venueId: string, _formData: FormDat
 
   revalidateAdminVenuePaths(venueId);
   redirect("/admin/venues");
+}
+
+export async function createAdminHomeBannerAction(formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertHomeBannerSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
+  const values = readHomeBannerFormValues(formData, { requireImage: true });
+
+  if (!values.imageFile) {
+    throw new Error("배너 이미지를 등록해 주세요.");
+  }
+
+  const bannerId = crypto.randomUUID();
+  let uploadedUrl = "";
+
+  try {
+    uploadedUrl = await uploadHomeBannerImageFile(admin, {
+      bannerId,
+      file: values.imageFile,
+    });
+    const displayOrder = await getHomeBannerInsertDisplayOrder(
+      supabase,
+      values.displayOrder,
+    );
+
+    const { error } = await ((supabase.from("home_banners" as any) as any).insert({
+      display_order: displayOrder,
+      ends_at: values.endsAt,
+      href: values.href,
+      id: bannerId,
+      image_url: uploadedUrl,
+      is_active: values.isActive,
+      starts_at: values.startsAt,
+      title: values.title,
+    }));
+
+    if (error) {
+      throw new Error(`Failed to create home banner: ${error.message}`);
+    }
+  } catch (error) {
+    await safeDeleteHomeBannerImageUrls(admin, uploadedUrl ? [uploadedUrl] : []);
+    throw error;
+  }
+
+  await reorderAdminHomeBanners(supabase, bannerId, values.displayOrder);
+  revalidateAdminHomeBannerPaths();
+  redirect("/admin/banners");
+}
+
+export async function updateAdminHomeBannerAction(bannerId: string, formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertHomeBannerSchemaReady(supabase);
+  const admin = requireServiceRoleClient();
+  const currentBanner = await getAdminHomeBannerById(supabase, bannerId);
+
+  if (!currentBanner) {
+    throw new Error("배너를 찾을 수 없습니다.");
+  }
+
+  const values = readHomeBannerFormValues(formData, { requireImage: false });
+  let uploadedUrl = "";
+  let nextImageUrl = currentBanner.imageUrl;
+
+  try {
+    if (values.imageFile) {
+      uploadedUrl = await uploadHomeBannerImageFile(admin, {
+        bannerId,
+        file: values.imageFile,
+      });
+      nextImageUrl = uploadedUrl;
+    }
+
+    const { error } = await ((supabase.from("home_banners" as any) as any)
+      .update({
+        ends_at: values.endsAt,
+        href: values.href,
+        image_url: nextImageUrl,
+        is_active: values.isActive,
+        starts_at: values.startsAt,
+        title: values.title,
+      })
+      .eq("id", bannerId));
+
+    if (error) {
+      throw new Error(`Failed to update home banner: ${error.message}`);
+    }
+  } catch (error) {
+    await safeDeleteHomeBannerImageUrls(admin, uploadedUrl ? [uploadedUrl] : []);
+    throw error;
+  }
+
+  if (
+    uploadedUrl &&
+    currentBanner.imageUrl !== nextImageUrl &&
+    isManagedHomeBannerImageUrl(currentBanner.imageUrl)
+  ) {
+    await safeDeleteHomeBannerImageUrls(admin, [currentBanner.imageUrl]);
+  }
+
+  await reorderAdminHomeBanners(supabase, bannerId, values.displayOrder);
+  revalidateAdminHomeBannerPaths();
+  redirect("/admin/banners");
+}
+
+export async function deleteAdminHomeBannerAction(bannerId: string, _formData: FormData) {
+  const supabase = await requireAdminSupabase();
+  await assertHomeBannerSchemaReady(supabase);
+  const banner = await getAdminHomeBannerById(supabase, bannerId);
+
+  if (!banner) {
+    redirect("/admin/banners");
+  }
+
+  const { error } = await ((supabase.from("home_banners" as any) as any)
+    .delete()
+    .eq("id", bannerId));
+
+  if (error) {
+    throw new Error(`Failed to delete home banner: ${error.message}`);
+  }
+
+  if (isManagedHomeBannerImageUrl(banner.imageUrl)) {
+    const admin = requireServiceRoleClient();
+    await safeDeleteHomeBannerImageUrls(admin, [banner.imageUrl]);
+  }
+
+  await normalizeAdminHomeBannerOrders(supabase);
+  revalidateAdminHomeBannerPaths();
+  redirect("/admin/banners");
 }
 
 export async function adjustAdminCashBalanceAction(formData: FormData) {
@@ -980,7 +1140,7 @@ async function getManagedVenue(
 ) {
   const { data, error } = await supabase
     .from("venues")
-    .select("id, slug, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -997,7 +1157,7 @@ async function resolveManualVenue(
 ) {
   const { data: existingVenue, error: lookupError } = await supabase
     .from("venues")
-    .select("id, slug, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
     .eq("address", values.address)
     .maybeSingle();
 
@@ -1013,10 +1173,11 @@ async function resolveManualVenue(
     name: values.venueName,
     district: values.district,
     address: values.address,
-    directions: values.directions,
-    parking: values.parking,
-    smoking: values.smoking,
-    showerLocker: values.showerLocker,
+    courtNote: values.courtNote,
+    directions: "",
+    parking: "",
+    smoking: "",
+    showerLocker: "",
     weatherGridNx: values.weatherGridNx,
     weatherGridNy: values.weatherGridNy,
     defaultImageUrls: values.imageUrls,
@@ -1038,10 +1199,11 @@ async function createVenue(
       name: values.name,
       district: values.district,
       address: values.address,
-      directions: values.directions,
-      parking: values.parking,
-      smoking: values.smoking,
-      shower_locker: values.showerLocker,
+      court_note: normalizeOptionalText(values.courtNote),
+      directions: "",
+      parking: "",
+      smoking: "",
+      shower_locker: "",
       weather_grid_nx: values.weatherGridNx,
       weather_grid_ny: values.weatherGridNy,
       default_image_urls: values.defaultImageUrls,
@@ -1049,7 +1211,7 @@ async function createVenue(
       default_safety_notes: values.defaultSafetyNotes,
       is_active: values.isActive,
     })
-    .select("id, slug, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
     .single();
 
   if (error || !data) {
@@ -1181,6 +1343,7 @@ type MatchFormValues = {
   summary: string;
   publicNotice: string;
   operatorNote: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -1230,6 +1393,7 @@ function readCreateMatchFormValues(formData: FormData): MatchFormValues {
     summary: getOptionalString(formData, "summary"),
     publicNotice: getOptionalString(formData, "publicNotice"),
     operatorNote: getOptionalString(formData, "operatorNote"),
+    courtNote: getOptionalString(formData, "courtNote"),
     directions: getOptionalString(formData, "directions"),
     parking: getOptionalString(formData, "parking"),
     smoking: getOptionalString(formData, "smoking"),
@@ -1280,6 +1444,7 @@ function readUpdateMatchFormValues(formData: FormData): MatchFormValues {
     summary: getOptionalString(formData, "summary"),
     publicNotice: getOptionalString(formData, "publicNotice"),
     operatorNote: getOptionalString(formData, "operatorNote"),
+    courtNote: getOptionalString(formData, "courtNote"),
     directions: getOptionalString(formData, "directions"),
     parking: getOptionalString(formData, "parking"),
     smoking: getOptionalString(formData, "smoking"),
@@ -1296,10 +1461,11 @@ function readVenueFormValues(formData: FormData): VenueFormValues {
     name: getRequiredString(formData, "name"),
     district: getRequiredString(formData, "district"),
     address: getRequiredString(formData, "address"),
-    directions: getRequiredString(formData, "directions"),
-    parking: getRequiredString(formData, "parking"),
-    smoking: getRequiredString(formData, "smoking"),
-    showerLocker: getRequiredString(formData, "showerLocker"),
+    courtNote: getOptionalString(formData, "courtNote"),
+    directions: getOptionalString(formData, "directions"),
+    parking: getOptionalString(formData, "parking"),
+    smoking: getOptionalString(formData, "smoking"),
+    showerLocker: getOptionalString(formData, "showerLocker"),
     weatherGridNx: getOptionalPositiveInteger(formData, "weatherGridNx"),
     weatherGridNy: getOptionalPositiveInteger(formData, "weatherGridNy"),
     imageFiles: getUploadedFiles(formData, "imageFiles"),
@@ -1307,6 +1473,38 @@ function readVenueFormValues(formData: FormData): VenueFormValues {
     defaultRules: splitLineSeparated(getOptionalString(formData, "defaultRulesText")),
     defaultSafetyNotes: splitLineSeparated(getOptionalString(formData, "defaultSafetyNotesText")),
     isActive: formData.get("isActive") === "on",
+  };
+}
+
+function readHomeBannerFormValues(
+  formData: FormData,
+  { requireImage }: { requireImage: boolean },
+): HomeBannerFormValues {
+  const imageFile = getUploadedFiles(formData, "imageFile")[0] ?? null;
+  const alwaysVisible = formData.get("alwaysVisible") === "on";
+  const startsAt = alwaysVisible
+    ? null
+    : getRequiredSeoulDateTimeLocal(formData, "startsAt");
+  const endsAt = alwaysVisible
+    ? null
+    : getRequiredSeoulDateTimeLocal(formData, "endsAt");
+
+  if (requireImage && !imageFile) {
+    throw new Error("Missing required field: imageFile");
+  }
+
+  if (startsAt && endsAt && new Date(startsAt).getTime() >= new Date(endsAt).getTime()) {
+    throw new Error("배너 종료 시각은 시작 시각보다 늦어야 합니다.");
+  }
+
+  return {
+    displayOrder: getOptionalPositiveInteger(formData, "displayOrder"),
+    endsAt,
+    href: getOptionalInternalHref(getOptionalString(formData, "href")),
+    imageFile,
+    isActive: formData.get("isActive") === "on",
+    startsAt,
+    title: getRequiredString(formData, "title"),
   };
 }
 
@@ -1323,6 +1521,11 @@ function getRequiredString(formData: FormData, key: string) {
 function getOptionalString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeOptionalText(value: string) {
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : null;
 }
 
 function getPositiveInteger(formData: FormData, key: string) {
@@ -1367,6 +1570,45 @@ function getOptionalPositiveInteger(formData: FormData, key: string) {
   }
 
   return parsed;
+}
+
+function getOptionalInternalHref(value: string) {
+  if (!value) {
+    return null;
+  }
+
+  if (value === "/" || (value.startsWith("/") && !value.startsWith("//"))) {
+    return value;
+  }
+
+  throw new Error("배너 링크는 /로 시작하는 내부 경로만 입력할 수 있습니다.");
+}
+
+function getRequiredSeoulDateTimeLocal(formData: FormData, key: string) {
+  const value = getOptionalSeoulDateTimeLocal(formData, key);
+
+  if (!value) {
+    throw new Error(`Missing required field: ${key}`);
+  }
+
+  return value;
+}
+
+function getOptionalSeoulDateTimeLocal(formData: FormData, key: string) {
+  const value = getOptionalString(formData, key);
+
+  if (!value) {
+    return null;
+  }
+
+  const valueWithSeconds = value.length === 16 ? `${value}:00` : value;
+  const parsed = new Date(`${valueWithSeconds}+09:00`);
+
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Invalid date time field: ${key}`);
+  }
+
+  return parsed.toISOString();
 }
 
 function getStatus(value: string) {
@@ -1542,6 +1784,7 @@ function mapVenueWriteResult(row: VenueWriteRow): VenueWriteResult {
   return {
     id: row.id,
     slug: row.slug,
+    courtNote: normalizeOptionalText(row.court_note ?? ""),
     weatherGridNx: row.weather_grid_nx,
     weatherGridNy: row.weather_grid_ny,
   };
@@ -1586,6 +1829,82 @@ function revalidateAdminVenuePaths(venueId: string) {
   revalidatePath("/admin/matches");
   revalidatePath("/admin/matches/new");
   revalidatePath(`/admin/venues/${venueId}/edit`);
+}
+
+function revalidateAdminHomeBannerPaths() {
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/admin/banners");
+}
+
+async function getHomeBannerInsertDisplayOrder(
+  supabase: AdminSupabaseClient,
+  requestedDisplayOrder: number | null,
+) {
+  if (requestedDisplayOrder !== null) {
+    return requestedDisplayOrder;
+  }
+
+  const rows = await listHomeBannerOrderRows(supabase);
+  return rows.length + 1;
+}
+
+async function reorderAdminHomeBanners(
+  supabase: AdminSupabaseClient,
+  movedBannerId: string,
+  requestedDisplayOrder: number | null,
+) {
+  const rows = await listHomeBannerOrderRows(supabase);
+  const movedRow = rows.find((row) => row.id === movedBannerId);
+
+  if (!movedRow) {
+    return;
+  }
+
+  const orderedRows = rows.filter((row) => row.id !== movedBannerId);
+  const targetOrder = requestedDisplayOrder ?? rows.length;
+  const targetIndex = Math.min(Math.max(targetOrder, 1), rows.length) - 1;
+
+  orderedRows.splice(targetIndex, 0, movedRow);
+  await updateHomeBannerDisplayOrders(supabase, orderedRows);
+}
+
+async function normalizeAdminHomeBannerOrders(supabase: AdminSupabaseClient) {
+  await updateHomeBannerDisplayOrders(supabase, await listHomeBannerOrderRows(supabase));
+}
+
+async function listHomeBannerOrderRows(supabase: AdminSupabaseClient) {
+  const { data, error } = await ((supabase.from("home_banners" as any) as any)
+    .select("id, display_order, created_at")
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true }));
+
+  if (error) {
+    throw new Error(`Failed to load home banner order: ${error.message}`);
+  }
+
+  return (data ?? []) as HomeBannerOrderRow[];
+}
+
+async function updateHomeBannerDisplayOrders(
+  supabase: AdminSupabaseClient,
+  rows: HomeBannerOrderRow[],
+) {
+  for (const [index, row] of rows.entries()) {
+    const nextDisplayOrder = index + 1;
+
+    if (row.display_order === nextDisplayOrder) {
+      continue;
+    }
+
+    const { error } = await ((supabase.from("home_banners" as any) as any)
+      .update({ display_order: nextDisplayOrder })
+      .eq("id", row.id));
+
+    if (error) {
+      throw new Error(`Failed to update home banner order: ${error.message}`);
+    }
+  }
 }
 
 function isDeletePermissionError(error: { code?: string; message?: string | null }) {
@@ -1646,6 +1965,18 @@ async function safeDeleteVenueImageUrls(admin: any, urls: string[]) {
 
   try {
     await deleteVenueImageUrls(admin, urls);
+  } catch {
+    // Ignore storage cleanup failures after the main DB write succeeds.
+  }
+}
+
+async function safeDeleteHomeBannerImageUrls(admin: any, urls: string[]) {
+  if (urls.length === 0) {
+    return;
+  }
+
+  try {
+    await deleteHomeBannerImageUrls(admin, urls);
   } catch {
     // Ignore storage cleanup failures after the main DB write succeeds.
   }

@@ -122,6 +122,7 @@ function mapEntityToMatchRecord(
         ? entity.venue.defaultImageUrls
         : DEFAULT_IMAGE_URLS,
     venueInfo: {
+      courtNote: entity.venue.courtNote,
       directions: entity.venue.directions,
       parking: entity.venue.parking,
       smoking: entity.venue.smoking,
@@ -172,6 +173,16 @@ function getPublicStatus(
     }
 
     if (entity.confirmedCount >= 4) {
+      return { kind: "confirmedSoon", label: "확정 임박" };
+    }
+  }
+
+  if (entity.format === "4vs4") {
+    if (entity.confirmedCount >= 9) {
+      return { kind: "closingSoon", label: "마감 임박" };
+    }
+
+    if (entity.confirmedCount >= 5) {
       return { kind: "confirmedSoon", label: "확정 임박" };
     }
   }

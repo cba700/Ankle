@@ -35,6 +35,13 @@ export type HomeFilterState = {
   levels: HomeLevelFilterKey[];
 };
 
+export type HomeBannerSlide = {
+  href: string | null;
+  id: string;
+  imageUrl: string;
+  title: string;
+};
+
 export type HomeMatchStatusTone = "neutral" | "accent" | "danger" | "open";
 
 export type HomeMatchRow = {

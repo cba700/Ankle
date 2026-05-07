@@ -19,20 +19,6 @@ export type MatchDetailDistributionItem = {
   tone: "basic" | "middle" | "high" | "star";
 };
 
-export type MatchDetailFacilityKey =
-  | "size"
-  | "parking"
-  | "shower"
-  | "locker"
-  | "snack"
-  | "toilet";
-
-export type MatchDetailFacility = {
-  key: MatchDetailFacilityKey;
-  label: string;
-  available?: boolean;
-};
-
 export type MatchDetailRefundRow = {
   condition: string;
   policy: string;
@@ -65,7 +51,6 @@ export type MatchDetailViewModel = {
   levelDistribution: MatchDetailDistributionItem[];
   averageLevel: string;
   levelHint: string;
-  facilities: MatchDetailFacility[];
   courtNotes: string[];
   rules: string[];
   howTo: string[];

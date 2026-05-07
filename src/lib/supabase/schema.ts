@@ -38,6 +38,10 @@ const REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION =
   "20260416110000_add_account_withdrawal.sql";
 const REQUIRED_MATCH_WEATHER_MIGRATION =
   "20260416143000_add_match_weather_and_notification_events.sql";
+const REQUIRED_COURT_NOTE_MIGRATION =
+  "20260506120000_add_court_note_to_venues_and_matches.sql";
+const REQUIRED_HOME_BANNER_MIGRATION =
+  "20260506121000_add_home_banners.sql";
 
 const REQUIRED_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MIGRATION} before running venue and match features.`;
 const REQUIRED_PUBLIC_ID_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_PUBLIC_ID_MIGRATION} before running public match routes.`;
@@ -55,6 +59,8 @@ const REQUIRED_NOTIFICATION_DISPATCH_MIGRATION_MESSAGE = `Database schema is out
 const REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_REFUND_POLICY_RUNTIME_MIGRATION} before running refund exception features.`;
 const REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_ACCOUNT_WITHDRAWAL_MIGRATION} before running account withdrawal features.`;
 const REQUIRED_MATCH_WEATHER_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_MATCH_WEATHER_MIGRATION} before running venue weather and match weather features.`;
+const REQUIRED_COURT_NOTE_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_COURT_NOTE_MIGRATION} before running court note features.`;
+const REQUIRED_HOME_BANNER_MIGRATION_MESSAGE = `Database schema is outdated. Apply migration ${REQUIRED_HOME_BANNER_MIGRATION} before running home banner features.`;
 
 let schemaCheckPromise: Promise<void> | null = null;
 let publicIdSchemaCheckPromise: Promise<void> | null = null;
@@ -69,6 +75,7 @@ let adminMatchParticipantsSchemaCheckPromise: Promise<void> | null = null;
 let couponSchemaCheckPromise: Promise<void> | null = null;
 let notificationDispatchSchemaCheckPromise: Promise<void> | null = null;
 let accountWithdrawalSchemaCheckPromise: Promise<void> | null = null;
+let homeBannerSchemaCheckPromise: Promise<void> | null = null;
 
 export async function assertVenueManagementSchemaReady(
   supabase?: SupabaseServerClient | null,
@@ -333,6 +340,25 @@ export async function assertNotificationDispatchSchemaReady(
   return notificationDispatchSchemaCheckPromise;
 }
 
+export async function assertHomeBannerSchemaReady(
+  supabase?: SupabaseServerClient | null,
+) {
+  const client = supabase ?? (await getSupabaseServerClient());
+
+  if (!client) {
+    return;
+  }
+
+  if (!homeBannerSchemaCheckPromise) {
+    homeBannerSchemaCheckPromise = runHomeBannerSchemaCheck(client).catch((error) => {
+      homeBannerSchemaCheckPromise = null;
+      throw error;
+    });
+  }
+
+  return homeBannerSchemaCheckPromise;
+}
+
 async function runSchemaCheck(supabase: SupabaseServerClient) {
   const matchSnapshotCheck = await supabase
     .from("matches")
@@ -369,6 +395,20 @@ async function runVenueManagementSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleMatchWeatherSchemaError(matchWeatherSnapshotCheck.error);
+
+  const venueCourtNoteCheck = await supabase
+    .from("venues")
+    .select("court_note")
+    .limit(1);
+
+  handleCourtNoteSchemaError(venueCourtNoteCheck.error);
+
+  const matchCourtNoteCheck = await supabase
+    .from("matches")
+    .select("court_note")
+    .limit(1);
+
+  handleCourtNoteSchemaError(matchCourtNoteCheck.error);
 }
 
 async function runCashSchemaCheck(supabase: SupabaseServerClient) {
@@ -630,6 +670,14 @@ async function runAccountWithdrawalSchemaCheck(supabase: SupabaseServerClient) {
     .limit(1);
 
   handleAccountWithdrawalSchemaCheckError(withdrawalRejoinBlockCheck.error);
+}
+
+async function runHomeBannerSchemaCheck(supabase: SupabaseServerClient) {
+  const homeBannerCheck = await ((supabase.from("home_banners" as any) as any)
+    .select("title, image_url, href, display_order, is_active, starts_at, ends_at")
+    .limit(1));
+
+  handleHomeBannerSchemaCheckError(homeBannerCheck.error);
 }
 
 function handleSchemaCheckError(
@@ -925,6 +973,48 @@ function handleMatchWeatherSchemaError(
   }
 
   throw new Error(`Failed to verify match weather schema: ${error.message}`);
+}
+
+function handleCourtNoteSchemaError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_COURT_NOTE_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify court note schema: ${error.message}`);
+}
+
+function handleHomeBannerSchemaCheckError(
+  error: { code?: string; message?: string } | null,
+) {
+  if (!error) {
+    return;
+  }
+
+  if (
+    error.code === "42703" ||
+    error.code === "42P01" ||
+    error.code === "PGRST202" ||
+    error.message?.includes("does not exist") ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("Could not find the relation")
+  ) {
+    throw new Error(REQUIRED_HOME_BANNER_MIGRATION_MESSAGE);
+  }
+
+  throw new Error(`Failed to verify home banner schema: ${error.message}`);
 }
 
 function isExpectedCouponRpcProbeError(

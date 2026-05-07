@@ -9,6 +9,7 @@ import {
 } from "@/components/home/home-route-state";
 import { buildHomeMatchRows, SEOUL_DISTRICTS } from "@/components/home/home-view-model";
 import { getDisplayDates } from "@/lib/matches";
+import { listPublicHomeBanners } from "@/lib/home-banners";
 import { getPublicMatches } from "@/lib/matches-data";
 import {
   SITE_DESCRIPTION,
@@ -52,7 +53,10 @@ export default async function Page({
     levels?: string | string[];
   }>;
 }) {
-  const matches = await getPublicMatches();
+  const [homeBanners, matches] = await Promise.all([
+    listPublicHomeBanners(),
+    getPublicMatches(),
+  ]);
   const rows = buildHomeMatchRows(matches);
   const dates = getDisplayDates();
   const resolvedSearchParams = await searchParams;
@@ -79,6 +83,7 @@ export default async function Page({
     <HomePage
       initialFilterState={initialFilterState}
       initialSelectedDateKey={initialSelectedDateKey}
+      homeBanners={homeBanners}
       isAdmin={false}
       dates={dates}
       rows={rows}

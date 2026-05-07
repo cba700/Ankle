@@ -21,6 +21,7 @@ import {
   listCouponTemplates,
   listCouponUsageSummaries,
 } from "@/lib/coupons";
+import { listAdminHomeBanners } from "@/lib/home-banners";
 import { getAdminMatchEntityById, listAdminMatchEntities, type MatchEntity } from "@/lib/match-store";
 import { listSentApplicationNotificationIds } from "@/lib/notifications";
 import {
@@ -29,6 +30,7 @@ import {
   assertCashChargeOperationsSchemaReady,
   assertCouponSchemaReady,
   assertCashRefundRequestSchemaReady,
+  assertHomeBannerSchemaReady,
 } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminVenueEntityById, listAdminVenueEntities, type VenueEntity } from "@/lib/venue-store";
@@ -82,6 +84,18 @@ export async function getAdminMatches() {
       })),
     ),
   );
+}
+
+export async function getAdminHomeBanners() {
+  const supabase = await getSupabaseServerClient();
+
+  if (!supabase) {
+    return [];
+  }
+
+  await assertHomeBannerSchemaReady(supabase);
+
+  return listAdminHomeBanners(supabase);
 }
 
 export async function getAdminMatchById(id: string) {
@@ -355,6 +369,7 @@ function mapEntityToAdminRecord(
     refundExceptionMode,
     participants,
     venueInfo: {
+      courtNote: entity.venue.courtNote,
       directions: entity.venue.directions,
       parking: entity.venue.parking,
       smoking: entity.venue.smoking,
@@ -453,6 +468,7 @@ function mapVenueEntityToAdminRecord(entity: VenueEntity): AdminVenueRecord {
     weatherGridNx: entity.weatherGridNx,
     weatherGridNy: entity.weatherGridNy,
     venueInfo: {
+      courtNote: entity.courtNote,
       directions: entity.directions,
       parking: entity.parking,
       smoking: entity.smoking,
@@ -475,6 +491,7 @@ function mapVenueEntityToOption(entity: VenueEntity): AdminVenueOption {
     weatherGridNx: entity.weatherGridNx,
     weatherGridNy: entity.weatherGridNy,
     venueInfo: {
+      courtNote: entity.courtNote,
       directions: entity.directions,
       parking: entity.parking,
       smoking: entity.smoking,

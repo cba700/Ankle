@@ -94,10 +94,7 @@ export function buildHomeMatchRows(matches: MatchRecord[]): HomeMatchRow[] {
 }
 
 function getHomeStatus(match: MatchRecord) {
-  const thresholds =
-    match.format === "3vs3"
-      ? { confirmedSoon: 3, closingSoon: 6, closed: 9 }
-      : { confirmedSoon: 7, closingSoon: 12, closed: 15 };
+  const thresholds = getMatchStatusThresholds(match.format);
 
   if (!match.canApply || match.currentParticipants >= thresholds.closed) {
     return { label: "마감", tone: "neutral" as const, isUrgent: false };
@@ -112,6 +109,18 @@ function getHomeStatus(match: MatchRecord) {
   }
 
   return { label: "", tone: "open" as const, isUrgent: false };
+}
+
+function getMatchStatusThresholds(format: MatchRecord["format"]) {
+  if (format === "3vs3") {
+    return { confirmedSoon: 3, closingSoon: 6, closed: 9 };
+  }
+
+  if (format === "4vs4") {
+    return { confirmedSoon: 5, closingSoon: 9, closed: 12 };
+  }
+
+  return { confirmedSoon: 7, closingSoon: 12, closed: 15 };
 }
 
 function getHomeGenderKey(value: string): HomeGenderFilterKey | null {

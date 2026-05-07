@@ -1,12 +1,13 @@
 .page {
   min-height: 100vh;
-  background: var(--user-page-background);
+  background: #f7f7f7;
 }
 
 .main {
-  padding: 24px 0 40px;
+  max-width: 760px;
+  padding: 40px 0 48px;
   display: grid;
-  gap: 16px;
+  gap: 24px;
 }
 
 .backLink {
@@ -14,220 +15,246 @@
   align-items: center;
   gap: 8px;
   justify-self: start;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #e5e7eb;
   border-radius: 999px;
   background: #fff;
+  color: #222;
   font-size: 13px;
   font-weight: 700;
 }
 
-.backIcon,
-.heroBadgeIcon {
+.backIcon {
   width: 18px;
   height: 18px;
 }
 
-.heroCard {
-  padding: 24px;
-  border: 1px solid rgba(201, 193, 183, 0.78);
-  border-radius: 24px;
+.guideCard {
+  padding: 42px 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 28px;
   background: #fff;
-  box-shadow: 0 20px 42px rgba(29, 24, 19, 0.08);
-  display: grid;
-  gap: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
-.heroBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.heroCopy {
-  min-width: 0;
-}
-
-.heroTitle {
-  margin: 14px 0 0;
-  font-size: clamp(26px, 3.8vw, 38px);
-  line-height: 1.08;
-  letter-spacing: -0.05em;
-}
-
-.heroCallout {
-  display: grid;
-  gap: 6px;
-  width: 100%;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(255, 123, 27, 0.1), rgba(255, 232, 203, 0.6));
-  box-sizing: border-box;
-}
-
-.heroCalloutTitle {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.heroCalloutBody {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.sectionList {
+.hero {
   display: grid;
   gap: 16px;
 }
 
-.guideSection {
-  min-width: 0;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: #fff;
-  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.05);
-}
-
-.toneBasic {
-  --guide-accent: #f4c542;
-  --guide-surface: #fff7ed;
-}
-
-.toneMiddle {
-  --guide-accent: #ffb443;
-  --guide-surface: rgba(255, 180, 67, 0.14);
-}
-
-.toneHigh {
-  --guide-accent: #ff8c00;
-  --guide-surface: rgba(255, 140, 0, 0.12);
-}
-
-.toneStar {
-  --guide-accent: #ff4500;
-  --guide-surface: rgba(255, 69, 0, 0.12);
-}
-
-.sectionIntro {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.sectionBadge {
+.heroTitle {
   margin: 0;
-  color: var(--guide-accent);
-  font-size: 42px;
+  color: #111;
+  font-size: 34px;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.18;
   letter-spacing: 0;
 }
 
-.sectionTitle {
+.heroDescription {
+  max-width: 620px;
   margin: 0;
-  color: #8f8a83;
+  color: #666;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.62;
+}
+
+.imageBox {
+  max-width: 680px;
+  margin: 34px auto 0;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.levelImage {
+  width: 100%;
+  border-radius: 24px;
+  object-fit: contain;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  margin-top: 34px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  white-space: nowrap;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9ca3af;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.tabActive {
+  transform: scale(1.04);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 8px;
+}
+
+.tabEn {
+  font-family: Inter, Arial, "Helvetica Neue", sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.tabKo {
+  margin-left: 4px;
+  font-family: Inter, Arial, "Helvetica Neue", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.content {
+  margin-top: 28px;
+}
+
+.selectedLevelSummary {
+  margin: 0 0 22px;
+  color: #666;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.45;
-  letter-spacing: 0;
+  line-height: 1.65;
 }
 
-.levelList {
-  margin-top: 18px;
+.stepList {
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
-.levelCard {
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid rgba(201, 193, 183, 0.72);
-  border-radius: 18px;
+.stepCard {
+  padding: 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
   background: #fff;
-  display: grid;
-  gap: 14px;
 }
 
-.levelHeader {
-  display: grid;
-  gap: 6px;
+.stepHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 13px;
 }
 
-.levelName {
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.stepTitle {
   margin: 0;
-  color: var(--guide-accent);
-  font-size: 20px;
+  color: #111;
+  font-family: Inter, Arial, "Helvetica Neue", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0;
 }
 
-.levelSummary {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.6;
+.stepDescription {
+  margin: 0 0 12px;
+  color: #111;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.55;
 }
 
-.levelDetails {
+.detailList {
   display: grid;
-  gap: 10px;
+  gap: 6px;
+}
+
+.detail {
   margin: 0;
-}
-
-.detailRow {
-  display: grid;
-  gap: 4px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(201, 193, 183, 0.56);
-}
-
-.detailRow:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.detailLabel {
-  color: var(--guide-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-.detailValue {
-  margin: 0;
-  color: var(--text-secondary);
+  color: #444;
   font-size: 14px;
   line-height: 1.65;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 720px) {
   .main {
-    padding: 16px 0 36px;
-    gap: 12px;
+    padding: 28px 0 40px;
+    gap: 20px;
   }
 
-  .heroCard,
-  .guideSection {
-    padding: 18px;
+  .guideCard {
+    padding: 34px 20px;
+    border-radius: 24px;
   }
 
-  .sectionBadge {
-    font-size: 34px;
+  .heroTitle {
+    font-size: 28px;
+  }
+
+  .heroDescription {
+    font-size: 14px;
+  }
+
+  .imageBox {
+    margin-top: 28px;
+    border-radius: 20px;
+  }
+
+  .levelImage {
+    border-radius: 20px;
+  }
+
+  .tabs {
+    gap: 24px;
+    margin-top: 28px;
+  }
+
+  .tabEn {
+    font-size: 17px;
+  }
+
+  .tabKo {
+    font-size: 14px;
+  }
+
+  .stepCard {
+    padding: 20px;
+  }
+
+  .stepTitle {
+    font-size: 20px;
+  }
+
+  .stepDescription {
+    font-size: 15px;
+  }
+
+  .detail {
+    font-size: 13.5px;
   }
 }

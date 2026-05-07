@@ -1,5 +1,5 @@
 export type AdminMatchStatus = "draft" | "open" | "closed" | "cancelled";
-export type AdminMatchFormat = "3vs3" | "5vs5";
+export type AdminMatchFormat = "3vs3" | "4vs4" | "5vs5";
 export type AdminVenueEntryMode = "managed" | "manual";
 export type AdminMatchLevelPreset = "all" | "basic" | "middle" | "high";
 export type AdminMatchRefundExceptionMode =
@@ -13,11 +13,26 @@ export type AdminShellNav =
   | "dashboard"
   | "matches"
   | "venues"
+  | "banners"
   | "cash"
   | "coupons"
   | "create";
 
+export type AdminHomeBannerRecord = {
+  id: string;
+  title: string;
+  imageUrl: string;
+  href: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminVenueInfo = {
+  courtNote?: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -71,6 +86,7 @@ export type AdminVenueFormValue = {
   name: string;
   district: string;
   address: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
@@ -270,6 +286,7 @@ export type AdminMatchFormValue = {
   summary: string;
   publicNotice: string;
   operatorNote: string;
+  courtNote: string;
   directions: string;
   parking: string;
   smoking: string;
