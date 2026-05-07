@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { HomeHeader } from "@/components/home/home-header";
-import { LegalFooter } from "@/components/legal/legal-footer";
 import { AppLink } from "@/components/navigation/app-link";
 import styles from "./about-page.module.css";
 
@@ -23,24 +22,24 @@ const FEATURES = [
     title: "조끼 · 공 · 운영 제공",
     label: "nothing to bring",
     description: [
-      "운동화 하나만 들고 코트로 오세요.",
-      "조끼, 공, 팀 구성, 매치 진행까지 앵클 매니저가 준비합니다.",
+      "운동화 하나만 들고 코트로 오세요",
+      "조끼, 공, 팀 구성, 매치 진행까지 앵클 매니저가 모두 준비합니다",
     ],
   },
   {
     title: "레벨 매칭",
     label: "similar level",
     description: [
-      "비슷한 실력끼리 경기해야 농구가 재밌습니다.",
-      "앵클 레벨 시스템으로 초보도 고수도 자기 경기를 즐깁니다.",
+      "비슷한 실력끼리 경기해야 농구가 재밌다",
+      "앵클 레벨 시스템으로 초보도 고수도 자기 경기를 즐긴다",
     ],
   },
   {
     title: "원클릭 신청",
     label: "just a minute",
     description: [
-      "단톡방 공지, 인원 확인, 장소 검색 없이 신청하세요.",
-      "날짜 선택, 경기 확인, 결제까지 오늘 경기도 오늘 신청할 수 있습니다.",
+      "단톡방 공지, 인원 확인, 장소 검색 없이",
+      "날짜 선택 → 경기 확인 → 결제, 오늘 경기도 오늘 신청 가능",
     ],
   },
 ];
@@ -54,7 +53,7 @@ const LEVELS = [
   {
     badge: "BASIC",
     badgeClassName: "badgeBasic",
-    description: "농구 규칙을 알고 기초 드리블과 패스가 가능한 수준",
+    description: "농구 규칙을 알고 기초 드리블·패스가 가능한 수준",
   },
   {
     badge: "MIDDLE",
@@ -67,9 +66,9 @@ const LEVELS = [
     description: "전술 이해와 수비 능력이 갖춰진 수준",
   },
   {
-    badge: "STAR",
+    badge: "★ STAR",
     badgeClassName: "badgeStar",
-    description: "클럽, 대학, 실업 수준 이상의 플레이어",
+    description: "클럽 · 대학 · 실업 수준 이상의 플레이어",
   },
 ];
 
@@ -120,37 +119,39 @@ export function AboutPage() {
       <HomeHeader isAdmin={false} resetBrandOnClick={false} />
 
       <main>
-        <section className={styles.heroWrap}>
-          <div className={`pageShell ${styles.hero}`}>
-            <div className={styles.heroImage} aria-label="농구 매치 이미지 영역">
-              {/* 이미지를 넣을 때 이 영역을 img 또는 background-image로 교체하세요. */}
-              <div className={styles.imagePlaceholder}>
+        <section className={styles.ctaTopWrap}>
+          <div className={styles.ctaTop}>
+            <div className={styles.ctaTopImg} aria-label="농구 매치 이미지 영역">
+              {/* 실제 사진을 넣을 때 이 영역을 img 태그로 교체하세요. 예: <img src="/about-hero.jpg" alt="농구 매치" /> */}
+              <div className={styles.imgPlaceholder}>
                 여기에 사진을 넣어주세요
-                <span>예: public/about-hero.jpg</span>
+                <span>img 태그로 교체</span>
               </div>
               <div className={styles.statBadge}>
-                <span className={styles.statValue}>TODAY OPEN</span>
-                <span className={styles.statLabel}>오늘도 경기가 열립니다</span>
+                <div className={styles.statNum}>TODAY OPEN</div>
+                <div className={styles.statLabel}>오늘도 경기가 열립니다</div>
               </div>
             </div>
 
-            <div className={`${styles.heroText} ${styles.fadeUp}`} data-about-fade>
-              <p className={styles.eyebrow}>농구 매칭 플랫폼 · ANKLEBASKET</p>
-              <h1 className={styles.heroTitle}>
+            <div className={`${styles.ctaTopText} ${styles.fadeUp}`} data-about-fade>
+              <span className={styles.eyebrow}>농구 매칭 플랫폼 · ANKLEBASKET</span>
+              <h1>
                 <span>{HERO_TEXTS[heroTextIndex]}</span>
                 <span>Just do</span>
                 <span>ANKLE</span>
               </h1>
-              <p className={styles.heroDescription}>
-                날짜와 레벨만 골라도 오늘 경기가 잡힌다.
+              <p>
+                날짜와 레벨만 골라도 오늘 경기가 잡힌다
                 <br />
-                조끼도, 공도, 준비할 것도 없다.
+                조끼도, 공도, 준비할 것도 없다
               </p>
             </div>
           </div>
         </section>
 
-        <section className={`pageShell ${styles.howSection} ${styles.fadeUp}`} data-about-fade>
+        <div className={styles.divider} />
+
+        <section className={`${styles.howSection} ${styles.fadeUp}`} data-about-fade>
           <div>
             <h2 className={styles.sectionTitle}>HOW ANKLE?</h2>
             <p className={styles.sectionSub}>앵클하는 방법</p>
@@ -165,8 +166,10 @@ export function AboutPage() {
           </div>
         </section>
 
+        <div className={styles.divider} />
+
         <section className={styles.featuresSection}>
-          <div className={`pageShell ${styles.featuresInner} ${styles.fadeUp}`} data-about-fade>
+          <div className={`${styles.featuresInner} ${styles.fadeUp}`} data-about-fade>
             <div>
               <h2 className={styles.sectionTitle}>WHY ANKLE?</h2>
               <p className={styles.sectionSub}>앵클인 이유</p>
@@ -188,14 +191,13 @@ export function AboutPage() {
           </div>
         </section>
 
-        <section className={`pageShell ${styles.levelSection}`}>
+        <section className={styles.levelSection}>
           <div className={`${styles.levelHeader} ${styles.fadeUp}`} data-about-fade>
             <div>
               <h2 className={styles.sectionTitle}>LEVEL SYSTEM</h2>
-              <p className={styles.sectionSub}>내 레벨에 맞는 경기를 고르세요</p>
             </div>
             <AppLink className={styles.textLink} href="/mypage/guide">
-              가이드 보러가기
+              가이드 보러가기 →
             </AppLink>
           </div>
 
@@ -216,13 +218,13 @@ export function AboutPage() {
         </section>
 
         <section className={styles.bottomCta}>
-          <div className={`${styles.bottomCtaInner} ${styles.fadeUp}`} data-about-fade>
+          <div className={`${styles.fadeUp}`} data-about-fade>
             <h2>
               오늘,
               <br />
               <span>코트에서 봐요</span>
             </h2>
-            <p>운동화만 챙기세요, 나머지는 앵클이 준비합니다.</p>
+            <p>운동화만 챙기세요, 나머지는 앵클이 준비합니다</p>
             <AppLink className={styles.primaryButton} href="/">
               매치 보러 가기
             </AppLink>
@@ -230,7 +232,12 @@ export function AboutPage() {
         </section>
       </main>
 
-      <LegalFooter />
+      <footer className={styles.footer}>
+        <span className={styles.footerLogo}>
+          앵<span>클</span>
+        </span>
+        <p>© 2025 AnkleBasket 농구 매칭 플랫폼</p>
+      </footer>
     </div>
   );
 }
