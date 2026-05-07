@@ -5,6 +5,7 @@ import {
   normalizePostAuthNextPath,
 } from "@/lib/auth/redirect";
 import { EmailSignupPage } from "@/components/login/email-signup-page";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { getServerUserState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
@@ -19,13 +20,14 @@ export default async function SignupRoute({
 }) {
   const resolvedSearchParams = await searchParams;
   const nextPath = normalizePostAuthNextPath(toSearchParam(resolvedSearchParams.next));
+  const referralCode = normalizeReferralCode(toSearchParam(resolvedSearchParams.ref));
   const { user } = await getServerUserState();
 
   if (user) {
     redirect(buildAuthContinueHref(nextPath));
   }
 
-  return <EmailSignupPage nextPath={nextPath} />;
+  return <EmailSignupPage initialReferralCode={referralCode} nextPath={nextPath} />;
 }
 
 function toSearchParam(value: string | string[] | undefined) {

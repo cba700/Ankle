@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { buildAuthContinueHref } from "@/lib/auth/redirect";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { normalizeAccountStatus } from "@/lib/account-status";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -11,6 +12,7 @@ import styles from "./login-page.module.css";
 
 type EmailLoginPageProps = {
   nextPath: string;
+  referralCode: string;
 };
 
 type LoginStatus =
@@ -18,7 +20,10 @@ type LoginStatus =
   | { status: "signedOut" }
   | { email: string; status: "signedIn" };
 
-export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
+export function EmailLoginPage({
+  nextPath,
+  referralCode,
+}: EmailLoginPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -204,7 +209,10 @@ export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
               <span className={styles.linkDivider} aria-hidden="true">
                 /
               </span>
-              <AppLink className={styles.inlineLink} href={`/signup${buildNextQuery(nextPath)}`}>
+              <AppLink
+                className={styles.inlineLink}
+                href={`/signup${buildNextQuery(nextPath, referralCode)}`}
+              >
                 회원가입
               </AppLink>
             </div>
@@ -238,6 +246,18 @@ export function EmailLoginPage({ nextPath }: EmailLoginPageProps) {
   );
 }
 
-function buildNextQuery(nextPath: string) {
-  return nextPath === "/" ? "" : `?next=${encodeURIComponent(nextPath)}`;
+function buildNextQuery(nextPath: string, referralCode?: string) {
+  const params = new URLSearchParams();
+  const normalizedReferralCode = normalizeReferralCode(referralCode);
+
+  if (nextPath !== "/") {
+    params.set("next", nextPath);
+  }
+
+  if (normalizedReferralCode) {
+    params.set("ref", normalizedReferralCode);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
 }

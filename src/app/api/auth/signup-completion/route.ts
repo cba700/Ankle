@@ -8,6 +8,12 @@ import {
   normalizeProfileGender,
   normalizeSignupAgreementValues,
 } from "@/lib/signup-profile";
+import { normalizeReferralCode } from "@/lib/referral-code";
+import {
+  getReferralErrorPayload,
+  recordReferralSignup,
+  validateReferralCodeForSignup,
+} from "@/lib/referrals";
 import { saveSignupProfileData } from "@/lib/signup-profile-server";
 import { getServerUserState } from "@/lib/supabase/auth";
 import { assertSignupProfileSchemaReady } from "@/lib/supabase/schema";
@@ -18,6 +24,12 @@ type SignupCompletionBody = {
   birthDate?: unknown;
   gender?: unknown;
   name?: unknown;
+  referralCode?: unknown;
+};
+
+type SignupReferralProfileRow = {
+  signup_profile_completed_at: string | null;
+  signup_profile_required: boolean | null;
 };
 
 export async function POST(request: Request) {
@@ -54,6 +66,7 @@ export async function POST(request: Request) {
   const birthDate = normalizeBirthDate(body?.birthDate);
   const gender = normalizeProfileGender(body?.gender);
   const legalName = normalizeLegalName(body?.name);
+  const referralCode = normalizeReferralCode(body?.referralCode);
 
   if (!legalName || !birthDate || !gender) {
     return NextResponse.json(
@@ -85,6 +98,50 @@ export async function POST(request: Request) {
     );
   }
 
+  if (referralCode) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("signup_profile_required, signup_profile_completed_at")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      throw new Error(`Failed to verify signup referral state: ${profileError.message}`);
+    }
+
+    const typedProfile = (profile ?? null) as SignupReferralProfileRow | null;
+
+    if (
+      !typedProfile?.signup_profile_required ||
+      typedProfile.signup_profile_completed_at
+    ) {
+      return NextResponse.json(
+        {
+          code: "REFERRAL_SIGNUP_ONLY",
+          message: "초대 코드는 가입 완료 전에만 입력할 수 있습니다.",
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: 409 },
+      );
+    }
+
+    try {
+      await validateReferralCodeForSignup(supabase as any, {
+        inviteeId: user.id,
+        referralCode,
+      });
+    } catch (error) {
+      const referralError = getReferralErrorPayload(error);
+
+      return NextResponse.json(
+        {
+          code: referralError.code,
+          message: referralError.message,
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: referralError.status },
+      );
+    }
+  }
+
   await saveSignupProfileData(supabase as any, {
     agreements,
     birthDate,
@@ -93,6 +150,25 @@ export async function POST(request: Request) {
     source: "signup_completion",
     userId: user.id,
   });
+
+  if (referralCode) {
+    try {
+      await recordReferralSignup(supabase as any, {
+        inviteeId: user.id,
+        referralCode,
+      });
+    } catch (error) {
+      const referralError = getReferralErrorPayload(error);
+
+      return NextResponse.json(
+        {
+          code: referralError.code,
+          message: referralError.message,
+        },
+        { headers: PRIVATE_NO_STORE_HEADERS, status: referralError.status },
+      );
+    }
+  }
 
   return NextResponse.json(
     {

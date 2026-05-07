@@ -315,6 +315,7 @@ export async function getAdminCouponDashboardData() {
         isActive: template.isActive,
         issuedCount: usage.issuedCount,
         name: template.name,
+        templateType: template.templateType,
         updatedAt: template.updatedAt,
         usedCount: usage.usedCount,
       };

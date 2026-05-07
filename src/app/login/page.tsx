@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { buildAuthContinueHref, normalizeNextPath } from "@/lib/auth/redirect";
 import { LoginPage } from "@/components/login/login-page";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { getServerUserState } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
@@ -17,13 +18,20 @@ export default async function Login({
   const resolvedSearchParams = await searchParams;
   const errorCode = toSearchParam(resolvedSearchParams.error);
   const nextPath = normalizeNextPath(toSearchParam(resolvedSearchParams.next));
+  const referralCode = normalizeReferralCode(toSearchParam(resolvedSearchParams.ref));
   const { user } = await getServerUserState();
 
   if (user) {
     redirect(buildAuthContinueHref(nextPath));
   }
 
-  return <LoginPage errorCode={errorCode} nextPath={nextPath} />;
+  return (
+    <LoginPage
+      errorCode={errorCode}
+      nextPath={nextPath}
+      referralCode={referralCode}
+    />
+  );
 }
 
 function toSearchParam(value: string | string[] | undefined) {

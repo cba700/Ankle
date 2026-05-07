@@ -28,6 +28,7 @@ import {
   assertCashFoundationSchemaReady,
   assertCouponSchemaReady,
   assertProfileOnboardingSchemaReady,
+  assertReferralSchemaReady,
 } from "@/lib/supabase/schema";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/auth";
@@ -40,6 +41,7 @@ type ProfileRow = {
   phone_number_e164: string | null;
   preferred_time_slots: PreferredTimeSlot[] | null;
   preferred_weekdays: PreferredWeekday[] | null;
+  referral_code: string | null;
   role: UserRole | null;
   temporary_level: TemporaryLevel | null;
 };
@@ -104,6 +106,7 @@ export type MyPageProfile = {
   preferredTimeSlots: PreferredTimeSlot[];
   preferredWeekdays: PreferredWeekday[];
   providerLabel: string;
+  referralCode: string;
   role: UserRole;
   temporaryLevel: TemporaryLevel | null;
 };
@@ -187,6 +190,7 @@ export async function getMyPageData({
   await assertCashFoundationSchemaReady(supabase);
   await assertCouponSchemaReady(supabase);
   await assertProfileOnboardingSchemaReady(supabase);
+  await assertReferralSchemaReady(supabase);
 
   const [
     { data: profile },
@@ -200,7 +204,7 @@ export async function getMyPageData({
       supabase
         .from("profiles")
         .select(
-          "display_name, avatar_url, role, temporary_level, preferred_weekdays, preferred_time_slots, phone_number_e164",
+          "display_name, avatar_url, role, temporary_level, preferred_weekdays, preferred_time_slots, phone_number_e164, referral_code",
         )
         .eq("id", user.id)
         .maybeSingle(),
@@ -257,6 +261,7 @@ export async function getMyPageData({
       preferredTimeSlots: typedProfile?.preferred_time_slots ?? [],
       preferredWeekdays: typedProfile?.preferred_weekdays ?? [],
       providerLabel: getProviderLabel(user),
+      referralCode: typedProfile?.referral_code ?? "",
       role: typedProfile?.role ?? role,
       temporaryLevel: typedProfile?.temporary_level ?? null,
     },

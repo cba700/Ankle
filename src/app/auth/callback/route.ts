@@ -7,6 +7,7 @@ import {
   buildLoginHref,
   normalizeNextPath,
 } from "@/lib/auth/redirect";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { syncKakaoSignupProfile } from "@/lib/signup-profile-server";
 
@@ -14,6 +15,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const nextPath = normalizeNextPath(requestUrl.searchParams.get("next"));
+  const referralCode = normalizeReferralCode(requestUrl.searchParams.get("ref"));
   const oauthError = requestUrl.searchParams.get("error");
 
   if (oauthError) {
@@ -95,7 +97,13 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL(buildAuthContinueHref(nextPath), requestUrl.origin), {
+  const continueUrl = new URL(buildAuthContinueHref(nextPath), requestUrl.origin);
+
+  if (referralCode) {
+    continueUrl.searchParams.set("ref", referralCode);
+  }
+
+  return NextResponse.redirect(continueUrl, {
     headers: PRIVATE_NO_STORE_HEADERS,
     status: 303,
   });

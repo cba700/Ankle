@@ -17,6 +17,7 @@ import {
 } from "@/lib/auth/single-session";
 import { ensureAuthUserBootstrap } from "@/lib/auth/user-bootstrap";
 import { getRequiredMemberSetupRedirectPath } from "@/lib/member-access";
+import { normalizeReferralCode } from "@/lib/referral-code";
 import { getServerUserState } from "@/lib/supabase/auth";
 import {
   assertAccountWithdrawalSchemaReady,
@@ -31,6 +32,7 @@ import {
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const nextPath = normalizePostAuthNextPath(requestUrl.searchParams.get("next"));
+  const referralCode = normalizeReferralCode(requestUrl.searchParams.get("ref"));
   const { configured, user } = await getServerUserState();
 
   if (!configured || !user) {
@@ -106,6 +108,7 @@ export async function GET(request: Request) {
         try {
           return await continueWithActiveAccount({
             nextPath,
+            referralCode,
             requestUrl,
             supabase,
             userId: user.id,
@@ -147,6 +150,7 @@ export async function GET(request: Request) {
   try {
     return await continueWithActiveAccount({
       nextPath,
+      referralCode,
       requestUrl,
       supabase,
       userId: user.id,
@@ -170,11 +174,13 @@ export async function GET(request: Request) {
 
 async function continueWithActiveAccount({
   nextPath,
+  referralCode,
   requestUrl,
   supabase,
   userId,
 }: {
   nextPath: string;
+  referralCode: string;
   requestUrl: URL;
   supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>;
   userId: string;
@@ -191,8 +197,14 @@ async function continueWithActiveAccount({
   );
 
   if (requiredSignupProfileHref) {
+    const signupCompleteUrl = new URL(requiredSignupProfileHref, requestUrl.origin);
+
+    if (referralCode) {
+      signupCompleteUrl.searchParams.set("ref", referralCode);
+    }
+
     const response = NextResponse.redirect(
-      new URL(requiredSignupProfileHref, requestUrl.origin),
+      signupCompleteUrl,
       {
         headers: PRIVATE_NO_STORE_HEADERS,
         status: 303,
