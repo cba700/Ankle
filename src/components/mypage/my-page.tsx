@@ -139,7 +139,11 @@ export function MyPage({ data }: MyPageProps) {
                 </AppLink>
               </div>
               <AppLink className={`${styles.statBox} ${styles.statBoxLink}`} href="/about">
-                <strong className={styles.statBoxTitle}>앵클 소개</strong>
+                <span className={styles.statLabel}>소개</span>
+                <strong className={styles.statValue}>
+                  <span className={styles.levelMarker} />
+                  앵클 서비스
+                </strong>
                 <span className={styles.statLink}>
                   바로가기
                   <ArrowRightIcon className={styles.statLinkArrow} />
