@@ -103,7 +103,7 @@
 
 @media (max-width: 767px) {
   .list {
-    max-height: 64px;
+    padding-bottom: 8px;
   }
 
   .chip {
