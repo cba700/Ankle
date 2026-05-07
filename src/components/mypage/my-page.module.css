@@ -291,12 +291,46 @@
   height: 14px;
 }
 
-.levelMarker {
-  width: 4px;
-  height: 14px;
-  border-radius: 999px;
-  background: var(--accent);
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 7px;
+  color: #111;
   flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 2px 5px rgba(17, 17, 17, 0.08);
+}
+
+.levelBadgeFirst {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: #111;
+  color: #fff;
+}
+
+.levelBadgeBasic {
+  background: #fed356;
+}
+
+.levelBadgeMiddle {
+  background: #0a76fb;
+}
+
+.levelBadgeHigh {
+  background: #ee021e;
+}
+
+.levelBadgeStar {
+  border-color: rgba(17, 17, 17, 0.2);
+  background: #fff;
+  color: #111;
 }
 
 .cashCard {
