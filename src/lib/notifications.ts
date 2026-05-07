@@ -70,11 +70,20 @@ type NotificationDispatchRow = {
   status: NotificationDispatchStatus;
 };
 
+type ImmediateNotificationResult = NotificationDispatchStatus;
+
+type NotificationSendSummary = {
+  failedCount: number;
+  sentCount: number;
+  skippedCount: number;
+};
+
 type MatchRelation = {
   address: string | null;
   end_at: string | null;
   format: string | null;
   id: string;
+  slug: string | null;
   start_at: string | null;
   title: string | null;
   venue_name: string | null;
@@ -337,7 +346,9 @@ export async function sendAdminMatchCancelledNotification(applicationId: string)
       return;
     }
 
-    const couponRestored = isCouponRestored(context);
+    const cashAccount = context.application.user_id
+      ? await getCashAccountByUserId(admin, context.application.user_id)
+      : null;
 
     await sendImmediateKakaoNotification(admin, {
       applicationId,
@@ -346,57 +357,72 @@ export async function sendAdminMatchCancelledNotification(applicationId: string)
       eventType: "match_cancelled_admin",
       matchId: context.application.match_id,
       payload: {
-        couponRestored,
+        remainingCash: cashAccount?.balance ?? 0,
         refundedAmount: context.application.refunded_amount,
         status: context.application.status,
       },
       phoneNumberE164: getVerifiedPhoneNumber(context.profile),
       templateVariables: {
-        ...buildMatchTemplateVariables(context),
-        "#{쿠폰복구}": couponRestored
-          ? `${formatMoney(context.application.coupon_discount_amount)}원 복구`
-          : "없음",
-        "#{환불금액}": `${formatMoney(context.application.refunded_amount)}원`,
+        ...buildAdminMatchCancelTemplateVariables(
+          context,
+          cashAccount?.balance ?? 0,
+        ),
       },
       userId: context.application.user_id,
+      allowRetry: true,
     });
   });
 }
 
-export async function sendRainAlertNotifications(matchId: string, precipitationMm: number) {
+export async function sendRainAlertNotifications(
+  matchId: string,
+  precipitationMm: number,
+) {
+  let summary = createEmptyNotificationSendSummary();
+
   await runNotificationTask("rain_alert", async (admin) => {
-    await sendRainNotificationsForMatch(admin, {
+    summary = await sendRainNotificationsForMatch(admin, {
       eventType: "rain_alert",
       matchId,
       precipitationMm,
     });
   });
+
+  return summary;
 }
 
 export async function sendRainAlertChangedNotifications(
   matchId: string,
   precipitationMm: number,
 ) {
+  let summary = createEmptyNotificationSendSummary();
+
   await runNotificationTask("rain_alert_changed", async (admin) => {
-    await sendRainNotificationsForMatch(admin, {
+    summary = await sendRainNotificationsForMatch(admin, {
       eventType: "rain_alert_changed",
       matchId,
       precipitationMm,
     });
   });
+
+  return summary;
 }
 
 export async function sendRainMatchCancelledNotifications(
   matchId: string,
   precipitationMm: number,
 ) {
+  let summary = createEmptyNotificationSendSummary();
+
   await runNotificationTask("rain_match_cancelled", async (admin) => {
-    await sendRainNotificationsForMatch(admin, {
+    summary = await sendRainNotificationsForMatch(admin, {
       eventType: "rain_match_cancelled",
       matchId,
       precipitationMm,
     });
   });
+
+  return summary;
 }
 
 export async function refreshMatchReminderNotifications(applicationId: string) {
@@ -595,7 +621,7 @@ async function sendImmediateKakaoNotification(
     templateVariables: Record<string, string>;
     userId: string | null;
   },
-) {
+): Promise<ImmediateNotificationResult> {
   const dispatch = await createOrReuseDispatch(admin, {
     allowRetry,
     applicationId,
@@ -609,7 +635,7 @@ async function sendImmediateKakaoNotification(
   });
 
   if (!dispatch.shouldSend) {
-    return;
+    return dispatch.dispatch?.status ?? "skipped";
   }
 
   const env = getSolapiKakaoEnv();
@@ -623,7 +649,7 @@ async function sendImmediateKakaoNotification(
       payload,
       status: "skipped",
     });
-    return;
+    return "skipped";
   }
 
   if (!templateId) {
@@ -633,7 +659,7 @@ async function sendImmediateKakaoNotification(
       payload,
       status: "skipped",
     });
-    return;
+    return "skipped";
   }
 
   if (!localPhoneNumber) {
@@ -643,7 +669,7 @@ async function sendImmediateKakaoNotification(
       payload,
       status: "skipped",
     });
-    return;
+    return "skipped";
   }
 
   const sendResult = await sendSolapiKakao({
@@ -663,7 +689,7 @@ async function sendImmediateKakaoNotification(
       },
       status: "failed",
     });
-    return;
+    return "failed";
   }
 
   await updateDispatch(admin, dedupeKey, {
@@ -678,6 +704,7 @@ async function sendImmediateKakaoNotification(
     sentAt: new Date().toISOString(),
     status: "sent",
   });
+  return "sent";
 }
 
 async function scheduleReminderDispatch(
@@ -897,6 +924,30 @@ async function sendMatchConfirmedNotificationToContext(
   });
 }
 
+function createEmptyNotificationSendSummary(): NotificationSendSummary {
+  return {
+    failedCount: 0,
+    sentCount: 0,
+    skippedCount: 0,
+  };
+}
+
+function summarizeNotificationResults(
+  results: ImmediateNotificationResult[],
+): NotificationSendSummary {
+  return results.reduce((summary, result) => {
+    if (result === "sent") {
+      summary.sentCount += 1;
+    } else if (result === "failed") {
+      summary.failedCount += 1;
+    } else if (result === "skipped") {
+      summary.skippedCount += 1;
+    }
+
+    return summary;
+  }, createEmptyNotificationSendSummary());
+}
+
 async function sendRainNotificationsForMatch(
   admin: NotificationAdminClient,
   {
@@ -914,23 +965,25 @@ async function sendRainNotificationsForMatch(
   ]);
 
   if (applicationIds.length === 0) {
-    return;
+    return createEmptyNotificationSendSummary();
   }
 
   const contexts = await Promise.all(
     applicationIds.map((applicationId) => getApplicationContext(admin, applicationId)),
   );
 
-  await Promise.all(
+  const results = await Promise.all(
     contexts.map((context) =>
       context?.match
         ? sendRainNotificationToContext(admin, context, {
             eventType,
             precipitationMm,
           })
-        : Promise.resolve()
+        : Promise.resolve<ImmediateNotificationResult>("skipped")
     ),
   );
+
+  return summarizeNotificationResults(results);
 }
 
 async function sendRainNotificationToContext(
@@ -950,16 +1003,20 @@ async function sendRainNotificationToContext(
       eventType === "rain_match_cancelled" ? context.application.refunded_amount : undefined,
   };
 
-  const templateVariables: Record<string, string> = buildRainTemplateVariables(
-    context,
-    precipitationMm,
-  );
+  const cashAccount =
+    eventType === "rain_match_cancelled" && context.application.user_id
+      ? await getCashAccountByUserId(admin, context.application.user_id)
+      : null;
+  const templateVariables: Record<string, string> =
+    eventType === "rain_match_cancelled"
+      ? buildAdminMatchCancelTemplateVariables(context, cashAccount?.balance ?? 0)
+      : buildRainTemplateVariables(context, precipitationMm);
 
   if (eventType === "rain_match_cancelled") {
-    templateVariables["#{환불금액}"] = `${formatMoney(context.application.refunded_amount)}원`;
+    templateVariables["#{예보강수량}"] = formatPrecipitationAmount(precipitationMm);
   }
 
-  await sendImmediateKakaoNotification(admin, {
+  return sendImmediateKakaoNotification(admin, {
     applicationId: context.application.id,
     chargeOrderId: null,
     dedupeKey: `${eventType}:${context.application.id}`,
@@ -969,6 +1026,7 @@ async function sendRainNotificationToContext(
     phoneNumberE164: getVerifiedPhoneNumber(context.profile),
     templateVariables,
     userId: context.application.user_id,
+    allowRetry: true,
   });
 }
 
@@ -981,6 +1039,7 @@ async function getApplicationContext(
     .select(
       `id, user_id, match_id, status, cancel_reason, cancelled_at, refunded_amount, charged_amount_snapshot, coupon_discount_amount, price_snapshot, match:matches!match_applications_match_id_fkey (
         id,
+        slug,
         format,
         title,
         venue_name,
@@ -1375,7 +1434,30 @@ function buildRainTemplateVariables(
 ) {
   return {
     ...buildMatchTemplateVariables(context),
+    "#{고객명}": getDisplayName(context.profile),
+    "#{매치ID}": context.match?.slug?.trim() || context.application.match_id,
+    "#{매치날짜}": getMatchDateTimeLabel(
+      context.match?.start_at ?? null,
+      context.match?.end_at ?? null,
+    ),
+    "#{매치장소이름}": getMatchVenueName(context),
     "#{예보강수량}": formatPrecipitationAmount(precipitationMm),
+  };
+}
+
+function buildAdminMatchCancelTemplateVariables(
+  context: NotificationApplicationContext,
+  remainingCash: number,
+) {
+  return {
+    "#{고객명}": getDisplayName(context.profile),
+    "#{매치날짜}": getMatchDateTimeLabel(
+      context.match?.start_at ?? null,
+      context.match?.end_at ?? null,
+    ),
+    "#{매치장소이름}": getMatchVenueName(context),
+    "#{잔여캐시}": formatMoney(remainingCash),
+    "#{환불캐시}": formatMoney(context.application.refunded_amount),
   };
 }
 
@@ -1438,6 +1520,25 @@ function getMatchTimeLabel(startAt: string | null, endAt: string | null) {
   }
 
   return `${startTimeLabel} - ${formatSeoulTime(endDate)}`;
+}
+
+function getMatchDateTimeLabel(startAt: string | null, endAt: string | null) {
+  const dateLabel = getMatchDateLabel(startAt);
+  const timeLabel = getMatchTimeLabel(startAt, endAt);
+
+  if (dateLabel === "-") {
+    return timeLabel;
+  }
+
+  if (timeLabel === "-") {
+    return dateLabel;
+  }
+
+  return `${dateLabel} ${timeLabel}`;
+}
+
+function getMatchVenueName(context: NotificationApplicationContext) {
+  return context.match?.venue_name?.trim() || "앵클 경기장";
 }
 
 function getMatchConfirmedThreshold(format: "3vs3" | "4vs4" | "5vs5") {

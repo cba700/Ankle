@@ -171,7 +171,9 @@ export function getSolapiKakaoEnv(): SolapiKakaoEnv | null {
       rainNotice: process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_NOTICE?.trim() ?? null,
       rainAlert: process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT?.trim() ?? null,
       rainAlertChanged:
-        process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT_CHANGED?.trim() ?? null,
+        process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT_CHANGED?.trim() ??
+        process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT?.trim() ??
+        null,
       rainMatchCancelled:
         process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_MATCH_CANCELLED?.trim() ?? null,
     },

@@ -296,7 +296,7 @@ export function AdminMatchEditor({
                   <option value="draft">임시 저장</option>
                   <option value="open">모집 중</option>
                   <option value="closed">마감</option>
-                  <option value="cancelled">운영 취소</option>
+                  <option value="cancelled">참가자 미달 취소</option>
                 </select>
               </label>
             ) : null}

@@ -10,7 +10,6 @@ type AdminMatchWeatherPanelProps = {
   onCancelForRain: () => Promise<void>;
   onCheckWeather: () => Promise<void>;
   onSendRainAlert: () => Promise<void>;
-  onSendRainAlertChanged: () => Promise<void>;
   weather: AdminMatchWeatherData | null;
 };
 
@@ -18,7 +17,6 @@ export function AdminMatchWeatherPanel({
   onCancelForRain,
   onCheckWeather,
   onSendRainAlert,
-  onSendRainAlertChanged,
   weather,
 }: AdminMatchWeatherPanelProps) {
   if (!weather) {
@@ -83,14 +81,13 @@ export function AdminMatchWeatherPanel({
             {weather.rainCancelledAt
               ? "강우 취소 완료"
               : weather.rainAlertChangedSentAt
-                ? "변동 알림 발송"
+                ? "강수 알림 발송"
                 : weather.rainAlertSentAt
-                  ? "1mm 안내 발송"
+                  ? "강수 알림 발송"
                   : "미발송"}
           </strong>
           <span className={ui.tertiary}>
-            안내 {formatDateTimeLabel(weather.rainAlertSentAt)} · 변동{" "}
-            {formatDateTimeLabel(weather.rainAlertChangedSentAt)}
+            알림 {formatDateTimeLabel(weather.rainAlertChangedSentAt ?? weather.rainAlertSentAt)}
           </span>
         </article>
       </div>
@@ -102,17 +99,7 @@ export function AdminMatchWeatherPanel({
             disabled={!isWeatherConfigured || isCancelled}
             type="submit"
           >
-            1mm 안내 발송
-          </button>
-        </form>
-
-        <form action={onSendRainAlertChanged}>
-          <button
-            className={ui.button}
-            disabled={!isWeatherConfigured || isCancelled}
-            type="submit"
-          >
-            변동 안내 발송
+            강수 알림 발송
           </button>
         </form>
 

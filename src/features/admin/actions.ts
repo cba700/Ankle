@@ -6,7 +6,6 @@ import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import {
   checkAndStoreMatchWeather,
   isRainAlertChangedWindow,
-  isRainAlertWindow,
   markRainAlertChangedSent,
   markRainAlertSent,
   markRainCancelled,
@@ -332,7 +331,7 @@ export async function deleteAdminMatchAction(matchId: string, _formData: FormDat
   const applicationCount = await getMatchApplicationCount(supabase, matchId);
 
   if (applicationCount > 0) {
-    throw new Error("신청/참가 이력이 있는 매치는 삭제할 수 없습니다. 운영 취소를 사용해 주세요.");
+    throw new Error("신청/참가 이력이 있는 매치는 삭제할 수 없습니다. 참가자 미달 취소나 강수 취소를 사용해 주세요.");
   }
 
   const { error } = await supabase.from("matches").delete().eq("id", matchId);
@@ -920,34 +919,6 @@ export async function sendAdminMatchRainAlertAction(matchId: string) {
   const supabase = await requireAdminSupabase();
   requireServiceRoleClient();
   await assertNotificationDispatchSchemaReady(supabase);
-  const { data } = await checkAndStoreMatchWeather(matchId, supabase);
-  const precipitationMm = data.lastPrecipitationMm ?? 0;
-
-  if (data.status === "cancelled") {
-    throw new Error("이미 취소된 매치입니다.");
-  }
-
-  if (data.rainAlertSentAt) {
-    throw new Error("강우 안내 알림이 이미 발송되었습니다.");
-  }
-
-  if (!isRainAlertWindow(data.startAt)) {
-    throw new Error("매치 시작 2시간 전까지만 강우 안내 알림을 보낼 수 있습니다.");
-  }
-
-  if (precipitationMm < 1) {
-    throw new Error("시간당 강수 예보가 1mm 미만입니다.");
-  }
-
-  await sendRainAlertNotifications(matchId, precipitationMm);
-  await markRainAlertSent(matchId, supabase);
-  revalidateAdminMatchPaths(matchId);
-}
-
-export async function sendAdminMatchRainAlertChangedAction(matchId: string) {
-  const supabase = await requireAdminSupabase();
-  requireServiceRoleClient();
-  await assertNotificationDispatchSchemaReady(supabase);
   const { data, previousPrecipitationMm } = await checkAndStoreMatchWeather(matchId, supabase);
   const precipitationMm = data.lastPrecipitationMm ?? 0;
 
@@ -955,28 +926,35 @@ export async function sendAdminMatchRainAlertChangedAction(matchId: string) {
     throw new Error("이미 취소된 매치입니다.");
   }
 
-  if (data.rainAlertChangedSentAt) {
-    throw new Error("강수 변동 알림이 이미 발송되었습니다.");
-  }
-
-  if (!isRainAlertChangedWindow(data.startAt)) {
-    throw new Error("매치 시작 2시간 이내에만 강수 변동 알림을 보낼 수 있습니다.");
-  }
-
   if (precipitationMm < 1) {
     throw new Error("시간당 강수 예보가 1mm 미만입니다.");
   }
 
-  if (previousPrecipitationMm === null) {
-    throw new Error("직전 예보 점검 이력이 없어 변동 알림을 보낼 수 없습니다.");
-  }
+  if (isRainAlertChangedWindow(data.startAt)) {
+    if (data.rainAlertChangedSentAt) {
+      throw new Error("강수 알림이 이미 발송되었습니다.");
+    }
 
-  if (previousPrecipitationMm >= 1) {
-    throw new Error("직전 예보가 이미 1mm 이상이라 변동 알림 대상이 아닙니다.");
-  }
+    if (previousPrecipitationMm === null) {
+      throw new Error("직전 예보 점검 이력이 없어 강수 알림을 보낼 수 없습니다.");
+    }
 
-  await sendRainAlertChangedNotifications(matchId, precipitationMm);
-  await markRainAlertChangedSent(matchId, supabase);
+    if (previousPrecipitationMm >= 1) {
+      throw new Error("직전 예보가 이미 1mm 이상이라 변동 알림 대상이 아닙니다.");
+    }
+
+    const summary = await sendRainAlertChangedNotifications(matchId, precipitationMm);
+    assertRainNotificationSent(summary);
+    await markRainAlertChangedSent(matchId, supabase);
+  } else {
+    if (data.rainAlertSentAt) {
+      throw new Error("강수 알림이 이미 발송되었습니다.");
+    }
+
+    const summary = await sendRainAlertNotifications(matchId, precipitationMm);
+    assertRainNotificationSent(summary);
+    await markRainAlertSent(matchId, supabase);
+  }
   revalidateAdminMatchPaths(matchId);
 }
 
@@ -1011,6 +989,7 @@ export async function cancelAdminMatchForRainAction(matchId: string) {
     "cancel_match_applications_by_admin",
     {
       p_match_id: matchId,
+      p_reason: "rain_cancelled",
     },
   );
 
@@ -1026,6 +1005,30 @@ export async function cancelAdminMatchForRainAction(matchId: string) {
   await sendRainMatchCancelledNotifications(matchId, precipitationMm);
   await markRainCancelled(matchId, supabase);
   revalidateAdminMatchPaths(matchId);
+}
+
+function assertRainNotificationSent({
+  failedCount,
+  sentCount,
+  skippedCount,
+}: {
+  failedCount: number;
+  sentCount: number;
+  skippedCount: number;
+}) {
+  if (sentCount > 0) {
+    return;
+  }
+
+  if (failedCount > 0) {
+    throw new Error("솔라피 강수 알림 발송에 실패했습니다.");
+  }
+
+  if (skippedCount > 0) {
+    throw new Error("강수 알림을 받을 수 있는 참가자 또는 알림톡 설정이 없습니다.");
+  }
+
+  throw new Error("강수 알림을 받을 확정 참가자가 없습니다.");
 }
 
 export async function createAdminCouponTemplateAction(formData: FormData) {

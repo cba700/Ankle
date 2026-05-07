@@ -4,7 +4,6 @@ import {
   checkAdminMatchWeatherAction,
   deleteAdminMatchAction,
   sendAdminMatchRainAlertAction,
-  sendAdminMatchRainAlertChangedAction,
   setAdminMatchRefundExceptionAction,
   updateAdminMatchAction,
 } from "@/features/admin/actions";
@@ -36,7 +35,6 @@ export default async function AdminEditMatchPage({
   const refundExceptionAction = setAdminMatchRefundExceptionAction.bind(null, id);
   const checkWeatherAction = checkAdminMatchWeatherAction.bind(null, id);
   const sendRainAlertAction = sendAdminMatchRainAlertAction.bind(null, id);
-  const sendRainAlertChangedAction = sendAdminMatchRainAlertChangedAction.bind(null, id);
   const cancelForRainAction = cancelAdminMatchForRainAction.bind(null, id);
 
   if (!match) {
@@ -54,14 +52,13 @@ export default async function AdminEditMatchPage({
         onCancelForRain={cancelForRainAction}
         onCheckWeather={checkWeatherAction}
         onSendRainAlert={sendRainAlertAction}
-        onSendRainAlertChanged={sendRainAlertChangedAction}
         weather={weather}
       />
       <AdminMatchEditor
         canDelete={applicationCount === 0}
         deleteAction={deleteAction}
         deleteConfirmMessage="이 매치를 삭제할까요? 신청 이력이 없는 경우에만 삭제되며, 삭제 후 되돌릴 수 없습니다."
-        deleteDisabledReason="신청/참가 이력이 있는 매치는 삭제할 수 없습니다. 운영 취소를 사용해 주세요."
+        deleteDisabledReason="신청/참가 이력이 있는 매치는 삭제할 수 없습니다. 참가자 미달 취소나 강수 취소를 사용해 주세요."
         formAction={formAction}
         mode="edit"
         refundExceptionAction={refundExceptionAction}
