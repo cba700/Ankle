@@ -7,14 +7,13 @@ import {
   updateAdminMatchAction,
 } from "@/features/admin/actions";
 import { AdminMatchEditor } from "@/features/admin/components/admin-match-editor";
-import { AdminMatchWeatherPanel } from "@/features/admin/components/admin-match-weather-panel";
+import { AdminMatchRainPanel } from "@/features/admin/components/admin-match-rain-panel";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import {
   getAdminMatchApplicationCount,
   getAdminMatchById,
   getAdminVenueOptions,
 } from "@/features/admin/data";
-import { getAdminMatchWeatherData } from "@/lib/match-weather";
 import { buildAdminMatchFormValue } from "@/features/admin/view-model";
 
 export default async function AdminEditMatchPage({
@@ -23,10 +22,9 @@ export default async function AdminEditMatchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [match, venueOptions, weather, applicationCount] = await Promise.all([
+  const [match, venueOptions, applicationCount] = await Promise.all([
     getAdminMatchById(id),
     getAdminVenueOptions(),
-    getAdminMatchWeatherData(id),
     getAdminMatchApplicationCount(id),
   ]);
   const formAction = updateAdminMatchAction.bind(null, id);
@@ -46,10 +44,10 @@ export default async function AdminEditMatchPage({
       eyebrow="Edit Match"
       title={match.title}
     >
-      <AdminMatchWeatherPanel
+      <AdminMatchRainPanel
         cancelForRainAction={cancelForRainAction}
+        isCancelled={match.status === "cancelled"}
         sendRainAlertAction={sendRainAlertAction}
-        weather={weather}
       />
       <AdminMatchEditor
         canDelete={applicationCount === 0}

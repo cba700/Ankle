@@ -15,10 +15,6 @@ type TossPaymentsServerEnv = TossPaymentsPublicEnv & {
   secretKey: string;
 };
 
-type KmaWeatherEnv = {
-  serviceKey: string;
-};
-
 type SolapiServerEnv = {
   apiKey: string;
   apiSecret: string;
@@ -40,7 +36,6 @@ type SolapiKakaoTemplateEnv = {
   rainChangeNotice: string | null;
   rainNotice: string | null;
   rainAlert: string | null;
-  rainAlertChanged: string | null;
   rainMatchCancelled: string | null;
 };
 
@@ -105,18 +100,6 @@ export function getTossPaymentsServerEnv(): TossPaymentsServerEnv | null {
   };
 }
 
-export function getKmaWeatherEnv(): KmaWeatherEnv | null {
-  const serviceKey = process.env.KMA_SERVICE_KEY?.trim();
-
-  if (!serviceKey) {
-    return null;
-  }
-
-  return {
-    serviceKey,
-  };
-}
-
 export function getSolapiServerEnv(): SolapiServerEnv | null {
   const apiKey = process.env.SOLAPI_API_KEY?.trim();
   const apiSecret = process.env.SOLAPI_API_SECRET?.trim();
@@ -170,10 +153,6 @@ export function getSolapiKakaoEnv(): SolapiKakaoEnv | null {
         process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_CHANGE_NOTICE?.trim() ?? null,
       rainNotice: process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_NOTICE?.trim() ?? null,
       rainAlert: process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT?.trim() ?? null,
-      rainAlertChanged:
-        process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT_CHANGED?.trim() ??
-        process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_ALERT?.trim() ??
-        null,
       rainMatchCancelled:
         process.env.SOLAPI_KAKAO_TEMPLATE_RAIN_MATCH_CANCELLED?.trim() ?? null,
     },

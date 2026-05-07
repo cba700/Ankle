@@ -4,12 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { formatSeoulDateInput, formatSeoulTime } from "@/lib/date";
 import {
-  checkAndStoreMatchWeather,
-  getAdminMatchWeatherData,
-  markRainAlertSent,
-  markRainCancelled,
-} from "@/lib/match-weather";
-import {
   cancelMatchReminderNotifications,
   refreshMatchReminderNotifications,
   sendAdminMatchCancelledNotification,
@@ -67,16 +61,12 @@ type VenueWriteResult = {
   id: string;
   slug: string;
   courtNote: string | null;
-  weatherGridNx: number | null;
-  weatherGridNy: number | null;
 };
 
 type VenueWriteRow = {
   id: string;
   slug: string;
   court_note: string | null;
-  weather_grid_nx: number | null;
-  weather_grid_ny: number | null;
 };
 
 type VenueFormValues = {
@@ -88,8 +78,6 @@ type VenueFormValues = {
   parking: string;
   smoking: string;
   showerLocker: string;
-  weatherGridNx: number | null;
-  weatherGridNy: number | null;
   imageFiles: File[];
   imageOrder: VenueImageOrderEntry[];
   defaultRules: string[];
@@ -106,8 +94,6 @@ type VenueWriteValues = {
   parking: string;
   smoking: string;
   showerLocker: string;
-  weatherGridNx: number | null;
-  weatherGridNy: number | null;
   defaultImageUrls: string[];
   defaultRules: string[];
   defaultSafetyNotes: string[];
@@ -178,6 +164,7 @@ const CREATE_MATCH_INTENTS = ["save_draft", "publish_now"] as const;
 const UPDATE_MATCH_INTENTS = ["save_changes"] as const;
 
 type AdminSupabaseClient = NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>;
+type AdminServiceRoleClient = NonNullable<ReturnType<typeof getSupabaseServiceRoleClient>>;
 
 export async function createAdminMatchAction(formData: FormData) {
   const supabase = await requireAdminSupabase();
@@ -199,8 +186,6 @@ export async function createAdminMatchAction(formData: FormData) {
       parking: "",
       smoking: "",
       shower_locker: "",
-      weather_grid_nx: values.weatherGridNx ?? venue.weatherGridNx,
-      weather_grid_ny: values.weatherGridNy ?? venue.weatherGridNy,
       title: values.title,
       summary: values.summary,
       public_notice: values.publicNotice,
@@ -264,8 +249,6 @@ export async function updateAdminMatchAction(matchId: string, formData: FormData
       parking: "",
       smoking: "",
       shower_locker: "",
-      weather_grid_nx: values.weatherGridNx ?? venue.weatherGridNx,
-      weather_grid_ny: values.weatherGridNy ?? venue.weatherGridNy,
       title: values.title,
       summary: values.summary,
       public_notice: values.publicNotice,
@@ -362,8 +345,6 @@ export async function createAdminVenueAction(formData: FormData) {
     parking: "",
     smoking: "",
     showerLocker: "",
-    weatherGridNx: values.weatherGridNx,
-    weatherGridNy: values.weatherGridNy,
     defaultImageUrls: [],
     defaultRules: values.defaultRules,
     defaultSafetyNotes: values.defaultSafetyNotes,
@@ -427,8 +408,6 @@ export async function updateAdminVenueAction(venueId: string, formData: FormData
         parking: "",
         smoking: "",
         shower_locker: "",
-        weather_grid_nx: values.weatherGridNx,
-        weather_grid_ny: values.weatherGridNy,
         default_image_urls: defaultImageUrls,
         default_rules: values.defaultRules,
         default_safety_notes: values.defaultSafetyNotes,
@@ -906,34 +885,26 @@ export async function issueAdminRainChangeRefundAction(formData: FormData) {
   revalidatePath("/admin/matches");
 }
 
-export async function checkAdminMatchWeatherAction(matchId: string) {
-  const supabase = await requireAdminSupabase();
-  await assertNotificationDispatchSchemaReady(supabase);
-  await checkAndStoreMatchWeather(matchId, supabase);
-  revalidateAdminMatchPaths(matchId);
-}
-
 export async function sendAdminMatchRainAlertAction(matchId: string) {
   const supabase = await requireAdminSupabase();
-  requireServiceRoleClient();
+  const admin = requireServiceRoleClient();
   await assertNotificationDispatchSchemaReady(supabase);
-  const data = await getAdminMatchWeatherData(matchId, supabase);
+  const status = await getMatchStatus(supabase, matchId);
 
-  if (!data) {
+  if (!status) {
     throw new Error("매치를 찾을 수 없습니다.");
   }
 
-  if (data.status === "cancelled") {
+  if (status === "cancelled") {
     throw new Error("이미 취소된 매치입니다.");
   }
 
-  if (data.rainAlertSentAt || data.rainAlertChangedSentAt) {
+  if (await hasActiveMatchNotificationDispatch(admin, matchId, "rain_alert")) {
     throw new Error("강수 알림이 이미 발송되었습니다.");
   }
 
-  const summary = await sendRainAlertNotifications(matchId, 0);
+  const summary = await sendRainAlertNotifications(matchId);
   assertRainNotificationSent(summary);
-  await markRainAlertSent(matchId, supabase);
   revalidateAdminMatchPaths(matchId);
   return buildRainNotificationResultMessage("강수 알림을 발송했습니다.", summary);
 }
@@ -942,15 +913,15 @@ export async function cancelAdminMatchForRainAction(matchId: string) {
   const supabase = await requireAdminSupabase();
   requireServiceRoleClient();
   await assertNotificationDispatchSchemaReady(supabase);
-  const data = await getAdminMatchWeatherData(matchId, supabase);
+  const status = await getMatchStatus(supabase, matchId);
 
-  if (!data) {
+  if (!status) {
     throw new Error("매치를 찾을 수 없습니다.");
   }
 
   const confirmedApplicationIds = await listConfirmedApplicationIds(supabase, matchId);
 
-  if (data.status === "cancelled") {
+  if (status === "cancelled") {
     throw new Error("이미 취소된 매치입니다.");
   }
 
@@ -982,13 +953,50 @@ export async function cancelAdminMatchForRainAction(matchId: string) {
       cancelMatchReminderNotifications(applicationId),
     ),
   );
-  const summary = await sendRainMatchCancelledNotifications(matchId, 3);
-  await markRainCancelled(matchId, supabase);
+  const summary = await sendRainMatchCancelledNotifications(matchId);
   revalidateAdminMatchPaths(matchId);
   return buildRainNotificationResultMessage("강수 취소를 실행했습니다.", summary, {
     emptyMessage: "강수 취소를 실행했습니다. 확정 참가자가 없어 발송할 알림은 없습니다.",
     expectedCount: confirmedApplicationIds.length,
   });
+}
+
+async function getMatchStatus(
+  supabase: AdminSupabaseClient,
+  matchId: string,
+) {
+  const { data, error } = await supabase
+    .from("matches")
+    .select("status")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load match status: ${error.message}`);
+  }
+
+  return (data?.status ?? null) as AdminMatchStatus | null;
+}
+
+async function hasActiveMatchNotificationDispatch(
+  supabase: AdminServiceRoleClient,
+  matchId: string,
+  eventType: string,
+) {
+  const { data, error } = await ((supabase.from(
+    "notification_dispatches" as any,
+  ) as any)
+    .select("id")
+    .eq("match_id", matchId)
+    .eq("event_type", eventType)
+    .in("status", ["queued", "scheduled", "sent"])
+    .limit(1));
+
+  if (error) {
+    throw new Error(`Failed to load notification dispatches: ${error.message}`);
+  }
+
+  return ((data ?? []) as Array<{ id: string }>).length > 0;
 }
 
 function buildRainNotificationResultMessage(
@@ -1175,7 +1183,7 @@ async function getManagedVenue(
 ) {
   const { data, error } = await supabase
     .from("venues")
-    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -1192,7 +1200,7 @@ async function resolveManualVenue(
 ) {
   const { data: existingVenue, error: lookupError } = await supabase
     .from("venues")
-    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note")
     .eq("address", values.address)
     .maybeSingle();
 
@@ -1213,8 +1221,6 @@ async function resolveManualVenue(
     parking: "",
     smoking: "",
     showerLocker: "",
-    weatherGridNx: values.weatherGridNx,
-    weatherGridNy: values.weatherGridNy,
     defaultImageUrls: values.imageUrls,
     defaultRules: values.rules,
     defaultSafetyNotes: values.safetyNotes,
@@ -1239,14 +1245,12 @@ async function createVenue(
       parking: "",
       smoking: "",
       shower_locker: "",
-      weather_grid_nx: values.weatherGridNx,
-      weather_grid_ny: values.weatherGridNy,
       default_image_urls: values.defaultImageUrls,
       default_rules: values.defaultRules,
       default_safety_notes: values.defaultSafetyNotes,
       is_active: values.isActive,
     })
-    .select("id, slug, court_note, weather_grid_nx, weather_grid_ny")
+    .select("id, slug, court_note")
     .single();
 
   if (error || !data) {
@@ -1373,8 +1377,6 @@ type MatchFormValues = {
   levelCondition: string;
   levelRange: string;
   preparation: string;
-  weatherGridNx: number | null;
-  weatherGridNy: number | null;
   summary: string;
   publicNotice: string;
   operatorNote: string;
@@ -1423,8 +1425,6 @@ function readCreateMatchFormValues(formData: FormData): MatchFormValues {
     levelCondition,
     levelRange,
     preparation: getOptionalString(formData, "preparation"),
-    weatherGridNx: getOptionalPositiveInteger(formData, "weatherGridNx"),
-    weatherGridNy: getOptionalPositiveInteger(formData, "weatherGridNy"),
     summary: getOptionalString(formData, "summary"),
     publicNotice: getOptionalString(formData, "publicNotice"),
     operatorNote: getOptionalString(formData, "operatorNote"),
@@ -1474,8 +1474,6 @@ function readUpdateMatchFormValues(formData: FormData): MatchFormValues {
     levelCondition,
     levelRange,
     preparation: getOptionalString(formData, "preparation"),
-    weatherGridNx: getOptionalPositiveInteger(formData, "weatherGridNx"),
-    weatherGridNy: getOptionalPositiveInteger(formData, "weatherGridNy"),
     summary: getOptionalString(formData, "summary"),
     publicNotice: getOptionalString(formData, "publicNotice"),
     operatorNote: getOptionalString(formData, "operatorNote"),
@@ -1501,8 +1499,6 @@ function readVenueFormValues(formData: FormData): VenueFormValues {
     parking: getOptionalString(formData, "parking"),
     smoking: getOptionalString(formData, "smoking"),
     showerLocker: getOptionalString(formData, "showerLocker"),
-    weatherGridNx: getOptionalPositiveInteger(formData, "weatherGridNx"),
-    weatherGridNy: getOptionalPositiveInteger(formData, "weatherGridNy"),
     imageFiles: getUploadedFiles(formData, "imageFiles"),
     imageOrder: parseVenueImageOrder(getOptionalString(formData, "imageOrderJson")),
     defaultRules: splitLineSeparated(getOptionalString(formData, "defaultRulesText")),
@@ -1820,8 +1816,6 @@ function mapVenueWriteResult(row: VenueWriteRow): VenueWriteResult {
     id: row.id,
     slug: row.slug,
     courtNote: normalizeOptionalText(row.court_note ?? ""),
-    weatherGridNx: row.weather_grid_nx,
-    weatherGridNy: row.weather_grid_ny,
   };
 }
 
