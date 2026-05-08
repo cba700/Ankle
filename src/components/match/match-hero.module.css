@@ -1,6 +1,6 @@
 .hero {
   width: var(--page-width);
-  margin: 0 auto;
+  margin: 14px auto 0;
 }
 
 .frame {
@@ -195,6 +195,10 @@
 }
 
 @media (max-width: 720px) {
+  .hero {
+    margin-top: 12px;
+  }
+
   .frame,
   .imageSlide,
   .placeholder {
